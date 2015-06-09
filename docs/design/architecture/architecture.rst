@@ -15,23 +15,23 @@ Policy Architecture
 This document records the development of policy architecture design goals for 
 the OPNFV Copper project. 
 
-Document Version 20150608.1
+Document Version 20150609.1
 
 Definitions
 ===========
 
-+-------+--------------------------------------------------------------+
-| Term  | Meaning                                                      |
-+=======+==============================================================+
-| State | Information that can be used to convey or imply the state of |
-|       | something, e.g. an application, resource, entity, etc. This  |
-|       | can include data held inside OPNFV components, "events" that |
-|       | have occurred (e.g. "policy violation"), etc.                |
-+-------+--------------------------------------------------------------+
-| Event | An item of significance to the policy engine, for which the  |
-|       | engine has become aware through some method of discovery e.g.|
-|       | polling or notification.                                     |
-+-------+--------------------------------------------------------------+
+.. list-table:: Definitions
+   :widths: 15 85
+   :header-rows: 1
+
+   * - Term
+     - Meaning
+
+   * - State
+     - Information that can be used to convey or imply the state of something, e.g. an application, resource, entity, etc. This can include data held inside OPNFV components, "events" that have occurred (e.g. "policy violation"), etc.
+
+   * - Event
+     - An item of significance to the policy engine, for which the engine has become aware through some method of discovery e.g. polling or notification.
 
 =====================
 Architectural Concept
@@ -95,25 +95,43 @@ General requirements for a policy architecture are below, with an assessment of 
   6. Reactive enforcement: Enforcement actions taken in response to policy violation events.
   7. Proactive enforcement: Enforcement actions taken in advance of policy violation events, e.g. blocking actions that could result in a policy violation.
   8. Compliance auditing: Periodic auditing of state against policies.
+  
+.. list-table:: Table 1: Assessment of NFVI VIM Support for General Requirements
+   :widths: 10 40 40
+   :header-rows: 1
 
-Table 1: Assessment of NFVI VIM Support for General Requirements  
+   * - #
+     - OpenStack
+     - OpenDaylight
+	 
+   * - 1
+     - 
+     - 
 
-+---+------------------------------------+------------------------------------+
-| # |            OpenStack               |            OpenDaylight            |
-+===+====================================+====================================+
-| 1 |                                    |                                    |
-+---+------------------------------------+------------------------------------+
-| 2 |                                    |                                    |
-+---+------------------------------------+------------------------------------+
-| 3 |                                    |                                    |
-+---+------------------------------------+------------------------------------+
-| 4 |                                    |                                    |
-+---+------------------------------------+------------------------------------+
-| 5 |                                    |                                    |
-+---+------------------------------------+------------------------------------+
-| 6 |                                    |                                    |
-+---+------------------------------------+------------------------------------+
-| 7 |                                    |                                    |
-+---+------------------------------------+------------------------------------+
-| 8 |                                    |                                    |
-+---+------------------------------------+------------------------------------+
+   * - 2
+     - 
+     - 
+
+   * - 3
+     - 
+     - 
+
+   * - 4
+     - 
+     - 
+
+   * - 5
+     - 
+     - 
+
+   * - 6
+     - 
+     - 
+
+   * - 7
+     - 
+     - 
+
+   * - 8
+     - 
+     - 
