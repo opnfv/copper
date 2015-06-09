@@ -67,20 +67,20 @@ Architectural Aspects
     * VNF-lifecycle events that can't be handled by the VIM locally are delivered directly to the service orchestrator
   * Some events/analytics need to be collected into a more "open-loop" system which can enable other actions, e.g.
     * audits and manual interventions
-	* machine-learning focused optimizations of policies (largely a future objective)
-	
+    * machine-learning focused optimizations of policies (largely a future objective)
+    
 Issues to be investigated as part of establishing an overall cohesive/adaptive policy architecture:
 
   * For the various components which may fulfill a specific purpose, what capabilities (e.g. APIs) do they have/need to
     * handle events locally
-	* enable closed-loop policy handling components to subscribe/optimize policy-related events that are of interest
+    * enable closed-loop policy handling components to subscribe/optimize policy-related events that are of interest
   * For global controllers and cloud orchestrators
     * How do they support correlation of events impacting resources in different scopes (network and cloud)
-	* What event/response flows apply to various policy use cases
+    * What event/response flows apply to various policy use cases
   * What specific policy use cases can/should fall into each overall class
     * locally handled by NFVI components
-	* handled by a closed-loop policy system, either VNF/service-specific or VNF-independent
-	
+    * handled by a closed-loop policy system, either VNF/service-specific or VNF-independent
+    
 ============
 Requirements
 ============
@@ -103,7 +103,7 @@ General requirements for a policy architecture are below, with an assessment of 
    * - #
      - OpenStack
      - OpenDaylight
-	 
+     
    * - 1
      - 
      - 
