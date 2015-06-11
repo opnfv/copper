@@ -1,40 +1,8 @@
-Policy Architecture
-===================
-
-..
- This work is licensed under a Creative Commons Attribution 3.0 Unported
- License.
-
- http://creativecommons.org/licenses/by/3.0/legalcode
- 
-.. NOTE::
-   This is a working document through which general aspects of a policy 
-   architecture are analyzed.
-
-This document records the development of policy architecture design goals for 
-the OPNFV Copper project. 
-
-Document Version 20150609.2
-
-.. contents::
-
-Definitions
-===========
-.. list-table:: Definitions
-   :widths: 15 85
-   :header-rows: 1
-
-   * - Term
-     - Meaning
-
-   * - State
-     - Information that can be used to convey or imply the state of something, e.g. an application, resource, entity, etc. This can include data held inside OPNFV components, "events" that have occurred (e.g. "policy violation"), etc.
-
-   * - Event
-     - An item of significance to the policy engine, for which the engine has become aware through some method of discovery e.g. polling or notification.
+Architecture
+============
 
 Architectural Concept
-=====================
+---------------------
 The following example diagram illustrates a "relationship diagram" type view of an NFVI platform, in which the roles of components focused on policy management, services, and infrastructure are shown. This view illustrates that a large-scale deployment of NFVI may leverage multiple components of the same "type" (e.g. SDN Controller), which fulfill specific purposes for which they are optimized. For example, a global SDN controller and cloud orchestrator can act as directed by a service orchestrator in the provisioning of VNFs per intent, while various components at a local and global level handle policy-related events directly and/or feed them back through a closed-loop policy design that responds as needed, directly or through the service orchestrator.
  
 .. image:: ./images/policy_architecture.png
@@ -45,7 +13,7 @@ The following example diagram illustrates a "relationship diagram" type view of 
 (source of the diagram above: https://wiki.opnfv.org/_media/copper/copper_work_items/policy_architecture.pptx)
 
 Architectural Aspects
-=====================
+---------------------
   * Policies are reflected in two high-level goals
   
     * Ensure resource requirements of VNFs are applied per VNF designer, service, and tenant intent
@@ -92,56 +60,3 @@ Issues to be investigated as part of establishing an overall cohesive/adaptive p
   
     * locally handled by NFVI components
     * handled by a closed-loop policy system, either VNF/service-specific or VNF-independent
-    
-Requirements
-============
-General requirements for a policy architecture are below, with an assessment of the current state of support for these across major OPNFV components (1=poor, 5=excellent).
-
-  1. Polled monitoring: Exposure of state via request-response APIs.
-  2. Notifications: Exposure of state via pub-sub APIs.
-  3. Realtime/near-realtime notifications: Notifications that occur in actual or near realtime.
-  4. Delegated policy: CRUD operations on policies that are distributed to specific components for local handling, including one/more of monitoring, violation reporting, and enforcement.
-  5. Violation reporting: Reporting of conditions that represent a policy violation.
-  6. Reactive enforcement: Enforcement actions taken in response to policy violation events.
-  7. Proactive enforcement: Enforcement actions taken in advance of policy violation events, e.g. blocking actions that could result in a policy violation.
-  8. Compliance auditing: Periodic auditing of state against policies.
-  
-.. list-table:: Table 1: Assessment of NFVI VIM Support for General Requirements
-   :widths: 10 40 40
-   :header-rows: 1
-
-   * - #
-     - OpenStack
-     - OpenDaylight
-     
-   * - 1
-     - 
-     - 
-
-   * - 2
-     - 
-     - 
-
-   * - 3
-     - 
-     - 
-
-   * - 4
-     - 
-     - 
-
-   * - 5
-     - 
-     - 
-
-   * - 6
-     - 
-     - 
-
-   * - 7
-     - 
-     - 
-
-   * - 8
-     - 
-     - 
