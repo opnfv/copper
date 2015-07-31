@@ -18,7 +18,7 @@ master_doc = 'index'
 pygments_style = 'sphinx'
 html_use_index = False
 
-pdf_documents = [('index', u'Doctor', u'Doctor Project', u'OPNFV')]
+pdf_documents = [('index', u'Copper', u'Copper Project', u'OPNFV')]
 pdf_fit_mode = "shrink"
 pdf_stylesheets = ['sphinx','kerning','a4']
 #latex_domain_indices = False
