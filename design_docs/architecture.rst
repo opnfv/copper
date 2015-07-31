@@ -60,3 +60,4 @@ Issues to be investigated as part of establishing an overall cohesive/adaptive p
   
     * locally handled by NFVI components
     * handled by a closed-loop policy system, either VNF/service-specific or VNF-independent
+
