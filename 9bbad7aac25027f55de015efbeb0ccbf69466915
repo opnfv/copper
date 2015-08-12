@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a437d4f_b554e8ca",
+        "filename": "etc/conf.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2015-08-12T18:48:22Z",
+      "side": 1,
+      "message": "typo here",
+      "revId": "9bbad7aac25027f55de015efbeb0ccbf69466915",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
