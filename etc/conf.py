@@ -28,7 +28,7 @@ latex_elements = {
     'printindex': '',
 }
 
-project = u'Doctor: Fault Management and Maintenance'
+project = u'Copper: Virtual Infrastructure Deploy;ment Policies'
 copyright = u'%s, OPNFV' % datetime.date.today().year
 version = u'1.0.0'
 release = u'1.0.0'
