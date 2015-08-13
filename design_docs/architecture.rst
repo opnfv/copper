@@ -10,13 +10,13 @@ The following example diagram illustrates a "relationship diagram" type view of 
    :alt: policy_architecture.png
    :align: center
 
-(source of the diagram above: https://wiki.opnfv.org/_media/copper/copper_work_items/policy_architecture.pptx)
+(source of the diagram above: https://git.opnfv.org/cgit/copper/plain/design_docs/images/policy_architecture.pptx)
 
 Architectural Aspects
 ---------------------
   * Policies are reflected in two high-level goals
   
-    * Ensure resource requirements of VNFs are applied per VNF designer, service, and tenant intent
+    * Ensure resource requirements of VNFs and services are applied per VNF designer, service, and tenant intent
     * Ensure that generic policies are not violated, e.g. *networks connected to VMs must either be public or owned by the VM owner*
 
   * Policies are distributed through two main means

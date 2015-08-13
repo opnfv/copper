@@ -1,13 +1,99 @@
 Use Cases
 =========
 
+Resource Requirements
++++++++++++++++++++++
+
+Workload Placement
+------------------
+
+Affinity
+........
+
+Ensures that the VM instance is launched "with affinity to" specific resources, e.g. within a compute or storage cluster. This is analogous to the affinity rules in `VMWare vSphere DRS <https://pubs.vmware.com/vsphere-50/topic/com.vmware.vsphere.resmgmt.doc_50/GUID-FF28F29C-8B67-4EFF-A2EF-63B3537E6934.html>`_. Examples include: "Same Host Filter", i.e. place on the same compute node as a given set of instances, e.g. as defined in a scheduler hint list.
+
+As implemented by OpenStack Heat using server groups:
+
+*Note: untested example...*
+
+.. code::
+
+	resources: 
+	  servgrp1: 
+		type: OS::Nova::ServerGroup
+		properties: 
+		  policies: 
+		  - affinity
+		  serv1:
+			type: OS::Nova::Server
+			properties:
+				image: { get_param: image }
+				flavor: { get_param: flavor }
+				networks:
+					- network: {get_param: network}
+		  serv2:
+			type: OS::Nova::Server
+			properties:
+				image: { get_param: image }
+				flavor: { get_param: flavor }
+				networks:
+					- network: {get_param: network}
+
+Anti-Affinity
+.............
+
+Ensures that the VM instance is launched "with anti-affinity to" specific resources, e.g. outside a compute or storage cluster, or geographic location. This filter is analogous to the anti-affinity rules in vSphere DRS. Examples include: "Different Host Filter", i.e. ensures that the VM instance is launched on a different compute node from a given set of instances, as defined in a scheduler hint list.
+
+As implemented by OpenStack Heat using scheduler hints:
+
+*Note: untested example...*
+
+.. code::
+
+	heat template version: 2013-05-23
+	parameters:
+	  image:
+		type: string
+		default: TestVM
+	  flavor:
+		type: string
+		default: m1.micro
+	  network:
+		type: string
+		default: cirros_net2
+	resources:
+	  serv1:
+		type: OS::Nova::Server
+		properties:
+			image: { get_param: image }
+			flavor: { get_param: flavor }
+			networks:
+				- network: {get_param: network}
+			scheduler_hints: {different_host: {get_resource: serv2}}
+	  serv2:
+		type: OS::Nova::Server
+		properties:
+			image: { get_param: image }
+			flavor: { get_param: flavor }
+			networks:
+				- network: {get_param: network}
+			scheduler_hints: {different_host: {get_resource: serv1}}
+
+Configuration Auditing
+----------------------
+
+As a service provider or tenant, I need to periodically verify that resource configuration requirements have not been violated, as a backup means to proactive or reactive policy enforcement.
+
+Generic Policy Requirements
++++++++++++++++++++++++++++
+
 NFVI Self-Service Constraints
 -----------------------------
 
 As an NFVI provider, I need to ensure that my self-service tenants are not able to configure their VNFs in ways that would impact other tenants or the reliability, security, etc of the NFVI.
 
-Example: Network Access Control
-...............................
+Network Access Control
+......................
 
 Networks connected to VMs must be public, or owned by someone in the VM owner's group.
 
@@ -74,22 +160,4 @@ As implemented through OpenStack Congress:
   reclaim_server(vm),
   nova:servers(vm, vm_name, user_id),
   keystone:users(user_id, email)
-
-Workload Placement
-------------------
-
-Affinity
-........
-
-Ensures that the VM instance is launched "with affinity to" specific resources, e.g. within a compute or storage cluster. This is analogous to the affinity rules in `VMWare vSphere DRS <https://pubs.vmware.com/vsphere-50/topic/com.vmware.vsphere.resmgmt.doc_50/GUID-FF28F29C-8B67-4EFF-A2EF-63B3537E6934.html>`_. Examples include: "Same Host Filter", i.e. place on the same compute node as a given set of instances, e.g. as defined in a scheduler hint list.
-
-Anti-Affinity
-.............
-
-Ensures that the VM instance is launched "with anti-affinity to" specific resources, e.g. outside a compute or storage cluster, or geographic location. This filter is analogous to the anti-affinity rules in vSphere DRS. Examples include: "Different Host Filter", i.e. ensures that the VM instance is launched on a different compute node from a given set of instances, as defined in a scheduler hint list.
-
-Configuration Auditing
-----------------------
-
-As a service provider or tenant, I need to periodically verify that resource configuration requirements have not been violated, as a backup means to proactive or reactive policy enforcement.
 
