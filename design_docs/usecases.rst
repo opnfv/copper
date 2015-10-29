@@ -79,6 +79,10 @@ As implemented by OpenStack Heat using scheduler hints:
 				- network: {get_param: network}
 			scheduler_hints: {different_host: {get_resource: serv1}}
 
+DMZ Deployment
+..............
+As a service provider, I need to ensure that applications which have not been designed for exposure in a DMZ zone, are not attached to DMZ networks.
+
 Configuration Auditing
 ----------------------
 
