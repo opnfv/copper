@@ -1,0 +1,12 @@
+---
+
+- hosts: congress_build_host
+  sudo: true
+  
+
+  vars_files: 
+     - config.yml
+
+
+  roles: 
+     - build

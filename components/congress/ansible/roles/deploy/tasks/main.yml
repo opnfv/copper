@@ -1,0 +1,89 @@
+---
+- name: updating package cache
+  apt: update_cache=yes
+
+- name: installing dependancies 
+  apt: pkg={{item}} state=present
+  with_items:
+     - python-pip
+     - libmysqlclient-dev
+     - python-mysqldb
+
+- name: installing python dependancies 
+  pip: name={{item}}
+  with_items:
+     - virtualenv
+#     - MySQL-python
+
+- name: creating congress group
+  group: name=congress state=present 
+  when: init == "True"
+
+- name: creating congress user 
+  user: name=congress group=congress state=present createhome=no
+  when: init == "True"
+
+- name: creating remote install directory
+  file: path={{item}} state=directory owner=congress group=congress
+  with_items:
+     - /etc/congress
+     - "{{installDir}}"
+     - /var/log/congress
+
+- name: copying congress build to prod host
+  unarchive: src={{tempDir}}/congress-{{congressVersion}}.tgz dest={{installDir}} owner=congress group=congress
+
+- name: activating virtualenv
+  shell: virtualenv {{installDir}}/congress
+
+- name: updating congress.conf
+  template: src=congress.conf dest=/etc/congress/congress.conf owner=congress group=congress
+
+- name: create congress service
+  shell: >
+     {{installDir}}/congress/bin/keystone \
+     --os-auth-url={{keystoneAuthProto}}://{{keystoneAuthHost}}:35357/v2.0 \
+     --os-username={{keystoneAdminUser}} \
+     --os-tenant-name={{adminTenantName}} \
+     --os-password={{keystoneAdminPassword}} \
+     service-create --name congress --type "policy" --description "Congress Service"
+  when: init == "True"
+
+- name: creating keystone endpoint
+  shell: >
+     {{installDir}}/congress/bin/keystone \
+     --os-auth-url={{keystoneAuthProto}}://{{keystoneAuthHost}}:35357/v2.0 \
+     --os-username={{keystoneAdminUser}} \
+     --os-tenant-name={{adminTenantName}} \
+     --os-password={{keystoneAdminPassword}} \
+     endpoint-create --service congress \
+     --region {{authRegion}}  \
+     --publicurl {{publicEndpoint}} \
+     --adminurl {{adminEndpoint}} \
+     --internalurl {{internalEndpoint}} 
+  when: init == "True"
+
+- name: creating congress database
+  mysql_db: name=congress state=present login_host={{mysqlDBIP}} login_user={{mysqlDBUser}} login_password={{mysqlDBPassword}}
+  when: init == "True"
+
+- name: creating and granting congress user access to database
+  mysql_user: name={{dbUser}} password={{dbPassword}} login_host={{mysqlDBIP}} login_user={{mysqlDBUser}} login_password={{mysqlDBPassword}} priv=congress.*:ALL host={{ item }}
+  with_items:
+    - "%"
+    - "localhost"
+  when: init == "True"
+
+- name: creating congress database schema
+  shell: >
+      {{installDir}}/congress/bin/congress-db-manage --config-file /etc/congress/congress.conf upgrade head
+  when: init == "True"
+
+- name: copy init service
+  template: src=congress-api.conf dest=/etc/init/congress-api.conf 
+  when: init == "True"
+
+- name: enabling init service for congress
+  file: src=/lib/init/upstart-job dest=/etc/init.d/congress-api state=link
+  when: init == "True"
+

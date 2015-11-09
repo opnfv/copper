@@ -1,0 +1,73 @@
+---
+#Openstack Congress Ansible installer answer file 
+#Jacob Cherkas <cherkasj@vmware.com>
+
+#temp directory used to build congress dependencies 
+tempDir: /tmp
+
+#directory where the binary venv package will be built
+virtualPackageDir: /var/tmp
+
+#packge version
+congressVersion: "2014.1.4-1"
+
+#directory where to install congress. This should only be the base directory and not the full path. We will create the congress folder automatically
+installDir: /opt/
+
+#initialize congress services, keystone endpoint, congress user creation and database initialization.
+#if this is the first time you are installing then set init = True. For subsequent install or upgrades 
+#set donInit = False
+init: "True"
+
+#--------- start init ---------
+#public endpoint 
+publicEndpoint: https://snsj54.vctlab.com:1789/
+
+#internal endpoint
+internalEndpoint: http://snsj54.vctlab.com:1789/
+
+#admin endpoint
+adminEndpoint: http://snsj54.vctlab.com:1789/
+
+#keystone admin user
+keystoneAdminUser: blsaws
+
+#keystone admin password
+keystoneAdminPassword: SHOULD@manner@11
+
+#keystone auth_url
+#keystoneAuthURL: http://keystone_server:35357/v2.0
+
+#keystone auth_host
+keystoneAuthHost: snsj54.vctlab.com
+
+#keystone auth protocal (http or https)
+keystoneAuthProto: http
+
+#openstack admin tenant name
+adminTenantName: admin
+
+#region
+authRegion: sddc
+
+#congress admin username
+congressAdminUser: congress
+
+#congress admin password
+congressAdminPassword: congress
+
+#mysql user ip address or hostname
+mysqlDBIP: snsj54.vctlab.com
+
+#mysql root password
+mysqlDBPassword: 67f7d56ce7dafd97af43
+
+#mysql root username
+mysqlDBUser: root
+
+#congress db user
+dbUser: congress
+
+#congress db password
+dbPassword: congress
+#--------- end init ---------
