@@ -154,6 +154,8 @@ As a service provider or tenant, I need to be informed of VMs that are under-uti
 
 As implemented through OpenStack Congress: 
 
+*Note: untested example...*
+
 .. code:: 
 
   reclaim_server(vm) :-
