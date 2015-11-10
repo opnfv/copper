@@ -1,5 +1,5 @@
 BUILDDIR := build
-DESIGN_DOCS = $(wildcard design_docs/*.rst)
+DESIGN_DOCS = $(wildcard docs/design/*.rst)
 
 .PHONY: clean html pdf bps all
 
