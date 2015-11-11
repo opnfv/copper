@@ -110,6 +110,8 @@ This use case captures the intent of the following sub-use-cases:
 
 As implemented through OpenStack Congress: 
 
+*Note: untested example...*
+
 .. code:: 
 
    error :- 
@@ -132,6 +134,8 @@ Storage Access Control
 Storage resources connected to VMs must be owned by someone in the VM owner's group.
 
 As implemented through OpenStack Congress: 
+
+*Note: untested example...*
 
 .. code:: 
 
