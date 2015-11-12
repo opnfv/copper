@@ -151,14 +151,15 @@ As implemented through OpenStack Congress:
   ldap:group(user1, g), 
   ldap:group(user2, g)
 
+Resource Management
+-------------------
+
 Resource Reclamation
---------------------
+....................
 
 As a service provider or tenant, I need to be informed of VMs that are under-utilized so that I can reclaim the VI resources. (example from `RuleYourCloud blog <http://ruleyourcloud.com/2015/03/12/scaling-up-congress.html>`_) 
 
 As implemented through OpenStack Congress: 
-
-*Note: untested example...*
 
 .. code:: 
 
@@ -170,4 +171,23 @@ As implemented through OpenStack Congress:
   reclaim_server(vm),
   nova:servers(vm, vm_name, user_id),
   keystone:users(user_id, email)
+
+Resource Use Limits
+...................
+
+As a tenant or service provider, I need to be automatically terminate an instance that has run for a pre-agreed maximum duration. 
+
+As implemented through OpenStack Congress: 
+
+.. code:: 
+
+  terminate_server(vm) :-
+  ceilometer:statistics("duration",vm, avg_cpu),
+  lessthan(avg_cpu, 1)
+
+  error(user_id, email, vm_name) :-
+  reclaim_server(vm),
+  nova:servers(vm, vm_name, user_id),
+  keystone:users(user_id, email)
+
 
