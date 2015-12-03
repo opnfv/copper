@@ -19,7 +19,7 @@ pygments_style = 'sphinx'
 html_use_index = False
 html_theme = 'sphinx_rtd_theme'
 
-pdf_documents = [('index', u'OPNFV', u'OPNFV Project', u'OPNFV')]
+pdf_documents = [('index', u'OPNFV', u'OPNFV Copper Project', u'OPNFV')]
 pdf_fit_mode = "shrink"
 pdf_stylesheets = ['sphinx','kerning','a4']
 #latex_domain_indices = False
