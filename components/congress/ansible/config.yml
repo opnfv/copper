@@ -1,45 +1,65 @@
 ---
-#Openstack Congress Ansible installer answer file 
-#Jacob Cherkas <cherkasj@vmware.com>
+# Copyright 2015 Open Platform for NFV Project, Inc. and its contributors
+#  
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#  
+# http://www.apache.org/licenses/LICENSE-2.0
+#  
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# What this is: An Ansible installer answer file for installing OpenStack Congress on Centos 7.
+# Status: testing in progress
+#
 
-#temp directory used to build congress dependencies 
+# temp directory used to build congress dependencies 
 tempDir: /tmp
 
-#directory where the binary venv package will be built
+# directory where the binary venv package will be built
 virtualPackageDir: /var/tmp
 
-#packge version
-congressVersion: "2014.1.4-1"
+# package version
+congressVersion: "2015.1.0"
 
-#directory where to install congress. This should only be the base directory and not the full path. We will create the congress folder automatically
-installDir: /opt/
+# directory where to install congress. This should only be the base directory and not the full path. We will create the congress folder automatically
+installDir: /opt
 
-#initialize congress services, keystone endpoint, congress user creation and database initialization.
-#if this is the first time you are installing then set init = True. For subsequent install or upgrades 
-#set donInit = False
+# If this is the first time you are installing then set init = True. For subsequent install or upgrades set init = False
+# You can also use the --start-at-task="(name)" and --step options to re-run and skip non-idempotent steps
+# (non-idempotent means the step will fail if already completed)
 init: "True"
 
+# This section contains the answers for all "init" (initial install) steps to 
+# initialize congress services, keystone endpoint, congress user creation and database initialization.
 #--------- start init ---------
+#hostIP
+hostIP: 192.168.10.6
+
 #public endpoint 
-publicEndpoint: https://snsj54.vctlab.com:1789/
+publicEndpoint: http://192.168.10.6:1789/
 
 #internal endpoint
-internalEndpoint: http://snsj54.vctlab.com:1789/
+internalEndpoint: http://192.168.10.6:1789/
 
 #admin endpoint
-adminEndpoint: http://snsj54.vctlab.com:1789/
+adminEndpoint: http://192.168.10.6:1789/
 
 #keystone admin user
-keystoneAdminUser: blsaws
+keystoneAdminUser: admin
 
 #keystone admin password
-keystoneAdminPassword: SHOULD@manner@11
+keystoneAdminPassword: octopus
 
 #keystone auth_url
-#keystoneAuthURL: http://keystone_server:35357/v2.0
+#keystoneAuthURL: http://192.168.10.6:35357/v2.0
 
 #keystone auth_host
-keystoneAuthHost: snsj54.vctlab.com
+keystoneAuthHost: localhost
 
 #keystone auth protocal (http or https)
 keystoneAuthProto: http
@@ -48,7 +68,7 @@ keystoneAuthProto: http
 adminTenantName: admin
 
 #region
-authRegion: sddc
+authRegion: RegionOne
 
 #congress admin username
 congressAdminUser: congress
@@ -57,10 +77,11 @@ congressAdminUser: congress
 congressAdminPassword: congress
 
 #mysql user ip address or hostname
-mysqlDBIP: snsj54.vctlab.com
+# TODO: whether this needs to be localhost or the actual IP address
+mysqlDBIP: localhost
 
 #mysql root password
-mysqlDBPassword: 67f7d56ce7dafd97af43
+mysqlDBPassword: octopus
 
 #mysql root username
 mysqlDBUser: root

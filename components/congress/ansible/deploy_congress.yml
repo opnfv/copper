@@ -1,6 +1,6 @@
 ---
 
-- hosts: congress_prod_host
+- hosts: 192.168.1.204
   sudo: true
   
 

@@ -1,57 +1,157 @@
 ---
-- name: updating package cache
-  apt: update_cache=yes
+# Copyright 2015 Open Platform for NFV Project, Inc. and its contributors
+#  
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#  
+# http://www.apache.org/licenses/LICENSE-2.0
+#  
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# What this is: An Ansible playbook for installing OpenStack Congress on Centos 7.
+# Status: this is a work in progress, under test
+#
+# How to use:
+#   ansible-playbook -vvv -u root -k -i hosts.ini deploy_congress.yml
+#
 
+# Update packages
+# yum update_cache=yes name=*
+- name: updating package cache
+#  apt: update_cache=yes
+  yum: update_cache=yes name=*
+
+# Install dependencies
+# Direct command: 
+# yum pkg=python-pip,mariadb-libs,MySQL-python,git,gcc,python-devel,libxml2,libxslt-devel,libzip-devel,mysql-server state=present
 - name: installing dependancies 
-  apt: pkg={{item}} state=present
+  yum: pkg={{item}} state=present
   with_items:
      - python-pip
-     - libmysqlclient-dev
-     - python-mysqldb
+     - mariadb-libs
+     - MySQL-python
+     - git
+     - gcc
+#     - python-dev
+#     - libxslt1-dev
+#     - libzip-dev
+     - python-devel
+     - libxml2
+     - libxslt-devel
+     - libzip-devel
+     - mysql-server
+#     - libmysqlclient-dev
+#     - python-mysqldb
 
+# Upgrade pip
+# Direct command: pip install --upgrade pip
+#- name: upgrade pip
+#  shell: pip install --upgrade pip
+
+# Install python dependencies
+# Direct command: pip name=virtualenv
 - name: installing python dependancies 
+#  pip: name={{item}} extra_args='--upgrade'
   pip: name={{item}}
   with_items:
      - virtualenv
+     - oslo.middleware
 #     - MySQL-python
 
+# Create the congress user group
+# Direct command: group name=congress state=present
 - name: creating congress group
   group: name=congress state=present 
   when: init == "True"
 
+# Create the congress user
+# Direct command: user name=congress group=congress state=present createhome=no
 - name: creating congress user 
   user: name=congress group=congress state=present createhome=no
-  when: init == "True"
 
+# Create the congress install directory
+# Direct command: mkdir {{item}}; chown congress {{item}}; chgrp congress {{item}};
 - name: creating remote install directory
   file: path={{item}} state=directory owner=congress group=congress
   with_items:
      - /etc/congress
-     - "{{installDir}}"
+     - /etc/congress/snapshot
+#     - "{{installDir}}"
      - /var/log/congress
 
+# Copying congress build to prod host
+# Direct command: what direct command this maps to is TBD
 - name: copying congress build to prod host
-  unarchive: src={{tempDir}}/congress-{{congressVersion}}.tgz dest={{installDir}} owner=congress group=congress
+  unarchive: src={{tempDir}}/congress-{{congressVersion}}.tar.gz dest={{installDir}} owner=congress group=congress
+  args:
+    creates: "{{installDir}}/congress-{{congressVersion}}"
 
+# Run the congress python setup
+# Direct command: cd /opt/congress-{{congressVersion}}; python setup.py install
+- name: run setup.py
+  shell: python setup.py install 
+  args:
+    chdir: "{{installDir}}/congress-{{congressVersion}}"
+    creates: /usr/bin/congress-db-manage
+
+# Activate virtualenv (creates virtual python script library to avoid conflicts with other code on the server)
+# TODO: clarify need or benefit from virtualenv
+# Direct command: virtualenv /opt/congress-{{congressVersion}}
 - name: activating virtualenv
-  shell: virtualenv {{installDir}}/congress
+  shell: virtualenv {{installDir}}/congress-{{congressVersion}}
 
+# Install dependencies in virtualenv
+# Direct command: pip install --upgrade {{item}}
+# TODO: how to invoke virtualenv install in manual command
+#- name: Install dependencies in virtualenv 
+#  pip: name={{item}} virtualenv={{installDir}}/congress-{{congressVersion}} virtualenv_site_packages=yes extra_args='--upgrade'
+#  with_items:
+#     - pbr
+#     - oslo.middleware
+#     - i18n
+
+# Copy api-paste.ini to the config directory
+# Direct command: cd /opt/congress-{{congressVersion}}; cp etc/api-paste.ini /etc/congress
+- name: copy /etc/congress/api-paste.ini
+  shell: cp etc/api-paste.ini /etc/congress
+  args:
+    creates: /etc/congress/api-paste.ini
+    chdir: "{{installDir}}/congress-{{congressVersion}}"
+
+# Copy policy.json to the config directory
+# Direct command: cd /opt/congress-{{congressVersion}}; cp etc/policy.json /etc/congress
+- name: copy /etc/congress/policy.json
+  shell: cp etc/policy.json /etc/congress
+  args:
+    creates: /etc/congress/policy.json
+    chdir: "{{installDir}}/congress-{{congressVersion}}"
+
+# Copy congress.conf to the config directory
+# Direct command: what direct command this maps to is TBD)
 - name: updating congress.conf
   template: src=congress.conf dest=/etc/congress/congress.conf owner=congress group=congress
 
+# Create the congress service
+# Direct command: bin/keystone --os-auth-url=http://localhost:35357/v2.0 --os-username=admin --os-tenant-name=admin --os-password=octopus service-create --name congress --type "policy" --description "Congress Service"
 - name: create congress service
   shell: >
-     {{installDir}}/congress/bin/keystone \
+     /bin/keystone \
      --os-auth-url={{keystoneAuthProto}}://{{keystoneAuthHost}}:35357/v2.0 \
      --os-username={{keystoneAdminUser}} \
      --os-tenant-name={{adminTenantName}} \
      --os-password={{keystoneAdminPassword}} \
      service-create --name congress --type "policy" --description "Congress Service"
-  when: init == "True"
 
+# Create the congress service endpoint
+# Direct command: bin/keystone --os-auth-url=http://localhost:35357/v2.0 --os-username=admin --os-tenant-name=admin --os-password=octopus endpoint-create --service congress --region RegionOne --publicurl http://192.168.1.204:1789/
 - name: creating keystone endpoint
   shell: >
-     {{installDir}}/congress/bin/keystone \
+     /bin/keystone \
      --os-auth-url={{keystoneAuthProto}}://{{keystoneAuthHost}}:35357/v2.0 \
      --os-username={{keystoneAdminUser}} \
      --os-tenant-name={{adminTenantName}} \
@@ -61,29 +161,135 @@
      --publicurl {{publicEndpoint}} \
      --adminurl {{adminEndpoint}} \
      --internalurl {{internalEndpoint}} 
-  when: init == "True"
 
+# Create the congress database
+# TODO: fix some bug resulting in "msg: unable to connect, check login credentials "
+# Workaround: on controller
+#   mysql mysql
+#   update user set host = '%' where user = 'root';
+#   exit
+# Direct command: mysql_db name=congress state=present login_host=192.168.1.204 login_user=root login_password=VALUE_HIDDEN
 - name: creating congress database
   mysql_db: name=congress state=present login_host={{mysqlDBIP}} login_user={{mysqlDBUser}} login_password={{mysqlDBPassword}}
-  when: init == "True"
 
+# Create the congress database user and access
+# Direct command: mysql_user name=congress password=VALUE_HIDDEN login_host=localhost login_user=root login_password=VALUE_HIDDEN priv=congress.*:ALL host=%
 - name: creating and granting congress user access to database
   mysql_user: name={{dbUser}} password={{dbPassword}} login_host={{mysqlDBIP}} login_user={{mysqlDBUser}} login_password={{mysqlDBPassword}} priv=congress.*:ALL host={{ item }}
   with_items:
     - "%"
     - "localhost"
-  when: init == "True"
 
+# Fix bug with congress-db-manage failure to import i18n
+# See https://bugs.launchpad.net/tripleo/+bug/1468028
+# It's unclear if this patch causes other problems...
+# Direct command: pip install oslo.i18n==1.7.0
+#- name: pip install oslo.i18n==1.7.0
+#  shell: >
+#      pip install oslo.i18n==1.7.0
+
+# Create the congress database schema
+# Direct command: /usr/bin/congress-db-manage --config-file /etc/congress/congress.conf upgrade head
 - name: creating congress database schema
   shell: >
-      {{installDir}}/congress/bin/congress-db-manage --config-file /etc/congress/congress.conf upgrade head
-  when: init == "True"
+      /usr/bin/congress-db-manage --config-file /etc/congress/congress.conf upgrade head
 
-- name: copy init service
-  template: src=congress-api.conf dest=/etc/init/congress-api.conf 
-  when: init == "True"
+# Enable congress to start on system restart
+# Direct command: what direct command this maps to is TBD
+- name: copy and enable congress-api.service thru systemd 
+  template: src=congress-api.service dest=/usr/lib/systemd/system/congress-api.service
 
-- name: enabling init service for congress
-  file: src=/lib/init/upstart-job dest=/etc/init.d/congress-api state=link
-  when: init == "True"
+# Install clients
+# Direct command: pip install {{item}}
+# pip: name={{item}} virtualenv={{installDir}}/congress-{{congressVersion}} virtualenv_site_packages=yes extra_args='--upgrade'
+- name: Install clients 
+  pip: name={{item}}
+  with_items:
+     - python-openstackclient
+     - python-congressclient
 
+# stderr: Exception raised: (pbr 0.11.0 (/usr/lib/python2.7/site-packages), Requirement.parse('pbr>=1.6'))
+# Install pbr-1.8.1
+# Direct command: pip install pbr==1.8.1
+- name: Install pbr-1.8.1
+  shell: >
+      pip install pbr==1.8.1
+
+# stderr: Exception raised: (pbr 1.8.1 (/usr/lib/python2.7/site-packages), Requirement.parse('pbr>=0.6,!=0.7,<1.0'))
+# fix per https://ask.openstack.org/en/question/83174/whole-cli-doesnt-work-anymore-kilo/
+# pip install --upgrade python-openstackclient
+- name: Upgrade python-openstackclient
+  shell: >
+      pip install --upgrade python-openstackclient
+
+# stderr: Unable to establish connection to http://192.168.10.6:1789/v1/data-sources
+# systemctl | grep congress
+# congress-api.service    loaded failed failed    OpenStack Congress Server
+# https://wiki.archlinux.org/index.php/Systemd#Investigating_systemd_errors
+# systemctl status congress-api -l
+# oscontroller1.opnfv.com systemd[4175]: Failed at step EXEC spawning /opt/congress/bin/congress-server: No such file or directory
+# error in congress-api.service, needed to completely remove from systemd and reinstall
+# systemctl stop congress-api.service
+# systemctl disable congress-api.service
+# rm /etc/systemd/system/congress-api.service
+# systemctl daemon-reload
+# systemctl reset-failed
+# restart at
+#   ansible-playbook -vvv -u root -k -i hosts.ini deploy_congress.yml  --start-at-task="copy and enable congress-api.service thru systemd"
+
+# congress-server: Traceback (most recent call last):
+# congress-server: File "/opt/congress-2015.1.0/bin/congress-server", line 33, in <module>
+# congress-server: from congress.server import congress_server
+# congress-server: File "/opt/congress-2015.1.0/congress/server/congress_server.py", line 26, in <module>
+# congress-server: from congress.common import config
+# congress-server: File "/opt/congress-2015.1.0/congress/common/config.py", line 20, in <module>
+# congress-server: from congress.managers import datasource as datasource_mgr
+# congress-server: File "/opt/congress-2015.1.0/congress/managers/datasource.py", line 19, in <module>
+# congress-server: from oslo.db import exception as db_exc
+# congress-server: File "/usr/lib/python2.7/site-packages/oslo/db/exception.py", line 48, in <module>
+# congress-server: from oslo.db._i18n import _
+# congress-server: File "/usr/lib/python2.7/site-packages/oslo/db/_i18n.py", line 19, in <module>
+# congress-server: from oslo import i18n
+# congress-server: ImportError: cannot import name i18n
+# systemd: congress-api.service: main process exited, code=exited, status=1/FAILURE
+# systemd: Unit congress-api.service entered failed state.
+# See https://bugs.launchpad.net/tripleo/+bug/1468028
+# It's unclear if this patch causes other problems...
+# Direct command: pip install oslo.i18n==1.7.0
+- name: install oslo.i18n==1.7.0
+  shell: >
+      pip install oslo.i18n==1.7.0
+
+# congress-server: 2015-11-26 00:30:42.754 24988 TRACE congress     from oslo.middleware import request_id
+# congress-server: 2015-11-26 00:30:42.754 24988 TRACE congress ImportError: No module named middleware
+- name: install oslo.middleware 
+  pip: name={{item}} 
+  with_items:
+     - oslo.middleware
+
+# Start the congress service
+# Direct command: systemctl start congress-api
+- name: start congress-api service 
+  shell: systemctl start congress-api
+
+# Create congress datasources
+# leave out swift for now, as it seems to break access to the other datasources
+# Direct command: openstack congress datasource create {{item}} "{{item}}" --os-username=admin --os-tenant-name=admin --os-password=octopus --os-auth-url=http://localhost:35357/v2.0
+- name: install datasource drivers
+  shell: openstack congress datasource create {{item}} "{{item}}" \
+    --os-username={{keystoneAdminUser}} \
+    --os-tenant-name={{adminTenantName}} \
+    --os-password={{keystoneAdminPassword}} \
+    --os-auth-url={{keystoneAuthProto}}://{{keystoneAuthHost}}:35357/v2.0
+    --config username={{keystoneAdminUser}} \
+    --config tenant-name={{adminTenantName}} \
+    --config password={{keystoneAdminPassword}} \
+    --config auth-url={{keystoneAuthProto}}://{{keystoneAuthHost}}:35357/v2.0
+  with_items:
+     - ceilometer
+     - cinder
+     - glancev2
+     - keystone
+     - neutronv2
+     - nova
+#     - swift

@@ -1,0 +1,11 @@
+[Unit]
+Description=OpenStack Congress Server
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=congress
+ExecStart={{installDir}}/congress/bin/congress-server --config-file /etc/congress/congress.conf
+
+[Install]
+WantedBy=multi-user.target
