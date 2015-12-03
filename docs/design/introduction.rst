@@ -69,3 +69,4 @@ OPNFV Brahmaputra will be the initial OPNFV release for Copper, with the goals:
   * Add the OpenStack Congress service to OPNFV, through at least one installer project
   * If possible, add Congress support to the OPNFV CI/CD pipeline for all Genesis project installers (Apex, Fuel, JOID, Compass)
   * Integrate Congress tests into Functest and develop additional use case tests for post-OPNFV-install
+  * Extend with other OpenStack components for testing, as time permits
