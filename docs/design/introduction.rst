@@ -11,6 +11,9 @@ Introduction
 
 The `OPNFV Copper <https://wiki.opnfv.org/copper>`_ project aims to help ensure that virtualized infrastructure deployments comply with goals of the VNF designer/user, e.g. re affinity and partitioning (e.g. per regulation, control/user plane separation, cost…). This is a "requirements" project with initial goal to assess "off the shelf" basic OPNFV platform support for policy management, using existing open source projects such as OpenStack Congress and OpenDaylight Group-Based Policy (GBP). The project will assess what policy-related features are currently supported through research into the related projects in OpenStack and ODL, and testing of integrated vanilla distributions of those and other dependent open source projects in the OPNFV’s NFVI platform scope.
 
+Configuration Policy
+--------------------
+
 As focused on by Copper, configuration policy helps ensure that the NFV service environment meets the requirements of the variety of stakeholders which will provide or use NFV platforms. These requirements can be expressed as an *intent* of the stakeholder, in specific terms or more abstractly, but at the highest level they express:
 
   * what I want
@@ -60,3 +63,9 @@ According to their role, service providers may apply more specific configuration
 
 Although such intent to capability translation is conceptually useful, it is unclear how it can address the variety of aspects that may affect the choice of an applicable configuration capability. For that reason, the Copper project will initially focus on more specific configuration requirements as fulfilled by specific configuration capabilities, and how those requirements and capabilities are expressed in VNF and service design and packaging, or as generic poicies for the NFVI.
 
+Release 1 Scope
+---------------
+OPNFV Brahmaputra will be the initial OPNFV release for Copper, with the goals:
+  * Add the OpenStack Congress service to OPNFV, through at least one installer project
+  * If possible, add Congress support to the OPNFV CI/CD pipeline for all Genesis project installers (Apex, Fuel, JOID, Compass)
+  * Integrate Congress tests into Functest and develop additional use case tests for post-OPNFV-install
