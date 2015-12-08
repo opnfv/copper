@@ -1,0 +1,15 @@
+body { font-family: sans-serif; }
+@media screen and (min-width: 200px) { body { font-size:100%; } }
+@media screen and (min-width: 400px) { body { font-size:120%; } }
+@media screen and (min-width: 600px) { body { font-size:150%; } }		
+
+p { font-size: 100%; }
+span { font-size: inherit; }
+table { font-size: inherit; }
+td { font-size: inherit; }
+input { font-size: inherit; display: table;}
+td { font-size: inherit; }
+button { font-size: inherit; color: white; background-color:darkslategray; 
+border-style:none; border-radius:10px; -moz-border-radius:10px; -webkit-border-radius:10px; 
+margin-top:5px; margin-bottom:5px;}
+textarea {width: 50%; resize:both;}
