@@ -1,1 +1,5 @@
-build/
+*~
+.*.sw?
+/build/
+/output/
+/releng/
