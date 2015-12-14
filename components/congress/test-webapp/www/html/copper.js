@@ -15,10 +15,13 @@
 */
 var origin = "http://localhost/proxy/?~url=";
 var dataSources = [];
-var tables = [];
-var rows = [];
+var datasource_tables = [];
+var datasource_rows = [];
 var policies = [];
-var rules = [];
+var policy_tables = [];
+var policy_rows = [];
+var policy_rules = [];
+var translators = [];
 
 function get_dataSources() {
 	dse = document.getElementById('dataSources');
@@ -29,61 +32,69 @@ function get_dataSources() {
 		var str = '';
 		for (i in dataSources) {
 			datasource = dataSources[i].name;
-			dhe = element('button',datasource,datasource,1);
-			de = element('div',datasource+":datasource","",1);
+			dhe = element('button',"datasources:"+datasource,datasource,1);
+			de = element('div',"datasource:"+datasource,"",1);
 			dhe.setAttribute('onclick','toggle("'+de.id+'");');
 			dse.appendChild(dhe);
 			de.style.display = 'none'
 			for (j in dataSources[i]) {
 				if (typeof dataSources[i][j] == 'object' && dataSources[i][j] != null) {
 					oe = element('button',"",j,2);
-					ae = element('p',datasource+':'+j,null,2);
+					ae = element('table',"datasource:"+datasource+':'+j,null,2);
 					ae.style.display = 'none'
 					oe.setAttribute('onclick','toggle("'+ae.id+'");');
 					de.appendChild(oe);
+  		    ah = element('thead',"",null,null);
+  		    ar = element('tr',"",null,null);
 					for (k in dataSources[i][j]) {
-						sae = element('p',"",k+':'+dataSources[i][j][k],3);
-						ae.appendChild(sae);						
+						ahe = element('th',"",k,3);
+						ah.appendChild(ahe);
+						are = element('td',"",dataSources[i][j][k],3);
+						ar.appendChild(are);
 					}
+					ae.appendChild(ah);						
+					ae.appendChild(ar);						
 				}
 				else ae = element('p',"",j+':'+dataSources[i][j],2);
 				de.appendChild(ae);
 			}
-			tb = element('button',"",'Tables',2);
-			tb.setAttribute('onclick','get_tables('+i+');');
-			de.appendChild(tb);
-			tb = element('p',datasource+':tables',"",2);
-			de.appendChild(tb);
+			dsb = element('button',"",'Tables',2);
+			dsb.setAttribute('onclick','get_datasource_tables('+i+');');
+			de.appendChild(dsb);
+			dst = element('p',"datasource:"+datasource+':tables',"",2);
+			de.appendChild(dst);
 			dse.appendChild(de);
 			}
 	},null,null,null);
 }
 
-function get_tables(dsIndex) {
+function get_datasource_tables(dsIndex) {
 	dsid = dataSources[dsIndex].id;
 	datasource = dataSources[dsIndex].name;
-	tb = document.getElementById(datasource+':tables');
+	tb = document.getElementById("datasource:"+datasource+":tables");
 	if (tb.innerHTML != "" && tb.style.display != 'none') tb.style.display = 'none';
 	else {
 		while (tb.firstChild) tb.removeChild(tb.firstChild);
 		asyncXHR('GET',origin+'/v1/data-sources/'+dsid+'/tables',function(xhr) {
 			obj = JSON.parse(xhr.responseText);
 			if (obj.results.length == 0) {
-				tables[dsIndex] = [];
-				rows[dsIndex] = [];
+				datasource_tables[dsIndex] = [];
+				datasource_rows[dsIndex] = [];
 				tb.innerHTML = "No tables defined.";
 			}
 			else {
-				tables[dsIndex] = obj.results;
-				rows[dsIndex] = [];
-				for (i in tables[dsIndex]) {
-					rows[dsIndex][i] = [];
-					tid = tables[dsIndex][i].id;
-					te = element('button',tid,tid,3);
-					te.setAttribute('onclick','get_rows('+dsIndex+','+i+');');
-					tb.appendChild(te);
-					te = element('div',datasource+":"+tid,"",2);
-					tb.appendChild(te);
+				datasource_tables[dsIndex] = obj.results;
+				datasource_rows[dsIndex] = [];
+				for (i in datasource_tables[dsIndex]) {
+					datasource_rows[dsIndex][i] = [];
+					tid = datasource_tables[dsIndex][i].id;
+					tbb = element('button',"datasource:"+datasource+":tables:"+tid+":get",tid,3);
+					tbb.setAttribute('onclick','get_datasource_table_rows('+dsIndex+','+i+');');
+					tb.appendChild(tbb);
+					tbnr = element('span',"datasource:"+datasource+":tables:"+tid+":numrows","",null);
+					tb.appendChild(tbnr);
+					tbd = element('div',"datasource:"+datasource+":tables:"+tid,"",2);
+					tb.appendChild(tbd);
 				}
 			}
 			tb.style.display = 'block';
@@ -91,29 +102,62 @@ function get_tables(dsIndex) {
 	}
 }
 
-function get_rows(dsIndex,tableIndex) {
+function get_datasource_table_rows(dsIndex,tableIndex) {
 	datasource = dataSources[dsIndex].name;
 	dsid = dataSources[dsIndex].id;
-	tid = tables[dsIndex][tableIndex].id;
-	tb = document.getElementById(datasource+":"+tid);
-	if (tb.innerHTML != "" && tb.style.display != 'none') tb.style.display = 'none';
+	tid = datasource_tables[dsIndex][tableIndex].id;
+  tbd = document.getElementById("datasource:"+datasource+":tables:"+tid);
+	if (tbd.innerHTML != "" && tbd.style.display != 'none') tbd.style.display = 'none';
 	else {
-		while (tb.firstChild) tb.removeChild(tb.firstChild);	
+		while (tbd.firstChild) tbd.removeChild(tbd.firstChild);	
 		asyncXHR('GET',origin+'/v1/data-sources/'+dsid+'/tables/'+tid+'/rows',function(xhr) {
 			obj = JSON.parse(xhr.responseText);
-			if (obj.results.length == 0) {
-				rows[dsIndex][tableIndex] = [];
-				tb.innerHTML = "No rows defined.";
-			}
-			else {
-				rows[dsIndex][tableIndex] = obj.results;
-				for (i in rows[dsIndex][tableIndex]) {
-					data = rows[dsIndex][tableIndex][i].data;
-					te = element('p',"",JSON.stringify(data),3);
-					tb.appendChild(te);
+			if (obj.results.length == 0) datasource_rows[dsIndex][tableIndex] = [];
+			else datasource_rows[dsIndex][tableIndex] = obj.results;
+
+			tbnr = document.getElementById("datasource:"+datasource+":tables:"+tid+":numrows");
+			tbnr.innerHTML = " ("+obj.results.length+" rows)<br/>";
+
+      tbr = element('table',"",null,0);
+      tbh = element('thead',"",null,null);
+			for (i in TRANSLATORS[datasource]) {
+				if (tid == TRANSLATORS[datasource][i]['table-name']) {
+          tbhr = element('tr',"",null,null);
+					if (TRANSLATORS[datasource][i]['translation-type'] == 'LIST') {
+						for (j in datasource_rows[dsIndex][tableIndex][0].data) {
+							tbhd = element('th',"",null,null);
+							tbhd.innerHTML = TRANSLATORS[datasource][i]['val-col'];
+							tbhr.appendChild(tbhd);
+						}
+					}
+					else {
+						for (j in TRANSLATORS[datasource][i]['field-translators']) {
+							tbhd = element('th',"",null,null);
+							tbhd.innerHTML = TRANSLATORS[datasource][i]['field-translators'][j]['fieldname'];
+							tbhd.title = TRANSLATORS[datasource][i]['field-translators'][j]['fieldname'];
+							tbhr.appendChild(tbhd);
+						}
+					}
+				tbh.appendChild(tbhr);
 				}
+			tbr.appendChild(tbh);
 			}
-			tb.style.display = 'block';
+			if (obj.results.length > 0) {
+				datasource_rows[dsIndex][tableIndex] = obj.results;
+				for (i in datasource_rows[dsIndex][tableIndex]) {
+          tbrr = element('tr',"",null,null);
+					data = datasource_rows[dsIndex][tableIndex][i].data;
+					for (j in data) {
+						tbrd = element('td',"",null,null);
+  					tbrd.innerHTML = data[j];
+  					tbrd.title = data[j];
+						tbrr.appendChild(tbrd);
+          }
+				tbr.appendChild(tbrr);
+				}
+			tbd.appendChild(tbr);
+			}
+		tbd.style.display = 'block';
 		},null,null,null);	
 	}
 }
@@ -125,9 +169,9 @@ function get_policies() {
 		obj = JSON.parse(xhr.responseText);
 		policies = obj.results;
 		for (i in policies) {
-			name = policies[i].name;
-			he = element('button',"",name,1);
-			pe = element('div',name+":policies","",1);
+			policy = policies[i].name;
+			he = element('button',"",policy,1);
+			pe = element('div',"policies:"+policy,"",1);
 			he.setAttribute('onclick','toggle("'+pe.id+'");');
 			poe.appendChild(he);
 			pe.style.display = 'none'
@@ -138,8 +182,13 @@ function get_policies() {
 			rb = element('button',"",'Rules',2);
 			rb.setAttribute('onclick','get_rules('+i+');');
 			pe.appendChild(rb);
-			pr = element('p',name+':rules',"",2);
+			pr = element('p',policy+':rules',"",2);
 			pe.appendChild(pr);
+			pob = element('button',"",'Tables',2);
+			pob.setAttribute('onclick','get_policy_tables('+i+');');
+			pe.appendChild(pob);
+			pot = element('p',"policies:"+policy+':tables',"",2);
+			pe.appendChild(pot);
 			poe.appendChild(pe);
 //			{"kind":"nonrecursive","description":"default action policy","name":"action","abbreviation":"actio",
 //			"id":"29196084-604d-4964-93e6-c23eb2c52990","owner_id":"user"}
@@ -159,7 +208,107 @@ function get_policies() {
     }
   ]
 }
- */
+ */http://congress.readthedocs.org/en/latest/api.html
+
+function get_policy_tables(policyIndex) {
+	pid = policies[policyIndex].id;
+	policy = policies[policyIndex].name;
+	tb = document.getElementById("policies:"+policy+':tables');
+	if (tb.innerHTML != "" && tb.style.display != 'none') tb.style.display = 'none';
+	else {
+		while (tb.firstChild) tb.removeChild(tb.firstChild);
+// TODO: verify why http://congress.readthedocs.org/en/latest/api.html uses policy name
+		asyncXHR('GET',origin+'/v1/policies/'+policy+'/tables',function(xhr) {
+			obj = JSON.parse(xhr.responseText);
+			if (obj.results.length == 0) {
+				policy_tables[policyIndex] = [];
+				policy_rows[policyIndex] = [];
+				tb.innerHTML = "No tables defined.";
+			}
+			else {
+				policy_tables[policyIndex] = obj.results;
+				policy_rows[policyIndex] = [];
+				for (i in policy_tables[policyIndex]) {
+					policy_rows[policyIndex][i] = [];
+					tid = policy_tables[policyIndex][i].id;
+					tbb = element('button',"policies:"+policy+":tables:"+tid+":get",tid,3);
+					tbb.setAttribute('onclick','get_policy_table_rows('+policyIndex+','+i+');');
+					tb.appendChild(tbb);
+					tbnr = element('span',"policies:"+policy+":tables:"+tid+":numrows","",null);
+					tb.appendChild(tbnr);
+					tbd = element('div',"policies:"+policy+":tables:"+tid,"",2);
+					tb.appendChild(tbd);
+				}
+			}
+			tb.style.display = 'block';
+		},null,null,null);	
+	}
+}
+
+function get_policy_table_rows(policyIndex,tableIndex) {
+	policy = policies[policyIndex].name;
+	pid = policies[policyIndex].id;
+	tid = policy_tables[policyIndex][tableIndex].id;
+	name = policy_tables[policyIndex][tableIndex].name;
+	tbd = document.getElementById("policies:"+policy+":tables:"+tid);
+	if (tbd.innerHTML != "" && tbd.style.display != 'none') tbd.style.display = 'none';
+	else {
+		while (tbd.firstChild) tbd.removeChild(tbd.firstChild);	
+// TODO: Verify why policy name is used instead of policy ID
+		asyncXHR('GET',origin+'/v1/policies/'+policy+'/tables/'+tid+'/rows',function(xhr) {
+			obj = JSON.parse(xhr.responseText);
+			if (obj.results.length == 0) policy_rows[policyIndex][tableIndex] = [];
+			else policy_rows[policyIndex][tableIndex] = obj.results;
+
+			tbnr = document.getElementById("policies:"+policy+":tables:"+tid+":numrows");
+			tbnr.innerHTML = " ("+obj.results.length+" rows)<br/>";
+      tbr = element('table',"",null,0);
+      tbh = element('thead',"",null,null);
+			tbr.appendChild(tbh);
+/*
+      tbh = element('thead',"",null,null);
+			for (i in TRANSLATORS[policy]) {
+				if (tid == TRANSLATORS[policy][i]['table-name']) {
+          tbr = element('tr',"",null,null);
+					if (TRANSLATORS[policy][i]['translation-type'] == 'LIST') {
+						for (j in policy_rows[policyIndex][tableIndex][0].data) {
+							tbd = element('th',"",null,null);
+							tbd.innerHTML = TRANSLATORS[policy][i]['val-col'];
+							tbr.appendChild(tbd);
+						}
+					}
+					else {
+						for (j in TRANSLATORS[policy][i]['field-translators']) {
+							tbd = element('th',"",null,null);
+							tbd.title = TRANSLATORS[policy][i]['field-translators'][j]['fieldname'];
+							tbd.innerHTML = TRANSLATORS[policy][i]['field-translators'][j]['fieldname'];
+							tbr.appendChild(tbd);
+						}
+					}
+				tbh.appendChild(tbr);
+				}
+			tbe.appendChild(tbh);
+			}
+*/
+			if (obj.results.length > 0) {
+				policy_rows[policyIndex][tableIndex] = obj.results;
+				for (i in policy_rows[policyIndex][tableIndex]) {
+          tbrr = element('tr',"",null,null);
+					data = policy_rows[policyIndex][tableIndex][i].data;
+					for (j in data) {
+						tbrd = element('td',"",null,null);
+  					tbrd.innerHTML = data[j];
+						tbrr.appendChild(tbrd);
+          }
+				tbr.appendChild(tbrr);
+				}
+			tbd.appendChild(tbr);
+			}
+		tbd.style.display = 'block';
+		},null,null,null);	
+	}
+}
+
 function get_rules(policyIndex) {
 	policy = policies[policyIndex].name;
 	pid = policies[policyIndex].id;
@@ -167,16 +316,16 @@ function get_rules(policyIndex) {
 	while (pr.firstChild) pr.removeChild(pr.firstChild);	
 	asyncXHR('GET',origin+'/v1/policies/'+policy+'/rules',function(xhr) {
 		obj = JSON.parse(xhr.responseText);
-		rules[policyIndex] = obj.results;
+		policy_rules[policyIndex] = obj.results;
 		if (obj.results.length == 0) {
-			rules[policyIndex] = [];
+			policy_rules[policyIndex] = [];
 			pr.innerHTML = "No rules defined.";
 		}
 		else {
 			var str = '';
-//			alert(JSON.stringify(rules[policyIndex]));
-			for (i in rules[policyIndex]) {
-				name = rules[policyIndex][i].name;
+//			alert(JSON.stringify(policy_rules[policyIndex]));
+			for (i in policy_rules[policyIndex]) {
+				name = policy_rules[policyIndex][i].name;
 				he = element('button',name,name,3);
 				re = element('div',name+"json","",4);
 				he.setAttribute('onclick','toggle("'+re.id+'");');
@@ -185,8 +334,8 @@ function get_rules(policyIndex) {
 				de.setAttribute('onclick','delete_rule('+policyIndex+','+i+');');
 				pr.appendChild(de);
 				re.style.display = 'none';
-				for (j in rules[policyIndex][i]) {
-					ae = element('p',"",j+':'+rules[policyIndex][i][j],4);
+				for (j in policy_rules[policyIndex][i]) {
+					ae = element('p',"",j+':'+policy_rules[policyIndex][i][j],4);
 					re.appendChild(ae);
 				}
 				pr.appendChild(re);
@@ -236,8 +385,8 @@ function create_rule(policyIndex,name,comment,rule) {
  */
 function delete_rule(policyIndex,ruleIndex) {
 	policy = policies[policyIndex].name;
-	name = rules[policyIndex][ruleIndex].name;
-	id = rules[policyIndex][ruleIndex].id;
+	name = policy_rules[policyIndex][ruleIndex].name;
+	id = policy_rules[policyIndex][ruleIndex].id;
 	// use policy name rather than id as the id!
 	asyncXHR('DELETE',origin+'/v1/policies/'+policy+'/rules/'+id,function(xhr) {
 		// BUG: Congress creates rules asyncchronously, thus a query for rules immediately after rule creation may not return the newly created rule
