@@ -5,7 +5,7 @@ Introduction
  This work is licensed under a Creative Commons Attribution 3.0 Unported License.
 
  http://creativecommons.org/licenses/by/3.0/legalcode
- 
+
 .. NOTE::
    This is the working documentation for the Copper project.
 
@@ -19,10 +19,10 @@ As focused on by Copper, configuration policy helps ensure that the NFV service 
   * what I want
   * what I don't want
 
-Using road-based transportation as an analogy, some examples of this are shown below. 
+Using road-based transportation as an analogy, some examples of this are shown below.
 
 .. list-table:: Configuration Intent Example
-   :widths: 10 45 45 
+   :widths: 10 45 45
    :header-rows: 1
 
    * - Who I Am
@@ -54,11 +54,11 @@ According to their role, service providers may apply more specific configuration
      - clustering, auto-scaling, anti-affinity, live migration
    * - disaster recovery
      - geo-diverse anti-affinity
-   * - high compute/storage performance 
+   * - high compute/storage performance
      - clustering, affinity
-   * - high network performance 
+   * - high network performance
      - data plane acceleration
-   * - resource reclamation 
+   * - resource reclamation
      - low-usage monitoring
 
 Although such intent to capability translation is conceptually useful, it is unclear how it can address the variety of aspects that may affect the choice of an applicable configuration capability. For that reason, the Copper project will initially focus on more specific configuration requirements as fulfilled by specific configuration capabilities, and how those requirements and capabilities are expressed in VNF and service design and packaging, or as generic poicies for the NFVI.

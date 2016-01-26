@@ -30,7 +30,7 @@ Abbreviations
 
    * - NF
      - Network Function
-	 
+  
    * - SFC
      - Service Function Chaining
 
