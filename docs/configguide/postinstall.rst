@@ -1,11 +1,11 @@
 Copper post installation procedures
 ===================================
 This release focused on use of the OpenStack Congress service for managing
-configuration policy. The Congress install verify procedure described here 
-is largely manual. This procedure, as well as the longer-term goal of 
-automated verification support, is a work in progress. The procedure is 
-further specific to one OPNFV installer (JOID, i.e. MAAS/JuJu) based 
-environment. 
+configuration policy. The Congress install verify procedure described here
+is largely manual. This procedure, as well as the longer-term goal of
+automated verification support, is a work in progress. The procedure is
+further specific to one OPNFV installer (JOID, i.e. MAAS/JuJu) based
+environment.
 
 Automated post installation activities
 --------------------------------------
@@ -18,7 +18,7 @@ No configuration procedures are required beyond the basic install procedure.
 Platform components validation
 ------------------------------
 
-Following are notes on creating a container as test driver for Congress. 
+Following are notes on creating a container as test driver for Congress.
 This is based upon an Ubuntu host as installed by JOID.
 
 Create and Activate the Container
@@ -27,11 +27,11 @@ On the jumphost:
 
 .. code::
 
-  sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu \ 
-	-- -b ubuntu ~/opnfv
+  sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu \
+  -- -b ubuntu ~/opnfv
   sudo lxc-start -n trusty-copper -d
   sudo lxc-info --name trusty-copper
-	(typical output)
+  (typical output)
   Name:           trusty-copper
   State:          RUNNING
   PID:            4563
@@ -61,8 +61,8 @@ Login and configure the test server
   sudo apt-get install default-jre -y
 
   # Install other dependencies
-  sudo apt-get install git gcc python-dev libxml2 libxslt1-dev \ 
-	libzip-dev php5-curl -y
+  sudo apt-get install git gcc python-dev libxml2 libxslt1-dev \
+  libzip-dev php5-curl -y
 
   # Setup OpenStack environment variables per your OPNFV install
   export CONGRESS_HOST=192.168.10.117
@@ -84,7 +84,7 @@ Login and configure the test server
   sudo pip install -r requirements.txt
   sudo python setup.py install
   openstack service list
-	(typical output)
+  (typical output)
   +----------------------------------+------------+----------------+
   | ID                               | Name       | Type           |
   +----------------------------------+------------+----------------+
@@ -108,7 +108,7 @@ Login and configure the test server
   sudo pip install -r requirements.txt
   sudo python setup.py install
   openstack congress driver list
-	(typical output)
+  (typical output)
   +------------+--------------------------------------------------------------------------+
   | id         | description                                                              |
   +------------+--------------------------------------------------------------------------+
@@ -128,7 +128,7 @@ Login and configure the test server
   sudo pip install -r requirements.txt
   sudo python setup.py install
   glance image-list
-	(typical output)
+  (typical output)
   +--------------------------------------+---------------------+
   | ID                                   | Name                |
   +--------------------------------------+---------------------+
@@ -143,7 +143,7 @@ Login and configure the test server
   sudo pip install -r requirements.txt
   sudo python setup.py install
   neutron net-list
-	(typical output)
+  (typical output)
   +--------------------------------------+----------+------------------------------------------------------+
   | id                                   | name     | subnets                                              |
   +--------------------------------------+----------+------------------------------------------------------+
@@ -159,7 +159,7 @@ Login and configure the test server
   sudo pip install -r requirements.txt
   sudo python setup.py install
   nova hypervisor-list
-	(typical output)
+  (typical output)
   +----+---------------------+-------+---------+
   | ID | Hypervisor hostname | State | Status  |
   +----+---------------------+-------+---------+
@@ -181,12 +181,12 @@ Setup the Congress Test Webapp
 
   # Clone Copper (if not already cloned in user home)
   cd ~/git
-  if [ ! -d ~/git/copper ]; then \ 
-	git clone https://gerrit.opnfv.org/gerrit/copper; fi
+  if [ ! -d ~/git/copper ]; then \
+  git clone https://gerrit.opnfv.org/gerrit/copper; fi
 
   # Copy the Apache config
   sudo cp ~/git/copper/components/congress/test-webapp/www/ubuntu-apache2.conf \
-	/etc/apache2/apache2.conf
+  /etc/apache2/apache2.conf
 
   # Point proxy.php to the Congress server per your install
   sed -i -- "s/192.168.10.117/$CONGRESS_HOST/g" \
@@ -207,4 +207,4 @@ Using the Test Webapp
 .....................
 Browse to the trusty-copper server IP address.
 
-Interactive options are meant to be self-explanatory given a basic familiarity with the Congress service and data model. But the app will be developed with additional features and UI elements. 
+Interactive options are meant to be self-explanatory given a basic familiarity with the Congress service and data model. But the app will be developed with additional features and UI elements.

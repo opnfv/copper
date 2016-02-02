@@ -1,10 +1,10 @@
 Copper configuration
 ====================
 This release focused on use of the OpenStack Congress service for managing
-configuration policy. The Congress install procedure described here is largely 
-manual. This procedure, as well as the longer-term goal of automated installer 
-support, is a work in progress. The procedure is further specific to one OPNFV 
-installer (JOID, i.e. MAAS/JuJu) based environment. Support for other OPNFV 
+configuration policy. The Congress install procedure described here is largely
+manual. This procedure, as well as the longer-term goal of automated installer
+support, is a work in progress. The procedure is further specific to one OPNFV
+installer (JOID, i.e. MAAS/JuJu) based environment. Support for other OPNFV
 installer deployed environments is also a work in progress.
 
 Pre-configuration activities
@@ -17,10 +17,10 @@ There is no specific hardware configuration required for the Copper project.
 
 Feature configuration
 ---------------------
-Following are instructions for installing Congress on an Ubuntu 14.04 LXC 
-container in the OPNFV Controller node, as installed by the JOID installer. 
-This guide uses instructions from the `Congress intro guide on readthedocs <http://congress.readthedocs.org/en/latest/readme.html#installing-congress|Congress>`_. 
-Specific values below will need to be modified if you intend to repeat this 
+Following are instructions for installing Congress on an Ubuntu 14.04 LXC
+container in the OPNFV Controller node, as installed by the JOID installer.
+This guide uses instructions from the `Congress intro guide on readthedocs <http://congress.readthedocs.org/en/latest/readme.html#installing-congress|Congress>`_.
+Specific values below will need to be modified if you intend to repeat this
 procedure in your JOID-based install environment.
 
 Install base VM for congress on controller node
@@ -106,7 +106,7 @@ Install other dependencies
 
   # when prompted, set and remember mysql root user password
   sudo apt-get install git gcc python-dev libxml2 libxslt1-dev libzip-dev \
-	mysql-server python-mysqldb -y
+  mysql-server python-mysqldb -y
   sudo pip install virtualenv
 
 Clone congress
@@ -117,7 +117,7 @@ Clone congress
   git clone https://github.com/openstack/congress.git
   cd congress
   git checkout stable/liberty
-	
+ 
 Create virtualenv
 .................
 
@@ -177,36 +177,36 @@ Edit congress.conf.sample as needed
 .. code::
 
   sed -i -- 's/#verbose = true/verbose = true/g' etc/congress.conf.sample
-  sed -i -- 's/#log_file = <None>/log_file = congress.log/g' \ 
-	etc/congress.conf.sample
-  sed -i -- 's/#log_dir = <None>/log_dir = \/var\/log\/congress/g' \ 
-	etc/congress.conf.sample
-  sed -i -- 's/#bind_host = 0.0.0.0/bind_host = 192.168.10.117/g' \ 
-	etc/congress.conf.sample
-  sed -i -- 's/#policy_path = <None>/policy_path = \ 
-	\/etc\/congress\/snapshot/g' etc/congress.conf.sample
-  sed -i -- 's/#auth_strategy = keystone/auth_strategy = noauth/g' \ 
-	etc/congress.conf.sample
+  sed -i -- 's/#log_file = <None>/log_file = congress.log/g' \
+  etc/congress.conf.sample
+  sed -i -- 's/#log_dir = <None>/log_dir = \/var\/log\/congress/g' \
+  etc/congress.conf.sample
+  sed -i -- 's/#bind_host = 0.0.0.0/bind_host = 192.168.10.117/g' \
+  etc/congress.conf.sample
+  sed -i -- 's/#policy_path = <None>/policy_path = \
+  \/etc\/congress\/snapshot/g' etc/congress.conf.sample
+  sed -i -- 's/#auth_strategy = keystone/auth_strategy = noauth/g' \
+  etc/congress.conf.sample
   sed -i -- 's/#drivers =/drivers =\
-	congress.datasources.neutronv2_driver.NeutronV2Driver,\
+  congress.datasources.neutronv2_driver.NeutronV2Driver,\
   congress.datasources.glancev2_driver.GlanceV2Driver,\
   congress.datasources.nova_driver.NovaDriver,\
-	congress.datasources.keystone_driver.KeystoneDriver,\
-	congress.datasources.ceilometer_driver.CeilometerDriver,\
-	congress.datasources.cinder_driver.CinderDriver/g' etc/congress.conf.sample
-  sed -i -- 's/#auth_host = 127.0.0.1/auth_host = 192.168.10.108/g' \ 
-	etc/congress.conf.sample
+  congress.datasources.keystone_driver.KeystoneDriver,\
+  congress.datasources.ceilometer_driver.CeilometerDriver,\
+  congress.datasources.cinder_driver.CinderDriver/g' etc/congress.conf.sample
+  sed -i -- 's/#auth_host = 127.0.0.1/auth_host = 192.168.10.108/g' \
+  etc/congress.conf.sample
   sed -i -- 's/#auth_port = 35357/auth_port = 35357/g' etc/congress.conf.sample
-  sed -i -- 's/#auth_protocol = https/auth_protocol = http/g' \ 
-	etc/congress.conf.sample
-  sed -i -- 's/#admin_tenant_name = admin/admin_tenant_name = admin/g' \ 
-	etc/congress.conf.sample
-  sed -i -- 's/#admin_user = <None>/admin_user = congress/g' \ 
-	etc/congress.conf.sample
-  sed -i -- 's/#admin_password = <None>/admin_password = congress/g' \ 
-	etc/congress.conf.sample
+  sed -i -- 's/#auth_protocol = https/auth_protocol = http/g' \
+  etc/congress.conf.sample
+  sed -i -- 's/#admin_tenant_name = admin/admin_tenant_name = admin/g' \
+  etc/congress.conf.sample
+  sed -i -- 's/#admin_user = <None>/admin_user = congress/g' \
+  etc/congress.conf.sample
+  sed -i -- 's/#admin_password = <None>/admin_password = congress/g' \
+  etc/congress.conf.sample
   sed -i -- 's/#connection = <None>/connection = mysql:\/\/ubuntu:\
-	<mysql password>@localhost:3306\/congress/g' etc/congress.conf.sample
+  <mysql password>@localhost:3306\/congress/g' etc/congress.conf.sample
 
 Copy congress.conf.sample to /etc/congress
 ..........................................
@@ -222,10 +222,10 @@ Create congress database
 
   sudo mysql -u root -p
   CREATE DATABASE congress;
-  GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'localhost' \ 
-	IDENTIFIED BY '<mysql password>';
-  GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'%' IDENTIFIED \ 
-	BY '<mysql password>';
+  GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'localhost' \
+  IDENTIFIED BY '<mysql password>';
+  GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'%' IDENTIFIED \
+  BY '<mysql password>';
   exit
 
 Install congress-db-manage dependencies
@@ -269,26 +269,26 @@ TODO: needs update in `Congress intro in readthedocs < http://congress.readthedo
 .. code::
 
   pip install cliff --upgrade
-  export ADMIN_ROLE=$(openstack role list | \ 
-	awk "/ Admin / { print \$2 }")
-  export SERVICE_TENANT=$(openstack project list | \ 
-	awk "/ admin / { print \$2 }")
-  openstack user create --password congress --project admin \ 
-	--email "congress@example.com" congress
-  export CONGRESS_USER=$(openstack user list | \ 
-	awk "/ congress / { print \$2 }")
-  openstack role add $ADMIN_ROLE --user $CONGRESS_USER \ 
-	--project $SERVICE_TENANT
+  export ADMIN_ROLE=$(openstack role list | \
+  awk "/ Admin / { print \$2 }")
+  export SERVICE_TENANT=$(openstack project list | \
+  awk "/ admin / { print \$2 }")
+  openstack user create --password congress --project admin \
+  --email "congress@example.com" congress
+  export CONGRESS_USER=$(openstack user list | \
+  awk "/ congress / { print \$2 }")
+  openstack role add $ADMIN_ROLE --user $CONGRESS_USER \
+  --project $SERVICE_TENANT
 
 Create Congress service
 .......................
 
 .. code::
 
-  openstack service create congress --type "policy" \ 
-	--description "Congress Service"
-  export CONGRESS_SERVICE=$(openstack service list | \ 
-	awk "/ congress / { print \$2 }")
+  openstack service create congress --type "policy" \
+  --description "Congress Service"
+  export CONGRESS_SERVICE=$(openstack service list | \
+  awk "/ congress / { print \$2 }")
 
 Create Congress endpoint
 ........................
@@ -315,8 +315,8 @@ Create data sources
 
 To remove datasources: openstack congress datasource delete <name>
 
-It's probably good to do these commands in a new terminal tab, as the 
-congress server log from the last command will be flooding your original 
+It's probably good to do these commands in a new terminal tab, as the
+congress server log from the last command will be flooding your original
 terminal screen.
 
 .. code::
@@ -350,7 +350,7 @@ terminal screen.
   --config username=$OS_USERNAME \
   --config tenant_name=$OS_TENANT_NAME \
   --config password=$OS_PASSWORD \
-  --config auth_url=http://$KEYSTONE_HOST:5000/v2.0 
+  --config auth_url=http://$KEYSTONE_HOST:5000/v2.0
 
 Run Congress Tempest Tests
 ..........................
@@ -377,11 +377,11 @@ service running again.
     sudo lxc-start -n juju-trusty-congress -d
     # Verify the Congress container status
     sudo lxc-ls -f juju-trusty-congress
-    NAME                  STATE    IPV4            IPV6  GROUPS  AUTOSTART  
+    NAME                  STATE    IPV4            IPV6  GROUPS  AUTOSTART 
     ----------------------------------------------------------------------
-    juju-trusty-congress  RUNNING  192.168.10.117  -     -       NO       
+    juju-trusty-congress  RUNNING  192.168.10.117  -     -       NO      
     # exit back to the Jumphost, wait a minute, and go back to the \
-		"SSH to Congress server" step above
+    "SSH to Congress server" step above
   # On the Congress server that you have logged into
   source ~/admin-openrc.sh
   cd congress

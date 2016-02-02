@@ -122,7 +122,7 @@ As implemented through OpenStack Congress:
    nova:owner(vm, vm-own),
    neutron:owner(network, net-own),
    -same-group(vm-own, net-own)
- 
+
    same-group(user1, user2) :-
    ldap:group(user1, g),
    ldap:group(user2, g)
