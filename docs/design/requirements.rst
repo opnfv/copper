@@ -1,17 +1,24 @@
 Requirements
 ============
-This section outlines general requirements for configuration policies, per the two main aspects in the Copper project scope:
+This section outlines general requirements for configuration policies,
+per the two main aspects in the Copper project scope:
   * Ensuring resource requirements of VNFs and services are applied per VNF designer, service, and tenant intent
-  * Ensuring that generic policies are not violated, e.g. *networks connected to VMs must either be public or owned by the VM owner*
+  * Ensuring that generic policies are not violated,
+    e.g. *networks connected to VMs must either be public or owned by the VM owner*
 
 Resource Requirements
 +++++++++++++++++++++
-Resource requirements describe the characteristics of virtual resources (compute, storage, network) that are needed for VNFs and services, and how those resources should be managed over the lifecycle of a VNF/service. Upstream projects  already include multiple ways in which resource requirements can be expressed and fulfilled, e.g.:
+Resource requirements describe the characteristics of virtual resources (compute, storage, network) that are needed for
+VNFs and services, and how those resources should be managed over the lifecycle of a VNF/service. Upstream projects
+already include multiple ways in which resource requirements can be expressed and fulfilled, e.g.:
   * OpenStack Nova
-    * the `image <http://docs.openstack.org/openstack-ops/content/user_facing_images.html>`_ feature, enabling "VM templates" to be defined for NFs, and referenced by name as a specific NF version to be used
-    * the `flavor <http://docs.openstack.org/openstack-ops/content/flavors.html>`_ feature, addressing basic compute and storage requirements, with extensibility for custom attributes
+    * the `image <http://docs.openstack.org/openstack-ops/content/user_facing_images.html>`_ feature, enabling
+      "VM templates" to be defined for NFs, and referenced by name as a specific NF version to be used
+    * the `flavor <http://docs.openstack.org/openstack-ops/content/flavors.html>`_ feature, addressing basic compute
+      and storage requirements, with extensibility for custom attributes
   * OpenStack Heat
-    * the `Heat Orchestration Template <http://docs.openstack.org/developer/heat/template_guide/index.html>`_ feature, enabling a variety of VM aspects to be defined and managed by Heat throughout the VM lifecycle, notably
+    * the `Heat Orchestration Template <http://docs.openstack.org/developer/heat/template_guide/index.html>`_ feature,
+      enabling a variety of VM aspects to be defined and managed by Heat throughout the VM lifecycle, notably
       * alarm handling (requires `Ceilometer <https://wiki.openstack.org/wiki/Ceilometer>`_)
       * attached volumes (requires `Cinder <https://wiki.openstack.org/wiki/Cinder>`_)
       * domain name assignment (requires `Designate <https://wiki.openstack.org/wiki/Designate>`_)
@@ -31,7 +38,8 @@ Resource requirements describe the characteristics of virtual resources (compute
       * DBaaS (requires `Trove <http://docs.openstack.org/developer/trove/>`_)
       * "multi-tenant cloud messaging and notification service" (requires `Zaqar <http://docs.openstack.org/developer/zaqar/>`_)
   * OpenStack `Group-Based Policy <https://wiki.openstack.org/wiki/GroupBasedPolicy>`_
-    * API-based grouping of endpoints with associated contractual expectations for data flow processing and service chaining
+    * API-based grouping of endpoints with associated contractual expectations for data flow processing and
+      service chaining
   * OpenStack `Tacker <https://wiki.openstack.org/wiki/Tacker>`_
     * "a fully functional ETSI MANO based general purpose NFV Orchestrator and VNF Manager for OpenStack"
   * OpenDaylight `Group-Based Policy <https://wiki.opendaylight.org/view/Group_Based_Policy_(GBP)>`_
@@ -46,14 +54,21 @@ Resource requirements describe the characteristics of virtual resources (compute
 
 Generic Policy Requirements
 +++++++++++++++++++++++++++
-Generic policy requirements address conditions related to resource state and events which need to be monitored for, and optionally responded to or prevented. These conditions are typically expected to be VNF/service-independent, as VNF/service-dependent condition handling (e.g. scale in/out) are considered to be addressed by VNFM/NFVO/VIM functions as described under Resource Requirements or as FCAPS related functions. However the general capabilities below can be applied to VNF/service-specific policy handling as well, or in particular to invocation of VNF/service-specific management/orchestration actions. The high-level required capabilities include:
+Generic policy requirements address conditions related to resource state and events which need to be monitored for,
+and optionally responded to or prevented. These conditions are typically expected to be VNF/service-independent,
+as VNF/service-dependent condition handling (e.g. scale in/out) are considered to be addressed by VNFM/NFVO/VIM
+functions as described under Resource Requirements or as FCAPS related functions. However the general capabilities
+below can be applied to VNF/service-specific policy handling as well, or in particular to invocation of
+VNF/service-specific management/orchestration actions. The high-level required capabilities include:
   * Polled monitoring: Exposure of state via request-response APIs.
   * Notifications: Exposure of state via pub-sub APIs.
   * Realtime/near-realtime notifications: Notifications that occur in actual or near realtime.
-  * Delegated policy: CRUD operations on policies that are distributed to specific components for local handling, including one/more of monitoring, violation reporting, and enforcement.
+  * Delegated policy: CRUD operations on policies that are distributed to specific components for local handling,
+    including one/more of monitoring, violation reporting, and enforcement.
   * Violation reporting: Reporting of conditions that represent a policy violation.
   * Reactive enforcement: Enforcement actions taken in response to policy violation events.
-  * Proactive enforcement: Enforcement actions taken in advance of policy violation events, e.g. blocking actions that could result in a policy violation.
+  * Proactive enforcement: Enforcement actions taken in advance of policy violation events,
+    e.g. blocking actions that could result in a policy violation.
   * Compliance auditing: Periodic auditing of state against policies.
 
  Upstream projects already include multiple ways in which configuration conditions can be monitored and responded to:
@@ -63,10 +78,12 @@ Generic policy requirements address conditions related to resource state and eve
 
 Requirements Validation Approach
 ++++++++++++++++++++++++++++++++
-The Copper project will assess the completeness of the upstream project solutions for requirements in scope though a process of:
+The Copper project will assess the completeness of the upstream project solutions for requirements in scope though
+a process of:
   * developing configuration policy use cases to focus solution assessment tests
   * integrating the projects into the OPNFV platform for testing
   * executing functional and performance tests for the solutions
   * assessing overall requirements coverage and gaps in the most complete upstream solutions
 
-Depending upon the priority of discovered gaps, new requirements will be submitted to upstream projects for the next available release cycle.
+Depending upon the priority of discovered gaps, new requirements will be submitted to upstream projects for the next
+available release cycle.

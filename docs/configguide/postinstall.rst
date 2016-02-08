@@ -207,4 +207,6 @@ Using the Test Webapp
 .....................
 Browse to the trusty-copper server IP address.
 
-Interactive options are meant to be self-explanatory given a basic familiarity with the Congress service and data model. But the app will be developed with additional features and UI elements.
+Interactive options are meant to be self-explanatory given a basic familiarity
+with the Congress service and data model.
+But the app will be developed with additional features and UI elements.
