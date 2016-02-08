@@ -117,7 +117,7 @@ Clone congress
   git clone https://github.com/openstack/congress.git
   cd congress
   git checkout stable/liberty
- 
+
 Create virtualenv
 .................
 
@@ -362,8 +362,8 @@ Run Congress Tempest Tests
 Restarting after server power loss etc
 ......................................
 
-Currently this install procedure is manual. Automated install and restoral \
-after host recovery is TBD. For now, this procedure will get the Congress \
+Currently this install procedure is manual. Automated install and restoral
+after host recovery is TBD. For now, this procedure will get the Congress
 service running again.
 
 .. code::
@@ -377,9 +377,9 @@ service running again.
     sudo lxc-start -n juju-trusty-congress -d
     # Verify the Congress container status
     sudo lxc-ls -f juju-trusty-congress
-    NAME                  STATE    IPV4            IPV6  GROUPS  AUTOSTART 
+    NAME                  STATE    IPV4            IPV6  GROUPS  AUTOSTART
     ----------------------------------------------------------------------
-    juju-trusty-congress  RUNNING  192.168.10.117  -     -       NO      
+    juju-trusty-congress  RUNNING  192.168.10.117  -     -       NO
     # exit back to the Jumphost, wait a minute, and go back to the \
     "SSH to Congress server" step above
   # On the Congress server that you have logged into
