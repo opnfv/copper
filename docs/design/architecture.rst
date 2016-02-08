@@ -3,7 +3,13 @@ Architecture
 
 Architectural Concept
 ---------------------
-The following example diagram illustrates a "relationship diagram" type view of an NFVI platform, in which the roles of components focused on policy management, services, and infrastructure are shown. This view illustrates that a large-scale deployment of NFVI may leverage multiple components of the same "type" (e.g. SDN Controller), which fulfill specific purposes for which they are optimized. For example, a global SDN controller and cloud orchestrator can act as directed by a service orchestrator in the provisioning of VNFs per intent, while various components at a local and global level handle policy-related events directly and/or feed them back through a closed-loop policy design that responds as needed, directly or through the service orchestrator.
+The following example diagram illustrates a "relationship diagram" type view of an NFVI platform,
+in which the roles of components focused on policy management, services, and infrastructure are shown.
+This view illustrates that a large-scale deployment of NFVI may leverage multiple components of the same "type"
+(e.g. SDN Controller), which fulfill specific purposes for which they are optimized. For example, a global SDN
+controller and cloud orchestrator can act as directed by a service orchestrator in the provisioning of VNFs per
+intent, while various components at a local and global level handle policy-related events directly and/or feed
+them back through a closed-loop policy design that responds as needed, directly or through the service orchestrator.
 
 .. image:: ./images/policy_architecture.png
    :width: 700 px
@@ -17,26 +23,36 @@ Architectural Aspects
   * Policies are reflected in two high-level goals
 
     * Ensure resource requirements of VNFs and services are applied per VNF designer, service, and tenant intent
-    * Ensure that generic policies are not violated, e.g. *networks connected to VMs must either be public or owned by the VM owner*
+    * Ensure that generic policies are not violated,
+      e.g. *networks connected to VMs must either be public or owned by the VM owner*
 
   * Policies are distributed through two main means
 
-    * As part of VNF packages, customized if needed by Service Design tools, expressing intent of the VNF designer and service provider, and possibly customized or supplemented by service orchestrators per the intent of specific tenants
-    * As generic policies provisioned into VIMs (SDN controllers and cloud orchestrators), expressing intent of the service provider re what states/events need to be policy-governed independently of specific VNFs
+    * As part of VNF packages, customized if needed by Service Design tools, expressing intent of the VNF designer and
+      service provider, and possibly customized or supplemented by service orchestrators per the intent of specific
+      tenants
+    * As generic policies provisioned into VIMs (SDN controllers and cloud orchestrators), expressing intent of the
+      service provider re what states/events need to be policy-governed independently of specific VNFs
 
-  * Policies are applied locally and in closed-loop systems per the capabilities of the local policy enforcer and the impact of the related state/event conditions
+  * Policies are applied locally and in closed-loop systems per the capabilities of the local policy enforcer and
+    the impact of the related state/event conditions
 
     * VIMs should be able to execute most policies locally
-    * VIMs may need to pass policy-related state/events to a closed-loop system, where those events are relevant to other components in the architecture (e.g. service orchestrator), or some additional data/arbitration is needed to resolve the state/event condition
+    * VIMs may need to pass policy-related state/events to a closed-loop system,
+      where those events are relevant to other components in the architecture (e.g. service orchestrator),
+      or some additional data/arbitration is needed to resolve the state/event condition
 
   * Policies are localized as they are distributed/delegated
 
-    * High-level policies (e.g. expressing “intent”) can be translated into VNF package elements or generic policies, perhaps using distinct syntaxes
-    * Delegated policy syntaxes are likely VIM-specific, e.g. Datalog (Congress), YANG (ODL-based SDNC), or other schemas specific to other SDNCs (Contrail, ONOS)
+    * High-level policies (e.g. expressing "intent") can be translated into VNF package elements or generic policies,
+      perhaps using distinct syntaxes
+    * Delegated policy syntaxes are likely VIM-specific, e.g. Datalog (Congress), YANG (ODL-based SDNC),
+      or other schemas specific to other SDNCs (Contrail, ONOS)
 
   * Closed-loop policy and VNF-lifecycle event handling are //somewhat// distinct
 
-    * Closed-loop policy is mostly about resolving conditions that can't be handled locally, but as above in some cases the conditions may be of relevance and either delivered directly or forwarded to service orchestrators
+    * Closed-loop policy is mostly about resolving conditions that can't be handled locally, but as above in some cases
+      the conditions may be of relevance and either delivered directly or forwarded to service orchestrators
     * VNF-lifecycle events that can't be handled by the VIM locally are delivered directly to the service orchestrator
 
   * Some events/analytics need to be collected into a more "open-loop" system which can enable other actions, e.g.
