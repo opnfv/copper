@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2015 Open Platform for NFV Project, Inc. and its contributors
+# Copyright 2015-2016 Open Platform for NFV Project, Inc. and its contributors
 #  
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,34 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# What this is: A shell script for installing a test driver for 
-# OpenStack Congress on Ubuntu.
-# Status: this is a work in progress, under test. Some steps are 
-# manual.
+# What this is: script 2 of 2 for installation of a test server for Congress.
+# Status: this is a work in progress, under test.
 #
+# Prequisite: OPFNV install per https://wiki.opnfv.org/copper/academy/joid
+# On jumphost:
+# - Congress installed through install_congress_1/2/3/4.sh
+# - ~/env.sh created as part of Congress install (install_congress_3.sh)
 # How to use:
 #   Install OPNFV per https://wiki.opnfv.org/copper/academy/joid
-#   $ source ~/git/copper/tests/setup/trusty-copper.sh
-#
+#   $ source ~/git/copper/tests/setup/install_congress_testserver_1.sh
 
-Following are notes on creating a container as test driver for Congress. This is based upon an Ubuntu host as installed by JOID.
-
-# === Create and Activate the Container ===
-
+# === Configure the test server ===
 # <code>
-# On the jumphost
-sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu -- -b ubuntu ~/opnfv
 
-sudo lxc-start -n trusty-copper -d
-
-sudo lxc-info --name trusty-copper
-
-HOST_IP=$(sudo lxc-info --name trusty-copper | grep IP | awk "/ / { print \$2 }")
-echo HOST_IP = $HOST_IP
-
-# === Login and configure the test server ===
-# <code>
-ssh ubuntu@$HOST_IP
 sudo apt-get update
 sudo apt-get upgrade -y
 
@@ -54,15 +40,10 @@ sudo apt-get install default-jre -y
 sudo apt-get install git gcc python-dev libxml2 libxslt1-dev libzip-dev php5-curl -y
 
 # Setup OpenStack environment variables per your OPNFV install
-export CONGRESS_HOST=192.168.10.117
-export KEYSTONE_HOST=192.168.10.108
-export CEILOMETER_HOST=192.168.10.105
-export CINDER_HOST=192.168.10.101
-export GLANCE_HOST=192.168.10.106
-export HEAT_HOST=192.168.10.107
-export NEUTRON_HOST=192.168.10.111
-export NOVA_HOST=192.168.10.112
-source ~/admin-openrc.sh
+source ~/env.sh
+source ~/admin-openrc.sh <<EOF
+openstack
+EOF
 
 # Install and test OpenStack client
 mkdir ~/git
@@ -71,7 +52,7 @@ git clone https://github.com/openstack/python-openstackclient.git
 cd python-openstackclient
 git checkout stable/liberty
 sudo pip install -r requirements.txt
-sudo python setup.py install
+sudo pip install .
 openstack service list
 
 # Install and test Congress client
@@ -80,7 +61,7 @@ git clone https://github.com/openstack/python-congressclient.git
 cd python-congressclient
 git checkout stable/liberty
 sudo pip install -r requirements.txt
-sudo python setup.py install
+sudo pip install .
 openstack congress driver list
 
 # Install and test Glance client
@@ -89,7 +70,7 @@ git clone https://github.com/openstack/python-glanceclient.git
 cd python-glanceclient
 git checkout stable/liberty
 sudo pip install -r requirements.txt
-sudo python setup.py install
+sudo pip install .
 glance image-list
 
 # Install and test Neutron client
@@ -98,7 +79,7 @@ git clone https://github.com/openstack/python-neutronclient.git
 cd python-neutronclient
 git checkout stable/liberty
 sudo pip install -r requirements.txt
-sudo python setup.py install
+sudo pip install .
 neutron net-list
 
 # Install and test Nova client
@@ -107,7 +88,7 @@ git clone https://github.com/openstack/python-novaclient.git
 cd python-novaclient
 git checkout stable/liberty
 sudo pip install -r requirements.txt
-sudo python setup.py install
+sudo pip install .
 nova hypervisor-list
 
 # Install and test Keystone client
@@ -116,7 +97,7 @@ git clone https://github.com/openstack/python-keystoneclient.git
 cd python-keystoneclient
 git checkout stable/liberty
 sudo pip install -r requirements.txt
-sudo python setup.py install
+sudo pip install .
 
 # </code>
 
@@ -127,16 +108,22 @@ sudo python setup.py install
 cd ~/git
 if [ ! -d ~/git/copper ]; then git clone https://gerrit.opnfv.org/gerrit/copper; fi
 
+# Install Apache, PHP
+sudo apt-get install -y apache2 php5 libapache2-mod-php5
+sudo /etc/init.d/apache2 restart
+
 # Copy the Apache config
 sudo cp ~/git/copper/components/congress/test-webapp/www/ubuntu-apache2.conf /etc/apache2/apache2.conf
-
-# Point proxy.php to the Congress server per your install
-sed -i -- "s/192.168.10.117/$CONGRESS_HOST/g" \
-  ~/git/copper/components/congress/test-webapp/www/html/proxy/index.php
 
 # Copy the webapp to the Apache root directory and fix permissions
 sudo cp -R ~/git/copper/components/congress/test-webapp/www/html /var/www
 sudo chmod 755 /var/www/html -R
+
+# Point copper.js to the trusty-copper server per your install
+sudo sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
+
+# Point proxy.php to the Congress server per your install
+sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
 
 # Make webapp log directory and set permissions
 mkdir ~/logs
@@ -145,8 +132,3 @@ chmod 777 ~/logs
 # Restart Apache
 sudo service apache2 restart
 # </code>
-
-# === Using the Test Webapp ===
-# Browse to the trusty-copper server IP address.
-
-# Interactive options are meant to be self-explanatory given a basic familiarity with the Congress service and data model. But the app will be developed with additional features and UI elements. 
