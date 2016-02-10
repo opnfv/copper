@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Open Platform for NFV Project, Inc. and its contributors
+ Copyright 2015-2016 Open Platform for NFV Project, Inc. and its contributors
   
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-var origin = "http://localhost/proxy/?~url=";
+var origin = "http://COPPER_HOST/proxy/?~url=";
 var dataSources = [];
 var datasource_tables = [];
 var datasource_rows = [];
