@@ -42,7 +42,11 @@ sudo apt-get install git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
 sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password password opnfvmysql'
 sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password opnfvmysql'
 sudo -E apt-get -q -y install mysql-server python-mysqldb
-sudo pip install virtualenv
+sudo pip install virtualenvsource ~/admin-openrc.sh <<EOF
+openstack
+EOF
+source ~/env.sh
+
 # clone congressedit congress.conf.sample as needed
 mkdir ~/git
 cd ~/git
@@ -146,7 +150,8 @@ sudo bin/congress-server &
 # disown the process (so it keeps running if you get disconnected)
 disown -h %1
 # Create data sources
-# To remove datasources: openstack congress datasource delete <name> Probably good to do these commands in a new terminal tab, as the congress server log from the last command will be flooding your original terminal screen…
+# To remove datasources: openstack congress datasource delete <name> 
+# May need to insert a delay here, as nova datasource seems to fail to get setup (server not ready?)
 openstack congress datasource create nova "nova" \
   --config username=$OS_USERNAME \
   --config tenant_name=$OS_TENANT_NAME \
@@ -179,4 +184,4 @@ openstack congress datasource create keystone "keystone" \
   --config auth_url=http://$KEYSTONE_HOST:5000/v2.0 
 # Run Congress Tempest Tests
 cd ~/git/congress
-tox -epy27
+# tox -epy27
