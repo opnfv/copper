@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2015 Open Platform for NFV Project, Inc. and its contributors
+# Copyright 2015-2016 Open Platform for NFV Project, Inc. and its contributors
 #  
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,9 @@
 
 set -x #echo on
 
-source ~/admin-openrc.sh
+source ~/admin-openrc.sh <<EOF
+openstack
+EOF
 
 glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64-dmz --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare 
 
