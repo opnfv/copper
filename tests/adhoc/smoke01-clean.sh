@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2015 Open Platform for NFV Project, Inc. and its contributors
+# Copyright 2015-2016 Open Platform for NFV Project, Inc. and its contributors
 #  
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@
 #   $ source ~/git/copper/tests/adhoc/smoke01-clean.sh
 
 set -x #echo on
+
+source ~/admin-openrc.sh <<EOF
+openstack
+EOF
 
 instance=$(nova list | awk "/ cirros1 / { print \$2 }")
 if [ "$instance" != "" ]; then nova delete $instance
