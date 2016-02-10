@@ -44,5 +44,5 @@ echo export COPPER_HOST=$COPPER_HOST >>~/env.sh
 scp ~/admin-openrc.sh ubuntu@$COPPER_HOST:/home/ubuntu
 scp ~/env.sh ubuntu@$COPPER_HOST:/home/ubuntu
 scp ~/git/copper/tests/setup/install_congress_testserver_2.sh ubuntu@$COPPER_HOST:/home/ubuntu
-ssh ubuntu@$COPPER_HOST "~/install_congress_testserver_2.sh; exit"
+ssh ubuntu@$COPPER_HOST "source ~/install_congress_testserver_2.sh; exit"
 # </code>

@@ -123,7 +123,7 @@ sudo chmod 755 /var/www/html -R
 sudo sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
 
 # Point proxy.php to the Congress server per your install
-sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
+sudo sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
 
 # Make webapp log directory and set permissions
 mkdir ~/logs
