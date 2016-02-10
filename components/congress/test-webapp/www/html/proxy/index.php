@@ -1,6 +1,6 @@
 <?php
 /*
- Copyright 2015 Open Platform for NFV Project, Inc. and its contributors
+ Copyright 2015-2016 Open Platform for NFV Project, Inc. and its contributors
   
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ if ($method == 'OPTIONS') {
 	exit();
 }
 
-$url = "http://192.168.10.117:1789".$_GET['~url'];
+$url = "http://CONGRESS_HOST:1789".$_GET['~url'];
 $curlop = curl_init();
 curl_setopt($curlop, CURLOPT_URL, $url);
 curl_setopt($curlop, CURLOPT_CUSTOMREQUEST, $method);
