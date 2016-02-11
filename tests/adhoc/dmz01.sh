@@ -37,7 +37,13 @@ source ~/admin-openrc.sh <<EOF
 openstack
 EOF
 
-glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64-dmz --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare 
+image=$(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }")
+if [ "$image" == "" ]; then glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64 --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare
+fi
+
+image=$(openstack image list | awk "/ cirros-0.3.3-x86_64-dmz / { print \$2 }")
+if [ "$image" == "" ]; then glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64-dmz --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare
+fi
 
 IMAGE_ID=$(glance image-list | awk "/ cirros-0.3.3-x86_64-dmz / { print \$2 }")
 
@@ -56,6 +62,8 @@ neutron router-create external
 neutron router-gateway-set external public
 
 neutron router-interface-add external subnet=internal
+# add a delay since the previous command takes the neutron-api offline for a while (?)
+sleep 30
 
 INTERNAL_NET=$(neutron net-list | awk "/ internal / { print \$2 }")
 

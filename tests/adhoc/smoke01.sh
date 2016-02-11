@@ -52,6 +52,8 @@ neutron router-create external
 neutron router-gateway-set external public
 
 neutron router-interface-add external subnet=internal
+# add a delay since the previous command takes the neutron-api offline for a while (?)
+sleep 30
 
 INTERNAL_NET=$(neutron net-list | awk "/ internal / { print \$2 }")
 
