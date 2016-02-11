@@ -27,6 +27,7 @@
 # === Configure the test server ===
 # <code>
 
+set -x #echo on
 sudo apt-get update
 sudo apt-get upgrade -y
 
@@ -46,7 +47,8 @@ openstack
 EOF
 
 # Install and test OpenStack client
-mkdir ~/git
+mkdir ~/coppertest
+mkdir ~/coppertest/git
 cd git
 git clone https://github.com/openstack/python-openstackclient.git
 cd python-openstackclient
@@ -56,7 +58,7 @@ sudo pip install .
 openstack service list
 
 # Install and test Congress client
-cd ~/git
+cd ~/coppertest/git
 git clone https://github.com/openstack/python-congressclient.git
 cd python-congressclient
 git checkout stable/liberty
@@ -65,7 +67,7 @@ sudo pip install .
 openstack congress driver list
 
 # Install and test Glance client
-cd ~/git
+cd ~/coppertest/git
 git clone https://github.com/openstack/python-glanceclient.git
 cd python-glanceclient
 git checkout stable/liberty
@@ -74,7 +76,7 @@ sudo pip install .
 glance image-list
 
 # Install and test Neutron client
-cd ~/git
+cd ~/coppertest/git
 git clone https://github.com/openstack/python-neutronclient.git
 cd python-neutronclient
 git checkout stable/liberty
@@ -83,7 +85,7 @@ sudo pip install .
 neutron net-list
 
 # Install and test Nova client
-cd ~/git
+cd ~/coppertest/git
 git clone https://github.com/openstack/python-novaclient.git
 cd python-novaclient
 git checkout stable/liberty
@@ -92,7 +94,7 @@ sudo pip install .
 nova hypervisor-list
 
 # Install and test Keystone client
-cd ~/git
+cd ~/coppertest/git
 git clone https://github.com/openstack/python-keystoneclient.git
 cd python-keystoneclient
 git checkout stable/liberty
@@ -105,18 +107,18 @@ sudo pip install .
 
 # <code>
 # Clone Copper (if not already cloned in user home)
-cd ~/git
-if [ ! -d ~/git/copper ]; then git clone https://gerrit.opnfv.org/gerrit/copper; fi
+cd ~/coppertest/git
+if [ ! -d ~/coppertest/git/copper ]; then git clone https://gerrit.opnfv.org/gerrit/copper; fi
 
 # Install Apache, PHP
 sudo apt-get install -y apache2 php5 libapache2-mod-php5
 sudo /etc/init.d/apache2 restart
 
 # Copy the Apache config
-sudo cp ~/git/copper/components/congress/test-webapp/www/ubuntu-apache2.conf /etc/apache2/apache2.conf
+sudo cp ~/coppertest/git/copper/components/congress/test-webapp/www/ubuntu-apache2.conf /etc/apache2/apache2.conf
 
 # Copy the webapp to the Apache root directory and fix permissions
-sudo cp -R ~/git/copper/components/congress/test-webapp/www/html /var/www
+sudo cp -R ~/coppertest/git/copper/components/congress/test-webapp/www/html /var/www
 sudo chmod 755 /var/www/html -R
 
 # Point copper.js to the trusty-copper server per your install
@@ -126,9 +128,10 @@ sudo sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
 sudo sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
 
 # Make webapp log directory and set permissions
-mkdir ~/logs
-chmod 777 ~/logs
+mkdir ~/coppertest/logs
+chmod 777 ~/coppertest/logs
 
 # Restart Apache
 sudo service apache2 restart
+set -x #echo off
 # </code>

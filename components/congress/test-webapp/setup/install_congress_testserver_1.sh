@@ -31,7 +31,6 @@
 
 # <code>
 # On the jumphost
-sudo apt-get install lxc
 sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu -- -b ubuntu ~/opnfv
 sudo lxc-start -n trusty-copper -d
 sudo lxc-info --name trusty-copper
@@ -41,8 +40,5 @@ while [ "$COPPER_HOST" == "" ]; do
 done
 echo COPPER_HOST = $COPPER_HOST
 echo export COPPER_HOST=$COPPER_HOST >>~/env.sh
-scp ~/admin-openrc.sh ubuntu@$COPPER_HOST:/home/ubuntu
-scp ~/env.sh ubuntu@$COPPER_HOST:/home/ubuntu
-scp ~/git/copper/tests/setup/install_congress_testserver_2.sh ubuntu@$COPPER_HOST:/home/ubuntu
-ssh ubuntu@$COPPER_HOST "source ~/install_congress_testserver_2.sh; exit"
+ssh -t ubuntu@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
 # </code>
