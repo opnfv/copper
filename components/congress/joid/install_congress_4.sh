@@ -26,6 +26,7 @@
 # - Congress server IP address as discovered in lxc-info above
 # source ~/git/copper/components/congress/joid/install_congress_3.sh
 
+set -x #echo on
 source ~/admin-openrc.sh <<EOF
 openstack
 EOF
@@ -185,3 +186,4 @@ openstack congress datasource create keystone "keystone" \
 # Run Congress Tempest Tests
 cd ~/git/congress
 # tox -epy27
+set -x #echo off

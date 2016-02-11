@@ -26,7 +26,7 @@
 # source ~/git/copper/components/congress/joid/install_congress_3.sh
 
 cat <<EOF >~/env.sh
-export CONGRESS_HOST=192.168.10.118
+export CONGRESS_HOST=192.168.10.132
 export KEYSTONE_HOST=$(juju status --format=short | awk "/keystone\/0/ { print \$3 }")
 export CEILOMETER_HOST=$(juju status --format=short | awk "/ceilometer\/0/ { print \$3 }")
 export CINDER_HOST=$(juju status --format=short | awk "/cinder\/0/ { print \$3 }")
@@ -38,4 +38,4 @@ source ~/env.sh
 juju scp ~/admin-openrc.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
 juju scp ~/env.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
 juju scp ~/git/copper/components/congress/joid/install_congress_4.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
-juju ssh ubuntu@$CONGRESS_HOST "source ~/install_congress_4.sh; exit"
+ssh ubuntu@$CONGRESS_HOST "source ~/install_congress_4.sh; exit"
