@@ -153,6 +153,7 @@ disown -h %1
 # Create data sources
 # To remove datasources: openstack congress datasource delete <name> 
 # May need to insert a delay here, as nova datasource seems to fail to get setup (server not ready?)
+sleep 10
 openstack congress datasource create nova "nova" \
   --config username=$OS_USERNAME \
   --config tenant_name=$OS_TENANT_NAME \
