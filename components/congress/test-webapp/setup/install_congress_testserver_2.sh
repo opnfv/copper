@@ -27,7 +27,6 @@
 # === Configure the test server ===
 # <code>
 
-set -x #echo on
 sudo apt-get update
 sudo apt-get upgrade -y
 
@@ -133,5 +132,4 @@ chmod 777 ~/coppertest/logs
 
 # Restart Apache
 sudo service apache2 restart
-set -x #echo off
 # </code>
