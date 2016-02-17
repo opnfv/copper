@@ -23,10 +23,11 @@
 # (copies install_congress_2.sh to node1-control and executes it)
 # Edit install_congress_3.sh with the congress host address from lxc_info
 # - Congress server IP address as discovered in lxc-info above
-# source ~/git/copper/components/congress/joid/install_congress_3.sh
+# source ~/git/copper/components/congress/joid/install_congress_3.sh 
 
+ssh-keygen -f "/home/opnfv/.ssh/known_hosts" -R $1
 cat <<EOF >~/env.sh
-export CONGRESS_HOST=192.168.10.132
+export CONGRESS_HOST=$1
 export KEYSTONE_HOST=$(juju status --format=short | awk "/keystone\/0/ { print \$3 }")
 export CEILOMETER_HOST=$(juju status --format=short | awk "/ceilometer\/0/ { print \$3 }")
 export CINDER_HOST=$(juju status --format=short | awk "/cinder\/0/ { print \$3 }")
@@ -38,4 +39,5 @@ source ~/env.sh
 juju scp ~/admin-openrc.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
 juju scp ~/env.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
 juju scp ~/git/copper/components/congress/joid/install_congress_4.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
-ssh ubuntu@$CONGRESS_HOST "source ~/install_congress_4.sh; exit"
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$CONGRESS_HOST "source ~/install_congress_4.sh; exit"
+return

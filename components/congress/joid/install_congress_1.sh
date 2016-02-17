@@ -24,4 +24,5 @@
 # next: see install_congress_3.sh
 
 juju scp ~/git/copper/components/congress/joid/install_congress_2.sh ubuntu@node1-control:/home/ubuntu
-juju ssh ubuntu@node1-control "source ~/install_congress_2.sh; exit"
+juju ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@node1-control "source ~/install_congress_2.sh; exit"
+return
