@@ -22,9 +22,7 @@
 # source ~/git/copper/components/congress/joid/install_congress_1.sh
 # (copies install_congress_2.sh to node1-control and executes it)
 
-set -x #echo on
 sudo lxc-clone -o juju-trusty-lxc-template -n juju-trusty-congress
 sudo lxc-start -n juju-trusty-congress -d
 sleep 10
 sudo lxc-info -n juju-trusty-congress
-set -x #echo off
