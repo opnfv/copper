@@ -48,7 +48,7 @@ EOF
 # Install and test OpenStack client
 mkdir ~/coppertest
 mkdir ~/coppertest/git
-cd git
+cd ~/coppertest/git
 git clone https://github.com/openstack/python-openstackclient.git
 cd python-openstackclient
 git checkout stable/liberty
@@ -107,7 +107,7 @@ sudo pip install .
 # <code>
 # Clone Copper (if not already cloned in user home)
 cd ~/coppertest/git
-if [ ! -d ~/coppertest/git/copper ]; then git clone https://gerrit.opnfv.org/gerrit/copper; fi
+git clone https://gerrit.opnfv.org/gerrit/copper
 
 # Install Apache, PHP
 sudo apt-get install -y apache2 php5 libapache2-mod-php5
