@@ -45,7 +45,6 @@ sudo -E apt-get -q -y install mysql-server python-mysqldb
 sudo pip install virtualenvsource ~/admin-openrc.sh <<EOF
 openstack
 EOF
-source ~/env.sh
 
 # clone congressedit congress.conf.sample as needed
 mkdir ~/git
@@ -186,4 +185,4 @@ openstack congress datasource create keystone "keystone" \
 # Run Congress Tempest Tests
 cd ~/git/congress
 # tox -epy27
-
+return
