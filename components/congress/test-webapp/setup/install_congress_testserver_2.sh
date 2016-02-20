@@ -18,32 +18,30 @@
 #
 # Prequisite: OPFNV install per https://wiki.opnfv.org/copper/academy/joid
 # On jumphost:
-# - Congress installed through install_congress_1/2/3/4.sh
-# - ~/env.sh created as part of Congress install (install_congress_3.sh)
+# - Congress installed through install_congress_1/2.sh
 # How to use:
 #   Install OPNFV per https://wiki.opnfv.org/copper/academy/joid
 #   $ source ~/git/copper/tests/setup/install_congress_testserver_1.sh
-
-# === Configure the test server ===
-# <code>
-
-sudo apt-get update
-sudo apt-get upgrade -y
-
-# Install pip
-sudo apt-get install python-pip -y
-
-# Install java
-sudo apt-get install default-jre -y
-
-# Install other dependencies
-sudo apt-get install git gcc python-dev libxml2 libxslt1-dev libzip-dev php5-curl -y
 
 # Setup OpenStack environment variables per your OPNFV install
 source ~/env.sh
 source ~/admin-openrc.sh <<EOF
 openstack
 EOF
+
+# Update the base server
+set -x
+sudo apt-get update
+sudo apt-get -y upgrade
+
+# Install pip
+sudo apt-get install -y python-pip
+
+# Install java
+sudo apt-get install -y default-jre
+
+# Install other dependencies
+sudo apt-get install -y git gcc python-dev libxml2 libxslt1-dev libzip-dev php5-curl
 
 # Install and test OpenStack client
 mkdir ~/coppertest
@@ -132,4 +130,6 @@ chmod 777 ~/coppertest/logs
 
 # Restart Apache
 sudo service apache2 restart
-# </code>
+
+set +x
+

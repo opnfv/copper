@@ -34,24 +34,40 @@
 # Earlier versions of the JOID installer installed lxc and created local templates
 # but now we have to get the ubuntu template from the controller
 set -x 
+
 sudo apt-get install -y lxc
 juju scp ubuntu@node1-control:/usr/share/lxc/templates/lxc-ubuntu ~/lxc-ubuntu
 sudo cp ~/lxc-ubuntu /usr/share/lxc/templates/lxc-ubuntu
 sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu -l DEBUG -- -b opnfv ~/opnfv
 sudo lxc-start -n trusty-copper -d
-sudo lxc-info --name trusty-copper
 if (($? > 0)); then
+  echo Error starting trusty-copper lxc container
   return
 fi
+
+# Get the copper server address
+sleep 5
 export COPPER_HOST=""
 while [ "$COPPER_HOST" == "" ]; do 
   sleep 5
   export COPPER_HOST=$(sudo lxc-info --name trusty-copper | grep IP | awk "/ / { print \$2 }")
 done
 echo COPPER_HOST = $COPPER_HOST
-echo export COPPER_HOST=$COPPER_HOST >>~/env.sh
-ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no opnfv@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit" <<EOF
-$1
+
+# Create the environment file 
+cat <<EOF >~/env.sh
+export COPPER_HOST=$COPPER_HOST
+export CONGRESS_HOST=$CONGRESS_HOST
+export KEYSTONE_HOST=$(juju status --format=short | awk "/keystone\/0/ { print \$3 }")
+export CEILOMETER_HOST=$(juju status --format=short | awk "/ceilometer\/0/ { print \$3 }")
+export CINDER_HOST=$(juju status --format=short | awk "/cinder\/0/ { print \$3 }")
+export GLANCE_HOST=$(juju status --format=short | awk "/glance\/0/ { print \$3 }")
+export NEUTRON_HOST=$(juju status --format=short | awk "/neutron-api\/0/ { print \$3 }")
+export NOVA_HOST=$(juju status --format=short | awk "/nova-cloud-controller\/0/ { print \$3 }")
 EOF
+
+# Invoke install_congress_testserver_2.sh
+ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no opnfv@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
+
 set +x
 # </code>
