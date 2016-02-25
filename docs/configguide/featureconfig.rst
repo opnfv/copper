@@ -19,18 +19,19 @@ Feature configuration
 ---------------------
 Following are instructions for installing Congress on an Ubuntu 14.04 LXC
 container in the OPNFV Controller node, as installed by the JOID installer.
-This guide uses instructions from the `Congress intro guide on readthedocs <http://congress.readthedocs.org/en/latest/readme.html#installing-congress|Congress>`_.
+This guide uses instructions from the
+`Congress intro guide on readthedocs <http://congress.readthedocs.org/en/latest/readme.html#installing-congress|Congress>`_.
 Specific values below will need to be modified if you intend to repeat this
 procedure in your JOID-based install environment.
 
 Install Procedure
 .................
 The install currently occurs via four bash scripts provided in the copper repo. See these files for the detailed steps:
-  * `install_congress_1.sh <https://git.opnfv.org/cgit/copper/tree/components/congress/joid/install_congress_1.sh>`_: copies install_congress_2.sh to the controller node and invokes it via ssh.
-  * `install_congress_2.sh <https://git.opnfv.org/cgit/copper/tree/components/congress/joid/install_congress_2.sh>`_: creates the linux container for congress on the controller node.
-  * `install_congress_3.sh <https://git.opnfv.org/cgit/copper/tree/components/congress/joid/install_congress_3.sh>`_: copies install_congress_4.sh to the congress container and invokes it via ssh. Currently requires one parameter which is the congress container IP address (to be scripted when a way to do this is figured out).
-  * `install_congress_4.sh <https://git.opnfv.org/cgit/copper/tree/components/congress/joid/install_congress_4.sh>`_: installs congress in the congress container.
-
+  * `install_congress_1.sh <https://git.opnfv.org/cgit/copper/tree/components/congress/joid/install_congress_1.sh>`_
+    * creates and starts the linux container for congress on the controller node
+    * copies install_congress_2.sh to the controller node and invokes it via ssh
+  * `install_congress_2.sh <https://git.opnfv.org/cgit/copper/tree/components/congress/joid/install_congress_2.sh>`_
+    * installs congress on the congress server.
 
 Cleanup Procedure
 .................
@@ -42,7 +43,8 @@ service from the controller database.
 Restarting after server power loss etc
 ......................................
 
-Currently this install procedure is manual. Automated install and restoral after host recovery is TBD. For now, this procedure will get the Congress service running again.
+Currently this install procedure is manual. Automated install and restoral after host
+recovery is TBD. For now, this procedure will get the Congress service running again.
 
 .. code::
 
