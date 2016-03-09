@@ -19,7 +19,8 @@
 #
 # On jumphost:
 # Download admin-openrc.sh from Horizon and save in ~
-# source ~/git/copper/components/congress/joid/install_congress_1.sh
+# source ~/git/copper/components/congress/joid/install_congress_1.sh <controller_hostname>
+# <controller_hostname> is the name of the controller node in MAAS.
 
 set -x
 
@@ -30,7 +31,7 @@ juju ssh ubuntu@node1-control "sudo lxc-clone -o juju-trusty-lxc-template -n juj
 CONGRESS_HOST=""
 while [ "$CONGRESS_HOST" == "" ]; do 
   sleep 5
-  CONGRESS_HOST=$(juju ssh ubuntu@node1-control "sudo lxc-info --name juju-trusty-congress | grep IP" | awk "/ / { print \$2 }" | tr -d '\r')
+  CONGRESS_HOST=$(juju ssh ubuntu@$1 "sudo lxc-info --name juju-trusty-congress | grep IP" | awk "/ / { print \$2 }" | tr -d '\r')
 done
 
 # Create the environment file and copy to the congress server
