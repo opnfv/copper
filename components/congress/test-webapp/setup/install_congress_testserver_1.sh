@@ -22,21 +22,21 @@
 # - ~/env.sh created as part of Congress install (install_congress_3.sh)
 # How to use:
 #   Install OPNFV per https://wiki.opnfv.org/copper/academy/joid
-#   $ source install_congress_testserver_1.sh <opnfv password>
+#   $ source install_congress_testserver_1.sh  <controller_hostname>
+# <controller_hostname> is the name of the controller node in MAAS.
 
 # Following are notes on creating a container as test driver for Congress. 
 # This is based upon an Ubuntu host as installed by JOID.
 
 # === Create and Activate the Container ===
 
-# <code>
 # On the jumphost
 # Earlier versions of the JOID installer installed lxc and created local templates
 # but now we have to get the ubuntu template from the controller
 set -x 
 
 sudo apt-get install -y lxc
-juju scp ubuntu@node1-control:/usr/share/lxc/templates/lxc-ubuntu ~/lxc-ubuntu
+juju scp ubuntu@$1:/usr/share/lxc/templates/lxc-ubuntu ~/lxc-ubuntu
 sudo cp ~/lxc-ubuntu /usr/share/lxc/templates/lxc-ubuntu
 sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu -l DEBUG -- -b opnfv ~/opnfv
 sudo lxc-start -n trusty-copper -d
@@ -70,4 +70,3 @@ EOF
 ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no opnfv@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
 
 set +x
-# </code>
