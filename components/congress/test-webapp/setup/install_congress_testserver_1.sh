@@ -22,8 +22,9 @@
 # - ~/env.sh created as part of Congress install (install_congress_3.sh)
 # How to use:
 #   Install OPNFV per https://wiki.opnfv.org/copper/academy/joid
-#   $ source install_congress_testserver_1.sh  <controller_hostname>
-# <controller_hostname> is the name of the controller node in MAAS.
+#   $ source install_congress_testserver_1.sh  <controller_hostname> <user>
+# <controller_hostname> is the name of the controller node in MAAS
+# and <user> is the name of the account where you are installing this
 
 # Following are notes on creating a container as test driver for Congress. 
 # This is based upon an Ubuntu host as installed by JOID.
@@ -38,7 +39,7 @@ set -x
 sudo apt-get install -y lxc
 juju scp ubuntu@$1:/usr/share/lxc/templates/lxc-ubuntu ~/lxc-ubuntu
 sudo cp ~/lxc-ubuntu /usr/share/lxc/templates/lxc-ubuntu
-sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu -l DEBUG -- -b opnfv ~/opnfv
+sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu -l DEBUG -- -b $2 ~/$2
 sudo lxc-start -n trusty-copper -d
 if (($? > 0)); then
   echo Error starting trusty-copper lxc container
@@ -67,6 +68,6 @@ export NOVA_HOST=$(juju status --format=short | awk "/nova-cloud-controller\/0/ 
 EOF
 
 # Invoke install_congress_testserver_2.sh
-ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no opnfv@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
+ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $2@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
 
 set +x
