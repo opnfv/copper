@@ -24,7 +24,7 @@ openstack
 EOF
 source ~/env.sh
 set -x echo on
-juju ssh ubuntu@node1-control "sudo lxc-stop --name juju-trusty-congress; sudo lxc-destroy --name juju-trusty-congress; exit"
+juju ssh ubuntu@$1 "sudo lxc-stop --name juju-trusty-congress; sudo lxc-destroy --name juju-trusty-congress; exit"
 
 # Delete Congress user
 export CONGRESS_USER=$(openstack user list | awk "/ congress / { print \$2 }")
