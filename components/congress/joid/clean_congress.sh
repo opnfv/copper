@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 # This is a cleanup script for installation of Congress on an Ubuntu 14.04 
 # LXC container in the OPNFV Controller node.
 # Presumably something has failed, and any record of the Congress feature
 # in OpenStack needs to be removed, so you can try the install again.
+#
+# Prequisite: OPFNV install per https://wiki.opnfv.org/copper/academy/joid
+# How to use:
+# Install OPNFV per https://wiki.opnfv.org/copper/academy/joid
+# $ source ~/git/copper/components/congress/joid/clean_congress.sh <controller_hostname>
+# <controller_hostname> is the name of the controller node in MAAS.
 
 source ~/admin-openrc.sh <<EOF
 openstack
