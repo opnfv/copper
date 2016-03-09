@@ -25,7 +25,7 @@
 set -x
 
 # Create the congress container
-juju ssh ubuntu@node1-control "sudo lxc-clone -o juju-trusty-lxc-template -n juju-trusty-congress; sudo lxc-start -n juju-trusty-congress -d; exit"
+juju ssh ubuntu@$1 "sudo lxc-clone -o juju-trusty-lxc-template -n juju-trusty-congress; sudo lxc-start -n juju-trusty-congress -d; exit"
 
 # Get the congress server address
 CONGRESS_HOST=""
