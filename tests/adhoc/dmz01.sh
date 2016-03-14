@@ -49,31 +49,31 @@ IMAGE_ID=$(glance image-list | awk "/ cirros-0.3.3-x86_64-dmz / { print \$2 }")
 
 glance --os-image-api-version 2 image-tag-update $IMAGE_ID "dmz"
 
-neutron net-create public --router:external=true --provider:network_type=flat --provider:physical_network=physnet1
+neutron net-create test_public --router:test_router=true --provider:network_type=flat --provider:physical_network=physnet1
 
-neutron subnet-create --disable-dhcp public 192.168.10.0/24
+neutron subnet-create --disable-dhcp test_public 192.168.10.0/24
 
-neutron net-create internal
+neutron net-create test_internal
 
-neutron subnet-create internal 10.0.0.0/24 --name internal --gateway 10.0.0.1 --enable-dhcp --allocation-pool start=10.0.0.2,end=10.0.0.254 --dns-nameserver 8.8.8.8
+neutron subnet-create test_internal 10.0.0.0/24 --name test_internal --gateway 10.0.0.1 --enable-dhcp --allocation-pool start=10.0.0.2,end=10.0.0.254 --dns-nameserver 8.8.8.8
 
-neutron router-create external
+neutron router-create test_router
 
-neutron router-gateway-set external public
+neutron router-gateway-set test_router test_public
 
-neutron router-interface-add external subnet=internal
+neutron router-interface-add test_router subnet=test_internal
 # add a delay since the previous command takes the neutron-api offline for a while (?)
 sleep 30
 
-INTERNAL_NET=$(neutron net-list | awk "/ internal / { print \$2 }")
+test_internal_NET=$(neutron net-list | awk "/ test_internal / { print \$2 }")
 
 neutron security-group-create dmz
 
 neutron security-group-rule-create --direction ingress  dmz
 
-nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$INTERNAL_NET --security-groups dmz cirros1
+nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$test_internal_NET --security-groups dmz cirros1
 
-nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64-dmz --nic net-id=$INTERNAL_NET  --security-groups dmz cirros2
+nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64-dmz --nic net-id=$test_internal_NET  --security-groups dmz cirros2
 
 openstack congress policy create test
 
