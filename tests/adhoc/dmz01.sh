@@ -49,7 +49,7 @@ IMAGE_ID=$(glance image-list | awk "/ cirros-0.3.3-x86_64-dmz / { print \$2 }")
 
 glance --os-image-api-version 2 image-tag-update $IMAGE_ID "dmz"
 
-neutron net-create test_public --router:test_router=true --provider:network_type=flat --provider:physical_network=physnet1
+neutron net-create test_public --router:external=true --provider:network_type=flat --provider:physical_network=physnet1
 
 neutron subnet-create --disable-dhcp test_public 192.168.10.0/24
 
