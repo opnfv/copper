@@ -38,6 +38,10 @@ instance=$(nova list | awk "/ cirros2 / { print \$2 }")
 if  [ "$instance" != "" ]; then nova delete $instance
 fi
 
+sg=$(neutron security-group-list | awk "/ dmz / { print \$2 }")
+
+neutron security-group-delete $sg
+
 router=$(neutron router-list | awk "/ test_router / { print \$2 }")
 
 test_internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk '{print $2}')
