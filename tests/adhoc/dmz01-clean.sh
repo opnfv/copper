@@ -38,23 +38,23 @@ instance=$(nova list | awk "/ cirros2 / { print \$2 }")
 if  [ "$instance" != "" ]; then nova delete $instance
 fi
 
-router=$(neutron router-list | awk "/ external / { print \$2 }")
+router=$(neutron router-list | awk "/ test_router / { print \$2 }")
 
-internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk '{print $2}')
+test_internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk '{print $2}')
 
-if [ "$internal_interface" != "" ]; then neutron router-interface-delete $router port=$internal_interface
+if [ "$test_internal_interface" != "" ]; then neutron router-interface-delete $router port=$test_internal_interface
 fi
 
-public_interface=$(neutron router-port-list $router | grep 191.168.10.2 | awk '{print $2}')
+test_public_interface=$(neutron router-port-list $router | grep 191.168.10.2 | awk '{print $2}')
 
-if [ "$public_interface" != "" ]; then neutron router-interface-delete $router port=$public_interface
+if [ "$test_public_interface" != "" ]; then neutron router-interface-delete $router port=$test_public_interface
 fi
 
-neutron router-interface-delete $router $internal_interface
+neutron router-interface-delete $router $test_internal_interface
 
-neutron router-gateway-clear external
+neutron router-gateway-clear test_router
 
-neutron router-delete external
+neutron router-delete test_router
 
 port=$(neutron port-list | awk "/ 10.0.0.1 / { print \$2 }")
 
@@ -66,12 +66,12 @@ port=$(neutron port-list | awk "/ 10.0.0.2 / { print \$2 }")
 if [ "$port" != "" ]; then neutron port-delete $port
 fi
 
-neutron subnet-delete internal
+neutron subnet-delete test_internal
 
-neutron net-delete internal
+neutron net-delete test_internal
 
-neutron subnet-delete public
+neutron subnet-delete test_public
 
-neutron net-delete public
+neutron net-delete test_public
 
 set +x #echo off
