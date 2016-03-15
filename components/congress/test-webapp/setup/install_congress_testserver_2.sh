@@ -18,9 +18,8 @@
 #
 # Prequisite: OPFNV install per https://wiki.opnfv.org/copper/academy/joid
 # On jumphost:
-# - Congress installed through install_congress_1/2.sh
+# - Congress installed through install_congress_1.sh
 # How to use:
-#   Install OPNFV per https://wiki.opnfv.org/copper/academy/joid
 #   $ source ~/git/copper/tests/setup/install_congress_testserver_1.sh
 
 # Setup OpenStack environment variables per your OPNFV install
