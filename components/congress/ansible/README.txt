@@ -1,3 +1,4 @@
+# Copyright 2015-2016 AT&T Intellectual Property, Inc
 # This file contains instructions for installing Congress on a Centos7 OPNFV jumphost using Ansible
 # Details are sparse so far - a user guide will be written
 # Some of these instructions may already have been completed in the copper git Ansible installer files
