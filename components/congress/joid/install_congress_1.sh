@@ -22,6 +22,11 @@
 # source ~/git/copper/components/congress/joid/install_congress_1.sh <controller_hostname>
 # <controller_hostname> is the name of the controller node in MAAS.
 
+if [ $# -lt 1 ]; then
+  echo 1>&2 "$0: not enough arguments"
+  return 2
+fi
+
 set -x
 
 # Create the congress container
