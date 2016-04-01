@@ -27,19 +27,20 @@ if [ $# -lt 1 ]; then
   return 2
 fi
 
-set -x
+if [ $1 == "debug" ]; then set -x #echo on
+fi
 
-# Create the congress container
+echo "Create the congress container"
 juju ssh ubuntu@$1 "sudo lxc-clone -o juju-trusty-lxc-template -n juju-trusty-congress; sudo lxc-start -n juju-trusty-congress -d; exit"
 
-# Get the congress server address
+echo "Get the congress server address"
 CONGRESS_HOST=""
 while [ "$CONGRESS_HOST" == "" ]; do 
   sleep 5
   CONGRESS_HOST=$(juju ssh ubuntu@$1 "sudo lxc-info --name juju-trusty-congress | grep IP" | awk "/ / { print \$2 }" | tr -d '\r')
 done
 
-# Create the environment file and copy to the congress server
+echo "Create the environment file and copy to the congress server"
 cat <<EOF >~/env.sh
 export CONGRESS_HOST=$CONGRESS_HOST
 export KEYSTONE_HOST=$(juju status --format=short | awk "/keystone\/0/ { print \$3 }")
@@ -53,8 +54,8 @@ source ~/env.sh
 juju scp ~/admin-openrc.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
 juju scp ~/env.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
 
-# Copy the install script to the congress server and execute
+echo "Copy the install script to the congress server and execute"
 juju scp ~/git/copper/components/congress/joid/install_congress_2.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
 ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$CONGRESS_HOST "source ~/install_congress_2.sh; exit"
 
-set +x
+set +x #echo off
