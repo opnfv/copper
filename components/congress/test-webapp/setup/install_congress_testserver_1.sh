@@ -28,22 +28,33 @@
 # Create and Activate the Container
 # Earlier versions of the JOID installer installed lxc and created local templates
 # but now we have to get the ubuntu template from the controller
-set -x 
 
+if [ $# -lt 2 ]; then
+  echo 1>&2 "$0: arguments required <controller_hostname> <user>"
+  return 2
+fi
+
+if [ $1 == "debug" ]; then set -x #echo on
+fi
+
+echo "Install prerequisites"
 sudo apt-get install -y lxc
+echo "Copy lxc-ubuntu container from the controller"
 juju scp ubuntu@$1:/usr/share/lxc/templates/lxc-ubuntu ~/lxc-ubuntu
 sudo cp ~/lxc-ubuntu /usr/share/lxc/templates/lxc-ubuntu
+echo "Create the trusty-copper container"
 sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu -l DEBUG -- -b $2 ~/$2
+echo "Start trusty-copper"
 sudo lxc-start -n trusty-copper -d
 if (($? > 0)); then
   echo Error starting trusty-copper lxc container
   return
 fi
 
-# Get the CONGRESS_HOST value from env.sh
+echo "Get the CONGRESS_HOST value from env.sh"
 source ~/env.sh
 
-# Get the copper server address
+echo "Get trusty-copper address"
 sleep 5
 export COPPER_HOST=""
 while [ "$COPPER_HOST" == "" ]; do 
@@ -52,7 +63,7 @@ while [ "$COPPER_HOST" == "" ]; do
 done
 echo COPPER_HOST = $COPPER_HOST
 
-# Create the environment file 
+echo "Create the environment file"
 cat <<EOF >~/env.sh
 export COPPER_HOST=$COPPER_HOST
 export CONGRESS_HOST=$CONGRESS_HOST
@@ -64,7 +75,7 @@ export NEUTRON_HOST=$(juju status --format=short | awk "/neutron-api\/0/ { print
 export NOVA_HOST=$(juju status --format=short | awk "/nova-cloud-controller\/0/ { print \$3 }")
 EOF
 
-# Invoke install_congress_testserver_2.sh
+echo "Invoke install_congress_testserver_2.sh on trusty-copper"
 ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $2@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
 
 set +x
