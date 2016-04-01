@@ -22,27 +22,27 @@
 # How to use:
 #   $ source ~/git/copper/tests/setup/install_congress_testserver_1.sh
 
-# Setup OpenStack environment variables per your OPNFV install
+echo "Setup OpenStack environment variables per your OPNFV install"
 source ~/env.sh
 source ~/admin-openrc.sh <<EOF
 openstack
 EOF
 
-# Update the base server
+echo "Update the base server"
 set -x
 sudo apt-get update
 sudo apt-get -y upgrade
 
-# Install pip
+echo "Install pip"
 sudo apt-get install -y python-pip
 
-# Install java
+echo "Install java"
 sudo apt-get install -y default-jre
 
-# Install other dependencies
+echo "Install other dependencies"
 sudo apt-get install -y git gcc python-dev libxml2 libxslt1-dev libzip-dev php5-curl
 
-# Install and test OpenStack client
+echo "Install and test OpenStack client"
 mkdir ~/coppertest
 mkdir ~/coppertest/git
 cd ~/coppertest/git
@@ -53,7 +53,7 @@ sudo pip install -r requirements.txt
 sudo pip install .
 openstack service list
 
-# Install and test Congress client
+echo "Install and test Congress client"
 cd ~/coppertest/git
 git clone https://github.com/openstack/python-congressclient.git
 cd python-congressclient
@@ -62,7 +62,7 @@ sudo pip install -r requirements.txt
 sudo pip install .
 openstack congress driver list
 
-# Install and test Glance client
+echo "Install and test Glance client"
 cd ~/coppertest/git
 git clone https://github.com/openstack/python-glanceclient.git
 cd python-glanceclient
@@ -71,7 +71,7 @@ sudo pip install -r requirements.txt
 sudo pip install .
 glance image-list
 
-# Install and test Neutron client
+echo "Install and test Neutron client"
 cd ~/coppertest/git
 git clone https://github.com/openstack/python-neutronclient.git
 cd python-neutronclient
@@ -80,7 +80,7 @@ sudo pip install -r requirements.txt
 sudo pip install .
 neutron net-list
 
-# Install and test Nova client
+echo "Install and test Nova client"
 cd ~/coppertest/git
 git clone https://github.com/openstack/python-novaclient.git
 cd python-novaclient
@@ -89,7 +89,7 @@ sudo pip install -r requirements.txt
 sudo pip install .
 nova hypervisor-list
 
-# Install and test Keystone client
+echo "Install and test Keystone client"
 cd ~/coppertest/git
 git clone https://github.com/openstack/python-keystoneclient.git
 cd python-keystoneclient
@@ -97,37 +97,34 @@ git checkout stable/liberty
 sudo pip install -r requirements.txt
 sudo pip install .
 
-# </code>
+echo "Setup the Congress Test Webappp"
 
-# === Setup the Congress Test Webapp ===
-
-# <code>
-# Clone Copper (if not already cloned in user home)
+echo "Clone Copper"
 cd ~/coppertest/git
 git clone https://gerrit.opnfv.org/gerrit/copper
 
-# Install Apache, PHP
+echo "Install Apache, PHP"
 sudo apt-get install -y apache2 php5 libapache2-mod-php5
 sudo /etc/init.d/apache2 restart
 
-# Copy the Apache config
+echo "Copy the Apache config"
 sudo cp ~/coppertest/git/copper/components/congress/test-webapp/www/ubuntu-apache2.conf /etc/apache2/apache2.conf
 
-# Copy the webapp to the Apache root directory and fix permissions
+echo "Copy the webapp to the Apache root directory and fix permissions"
 sudo cp -R ~/coppertest/git/copper/components/congress/test-webapp/www/html /var/www
 sudo chmod 755 /var/www/html -R
 
-# Point copper.js to the trusty-copper server per your install
+echo "Point copper.js to the trusty-copper server per your install"
 sudo sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
 
-# Point proxy.php to the Congress server per your install
+echo "Point proxy.php to the Congress server per your install"
 sudo sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
 
-# Make webapp log directory and set permissions
+echo "Make webapp log directory and set permissions"
 mkdir ~/coppertest/logs
 chmod 777 ~/coppertest/logs
 
-# Restart Apache
+echo "Restart Apache"
 sudo service apache2 restart
 
 set +x
