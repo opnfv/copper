@@ -54,7 +54,7 @@ fi
 echo "Create the environment file and copy to the congress server"
 cat <<EOF >~/env.sh
 export CONGRESS_HOST=$CONGRESS_HOST
-export HORIZON_HOST=$(juju status --format=short | awk "/openstack-dashboard\/0/ { print \$3 }")
+export HORIZON_HOST=$(juju status --format=short | awk "/openstack-dashboard/ { print \$3 }")
 export KEYSTONE_HOST=$(juju status --format=short | awk "/keystone\/0/ { print \$3 }")
 export CEILOMETER_HOST=$(juju status --format=short | awk "/ceilometer\/0/ { print \$3 }")
 export CINDER_HOST=$(juju status --format=short | awk "/cinder\/0/ { print \$3 }")
@@ -80,9 +80,7 @@ sudo apt-get install python-pip -y
 
 echo "install other dependencies"
 sudo apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
-
-echo "Install virtualenv"
-sudo pip install virtualenv
+sudo pip install --upgrade pip virtualenv setuptools pbr tox
 
 echo "Clone congress"
 mkdir ~/git
@@ -140,10 +138,14 @@ openstack endpoint create $CONGRESS_SERVICE \
   --adminurl http://$CONGRESS_HOST:1789/ \
   --internalurl http://$CONGRESS_HOST:1789/
 
+echo "Start the Congress service"
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$CONGRESS_HOST "nohup ~/git/congress/bin/congress-server; exit"
+
+echo "Wait 30 seconds for Congress service to startup"
+sleep 30
+
 echo "Create data sources"
 # To remove datasources: openstack congress datasource delete <name> 
-# Insert a delay here, as nova datasource seems to fail to get setup (server not ready?)
-sleep 10
 openstack congress datasource create nova "nova" \
   --config username=$OS_USERNAME \
   --config tenant_name=$OS_TENANT_NAME \
