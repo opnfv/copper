@@ -139,7 +139,7 @@ openstack endpoint create $CONGRESS_SERVICE \
   --internalurl http://$CONGRESS_HOST:1789/
 
 echo "Start the Congress service"
-ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$CONGRESS_HOST "nohup ~/git/congress/bin/congress-server; exit"
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$CONGRESS_HOST "~/git/congress/bin/congress-server &>/dev/null &"
 
 echo "Wait 30 seconds for Congress service to startup"
 sleep 30

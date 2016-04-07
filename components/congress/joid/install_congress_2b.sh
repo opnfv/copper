@@ -38,7 +38,7 @@ source ~/env.sh
 
 echo "Update/upgrade package repos"
 sudo apt-get update
-sudo apt-get upgrade -y
+#sudo apt-get upgrade -y
 
 echo "install pip"
 sudo apt-get install python-pip -y
