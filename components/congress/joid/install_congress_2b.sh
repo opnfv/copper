@@ -36,8 +36,9 @@ openstack
 EOF
 source ~/env.sh
 
-echo "Update package repos"
+echo "Update/upgrade package repos"
 sudo apt-get update
+sudo apt-get upgrade -y
 
 echo "install pip"
 sudo apt-get install python-pip -y
@@ -61,14 +62,20 @@ git clone https://github.com/openstack/congress.git
 cd congress
 git checkout stable/liberty
 
+echo "Install virtualenv"
+sudo pip install virtualenv
+
+echo "Create virtualenv"
+virtualenv ~/git/congress
+source bin/activate
+
 echo "Setup Congress"
 sudo mkdir -p /etc/congress
-sudo chown ubuntu /etc/congress
-mkdir -p /etc/congress/snapshot
+sudo mkdir -p /etc/congress/snapshot
 sudo mkdir /var/log/congress
 sudo chown ubuntu /var/log/congress
-cp etc/api-paste.ini /etc/congress
-cp etc/policy.json /etc/congress
+sudo cp etc/api-paste.ini /etc/congress
+sudo cp etc/policy.json /etc/congress
 
 echo "install requirements.txt and tox dependencies (detected by errors during 'tox -egenconfig')"
 sudo apt-get install libffi-dev -y
@@ -77,58 +84,51 @@ sudo apt-get install libssl-dev -y
 
 echo "install dependencies of Congress"
 cd ~/git/congress
-pip install -r requirements.txt
-pip install .
+sudo bin/pip install -r requirements.txt
+sudo bin/pip install .
 
 echo "install tox"
-pip install tox
+sudo bin/pip install tox
 
 echo "generate congress.conf.sample"
-tox -egenconfig
+sudo tox -egenconfig
 
 echo "edit congress.conf.sample as needed"
-sed -i -- 's/#verbose = true/verbose = true/g' etc/congress.conf.sample
-sed -i -- 's/#log_file = <None>/log_file = congress.log/g' etc/congress.conf.sample
-sed -i -- 's/#log_dir = <None>/log_dir = \/var\/log\/congress/g' etc/congress.conf.sample
-sed -i -- 's/#bind_host = 0.0.0.0/bind_host = '$CONGRESS_HOST'/g' etc/congress.conf.sample
-sed -i -- 's/#policy_path = <None>/policy_path = \/etc\/congress\/snapshot/g' etc/congress.conf.sample
-sed -i -- 's/#auth_strategy = keystone/auth_strategy = noauth/g' etc/congress.conf.sample
-sed -i -- 's/#drivers =/drivers = congress.datasources.neutronv2_driver.NeutronV2Driver,congress.datasources.glancev2_driver.GlanceV2Driver,congress.datasources.nova_driver.NovaDriver,congress.datasources.keystone_driver.KeystoneDriver,congress.datasources.ceilometer_driver.CeilometerDriver,congress.datasources.cinder_driver.CinderDriver/g' etc/congress.conf.sample
-sed -i -- 's/#auth_host = 127.0.0.1/auth_host = '$CONGRESS_HOST'/g' etc/congress.conf.sample
-sed -i -- 's/#auth_port = 35357/auth_port = 35357/g' etc/congress.conf.sample
-sed -i -- 's/#auth_protocol = https/auth_protocol = http/g' etc/congress.conf.sample
-sed -i -- 's/#admin_tenant_name = admin/admin_tenant_name = admin/g' etc/congress.conf.sample
-sed -i -- 's/#admin_user = <None>/admin_user = congress/g' etc/congress.conf.sample
-sed -i -- 's/#admin_password = <None>/admin_password = congress/g' etc/congress.conf.sample
-sed -i -- 's/#connection = <None>/connection = mysql:\/\/ubuntu:'$MYSQL_PASSWORD'@localhost:3306\/congress/g' etc/congress.conf.sample
+sudo sed -i -- 's/#verbose = true/verbose = true/g' etc/congress.conf.sample
+sudo sed -i -- 's/#log_file = <None>/log_file = congress.log/g' etc/congress.conf.sample
+sudo sed -i -- 's/#log_dir = <None>/log_dir = \/var\/log\/congress/g' etc/congress.conf.sample
+sudo sed -i -- 's/#bind_host = 0.0.0.0/bind_host = '$CONGRESS_HOST'/g' etc/congress.conf.sample
+sudo sed -i -- 's/#policy_path = <None>/policy_path = \/etc\/congress\/snapshot/g' etc/congress.conf.sample
+sudo sed -i -- 's/#auth_strategy = keystone/auth_strategy = noauth/g' etc/congress.conf.sample
+sudo sed -i -- 's/#drivers =/drivers = congress.datasources.neutronv2_driver.NeutronV2Driver,congress.datasources.glancev2_driver.GlanceV2Driver,congress.datasources.nova_driver.NovaDriver,congress.datasources.keystone_driver.KeystoneDriver,congress.datasources.ceilometer_driver.CeilometerDriver,congress.datasources.cinder_driver.CinderDriver/g' etc/congress.conf.sample
+sudo sed -i -- 's/#auth_host = 127.0.0.1/auth_host = '$CONGRESS_HOST'/g' etc/congress.conf.sample
+sudo sed -i -- 's/#auth_port = 35357/auth_port = 35357/g' etc/congress.conf.sample
+sudo sed -i -- 's/#auth_protocol = https/auth_protocol = http/g' etc/congress.conf.sample
+sudo sed -i -- 's/#admin_tenant_name = admin/admin_tenant_name = admin/g' etc/congress.conf.sample
+sudo sed -i -- 's/#admin_user = <None>/admin_user = congress/g' etc/congress.conf.sample
+sudo sed -i -- 's/#admin_password = <None>/admin_password = congress/g' etc/congress.conf.sample
+sudo sed -i -- 's/#connection = <None>/connection = mysql:\/\/ubuntu:'$MYSQL_PASSWORD'@localhost:3306\/congress/g' etc/congress.conf.sample
 
 echo "copy congress.conf.sample to /etc/congress"
-cp etc/congress.conf.sample /etc/congress/congress.conf
+sudo cp etc/congress.conf.sample /etc/congress/congress.conf
 
 echo "create congress database"
-sudo mysql --user=root --password=$MYSQL_PASSWORD -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu@localhost' IDENTIFIED BY '"$MYSQL_PASSWORD"'; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'%' IDENTIFIED BY '"$MYSQL_PASSWORD"'; exit;"
+sudo mysql --user=root --password=$MYSQL_PASSWORD -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu@localhost' IDENTIFIED BY '"$MYSQL_PASSWORD"'; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'%' IDENTIFIED BY '"$MYSQL_PASSWORD"';"
 
 echo "install congress-db-manage dependencies (detected by errors)"
 sudo apt-get build-dep python-mysqldb -y
-pip install MySQL-python
+sudo bin/pip install MySQL-python
 
 echo "create database schema"
 congress-db-manage --config-file /etc/congress/congress.conf upgrade head
-
-echo "Start the Congress service in the background"
-cd ~/git/congress
-sudo bin/congress-server &
-
-echo "disown the process (so it keeps running if you get disconnected)"
-disown -h %1
 
 echo "Install Congress client"
 cd ~/git
 git clone https://github.com/openstack/python-congressclient.git
 cd python-congressclient
 git checkout stable/liberty
-pip install -r requirements.txt
-pip install .
+sudo bin/pip install -r requirements.txt
+sudo bin/pip install .
 
 function _congress_setup_horizon {
   local HORIZON_DIR="/usr/share/openstack-dashboard"
