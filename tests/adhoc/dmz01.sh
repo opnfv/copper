@@ -119,15 +119,18 @@ test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
 echo "Get cirros2 instance ID"
 test_cirros2_ID=$(openstack server list | awk "/ cirros2 / { print \$2 }")
 
-echo "Check for presence of cirros1 ID in Congress policy 'test' table 'dmz_server'"
-dmz_cirros1=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros1_ID / { print \$2 }")
-
-echo "Check for presence of cirros1 ID in Congress policy 'test' table 'dmz_server'"
-dmz_cirros2=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros2_ID / { print \$2 }")
-
 echo "Verify cirros1 and cirros2 IDs are in the Congress policy 'test' table 'dmz_server'"
-if [ "$dmz_cirros1" == "$test_cirros1_ID" ] &&  [ "$dmz_cirros2" == "$test_cirros2_ID" ]; then echo "Test Success!"
-else echo "Test Failed!"
-fi
+COUNTER=5
+RESULT="Test Failed!"
+until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  echo "Check for presence of cirros1 ID in Congress policy 'test' table 'dmz_server'"
+  dmz_cirros1=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros1_ID / { print \$2 }")
+  echo "Check for presence of cirros2 ID in Congress policy 'test' table 'dmz_server'"
+  dmz_cirros2=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros2_ID / { print \$2 }")
+  if [ "$dmz_cirros1" == "$test_cirros1_ID" ] &&  [ "$dmz_cirros2" == "$test_cirros2_ID" ]; then RESULT="Test Success!"
+  fi
+  let COUNTER-=1
+done
+echo $RESULT
 
 set +x #echo off
