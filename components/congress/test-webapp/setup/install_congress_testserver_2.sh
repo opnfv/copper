@@ -31,7 +31,7 @@ EOF
 echo "Update the base server"
 set -x
 sudo apt-get update
-sudo apt-get -y upgrade
+#sudo apt-get -y upgrade
 
 echo "Install pip"
 sudo apt-get install -y python-pip

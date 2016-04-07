@@ -34,7 +34,9 @@ if [ $# -lt 2 ]; then
   return 2
 fi
 
-if [ $1 == "debug" ]; then set -x #echo on
+if [ $# -eq 3 ]; then
+  if [ $3 == "debug" ]; then set -x #echo on
+  fi
 fi
 
 echo "Install prerequisites"
