@@ -105,7 +105,7 @@ echo "copy congress.conf.sample to /etc/congress"
 sudo cp etc/congress.conf.sample /etc/congress/congress.conf
 
 echo "create congress database"
-sudo mysql --user=root --password=$MYSQL_PASSWORD -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu@localhost' IDENTIFIED BY '"$MYSQL_PASSWORD"'; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'%' IDENTIFIED BY '"$MYSQL_PASSWORD"'; exit;"
+sudo mysql --user=root --password=$MYSQL_PASSWORD -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu@localhost' IDENTIFIED BY '"$MYSQL_PASSWORD"'; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'%' IDENTIFIED BY '"$MYSQL_PASSWORD"';"
 
 echo "install congress-db-manage dependencies (detected by errors)"
 sudo apt-get build-dep python-mysqldb -y
