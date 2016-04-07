@@ -36,8 +36,9 @@ openstack
 EOF
 source ~/env.sh
 
-echo "Update package repos"
+echo "Update/upgrade package repos"
 sudo apt-get update
+sudo apt-get upgrade -y
 
 echo "install pip"
 sudo apt-get install python-pip -y
@@ -47,6 +48,7 @@ sudo apt-get install default-jre -y
 
 echo "install other dependencies"
 sudo apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
+sudo pip install --upgrade pip virtualenv setuptools pbr tox
 
 echo "set mysql root user password and install mysql"
 export MYSQL_PASSWORD=$(/usr/bin/apg -n 1 -m 16 -c cl_seed)
@@ -60,6 +62,10 @@ cd ~/git
 git clone https://github.com/openstack/congress.git
 cd congress
 git checkout stable/liberty
+
+echo "Create virtualenv"
+virtualenv ~/git/congress
+source bin/activate
 
 echo "Setup Congress"
 sudo mkdir -p /etc/congress
@@ -77,11 +83,11 @@ sudo apt-get install libssl-dev -y
 
 echo "install dependencies of Congress"
 cd ~/git/congress
-pip install -r requirements.txt
-pip install .
+bin/pip install -r requirements.txt
+bin/pip install .
 
 echo "install tox"
-pip install tox
+bin/pip install tox
 
 echo "generate congress.conf.sample"
 tox -egenconfig
@@ -106,29 +112,22 @@ echo "copy congress.conf.sample to /etc/congress"
 cp etc/congress.conf.sample /etc/congress/congress.conf
 
 echo "create congress database"
-sudo mysql --user=root --password=$MYSQL_PASSWORD -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu@localhost' IDENTIFIED BY '"$MYSQL_PASSWORD"'; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'%' IDENTIFIED BY '"$MYSQL_PASSWORD"'; exit;"
+sudo mysql --user=root --password=$MYSQL_PASSWORD -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu@localhost' IDENTIFIED BY '"$MYSQL_PASSWORD"'; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'%' IDENTIFIED BY '"$MYSQL_PASSWORD"';"
 
 echo "install congress-db-manage dependencies (detected by errors)"
 sudo apt-get build-dep python-mysqldb -y
-pip install MySQL-python
+bin/pip install MySQL-python
 
 echo "create database schema"
 congress-db-manage --config-file /etc/congress/congress.conf upgrade head
-
-echo "Start the Congress service in the background"
-cd ~/git/congress
-sudo bin/congress-server &
-
-echo "disown the process (so it keeps running if you get disconnected)"
-disown -h %1
 
 echo "Install Congress client"
 cd ~/git
 git clone https://github.com/openstack/python-congressclient.git
 cd python-congressclient
 git checkout stable/liberty
-pip install -r requirements.txt
-pip install .
+../congress/bin/pip install -r requirements.txt
+../congress/bin/pip install .
 
 function _congress_setup_horizon {
   local HORIZON_DIR="/usr/share/openstack-dashboard"
