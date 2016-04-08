@@ -177,8 +177,19 @@ openstack congress datasource create keystone "keystone" \
   --config password=$OS_PASSWORD \
   --config auth_url=http://$KEYSTONE_HOST:5000/v2.0 
 
+echo "Install Tempest and dependencies"
+sudo apt-get install libffi-dev libssl-dev
+cd ~/git
+git clone https://github.com/openstack/tempest/
+cd tempest
+~/git/congress/bin/pip install -r requirements.txt
+~/git/congress/bin/pip install .
+
+echo "Copy Congress tests to tempest folder"
+cp -r ~/git/congress/contrib/tempest/tempest/ /opt/stack/tempest/
+
 echo "Run Congress Tempest Tests"
 cd ~/git/congress
-# tox -epy27
+bin/tox -epy27
 
 set +x #echo off
