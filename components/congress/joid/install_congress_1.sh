@@ -67,8 +67,8 @@ juju scp ~/admin-openrc.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
 juju scp ~/env.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
 
 echo "Copy install_congress_2.sh to the congress server and execute"
-juju scp ~/git/copper/components/congress/joid/install_congress_2b.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
-ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$CONGRESS_HOST "source ~/install_congress_2b.sh; exit"
+juju scp ~/git/copper/components/congress/joid/install_congress_2.sh ubuntu@$CONGRESS_HOST:/home/ubuntu
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$CONGRESS_HOST "source ~/install_congress_2.sh; exit"
 
 echo "Install jumphost dependencies"
 
@@ -177,18 +177,10 @@ openstack congress datasource create keystone "keystone" \
   --config password=$OS_PASSWORD \
   --config auth_url=http://$KEYSTONE_HOST:5000/v2.0 
 
-echo "Install Tempest and dependencies"
-sudo apt-get install libffi-dev libssl-dev
-cd ~/git
-git clone https://github.com/openstack/tempest/
-cd tempest
-~/git/congress/bin/pip install -r requirements.txt
-~/git/congress/bin/pip install .
+echo "Install tox test dependencies"
+sudo apt-get install -y libffi-dev libssl-dev
 
-echo "Copy Congress tests to tempest folder"
-cp -r ~/git/congress/contrib/tempest/tempest/ /opt/stack/tempest/
-
-echo "Run Congress Tempest Tests"
+echo "Run Congress tox Tests"
 cd ~/git/congress
 bin/tox -epy27
 
