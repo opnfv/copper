@@ -182,6 +182,6 @@ sudo apt-get install -y libffi-dev libssl-dev
 
 echo "Run Congress tox Tests"
 cd ~/git/congress
-bin/tox -epy27
+tox -epy27
 
 set +x #echo off
