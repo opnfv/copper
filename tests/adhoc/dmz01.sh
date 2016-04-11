@@ -108,7 +108,7 @@ echo "Boot cirros1 with non-dmz image"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$test_internal_NET --security-groups dmz cirros1
 
 echo "Boot cirros2 with non-dmz image"
-nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64-dmz --nic net-id=$test_internal_NET  --security-groups dmz cirros2\
+nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64-dmz --nic net-id=$test_internal_NET  --security-groups dmz cirros2
 
 echo "Wait 30 seconds for Congress polling to occur at least once"
 sleep 30
@@ -130,6 +130,7 @@ until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   if [ "$dmz_cirros1" == "$test_cirros1_ID" ] &&  [ "$dmz_cirros2" == "$test_cirros2_ID" ]; then RESULT="Test Success!"
   fi
   let COUNTER-=1
+  sleep 10
 done
 echo $RESULT
 
