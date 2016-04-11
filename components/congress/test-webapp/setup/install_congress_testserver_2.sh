@@ -20,7 +20,8 @@
 # On jumphost:
 # - Congress installed through install_congress_1.sh
 # How to use:
-#   $ source ~/git/copper/tests/setup/install_congress_testserver_1.sh
+#   $ source install_congress_testserver_1.sh  <controller_hostname>
+# <controller_hostname> is the name of the controller node in MAAS
 
 echo "Setup OpenStack environment variables per your OPNFV install"
 source ~/env.sh
@@ -119,6 +120,9 @@ sudo sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
 
 echo "Point proxy.php to the Congress server per your install"
 sudo sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
+
+echo "Set user so log files are stored"
+sudo sed -i -- "s/opnfv/$USER/g" /var/www/html/proxy/index.php
 
 echo "Make webapp log directory and set permissions"
 mkdir ~/coppertest/logs
