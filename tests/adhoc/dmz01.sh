@@ -20,10 +20,11 @@
 #    specifically-named security group)
 # 2) Identifying VMs connected per (1), which are by policy not allowed to be
 #    (currently implemented through an image tag intended to identify images
-#    that are "authorized" i.e. tested and secure, to be DMZ-connected) 
+#    that are "authorized" i.e. tested and secure, to be DMZ-connected)
+# 3) Reactively enforce the dmz placement rule by pausing VMs found to be in
+#    violation of the policy.
 #
-# Status: this is a work in progress, under test. Test (1) has been verified, 
-# Test (2) is still in development.
+# Status: this is a work in progress, under test.
 #
 # How to use:
 #   Install test server per https://wiki.opnfv.org/copper/academy/congress/test
@@ -53,6 +54,9 @@ openstack congress policy create test
 
 echo "Create dmz_server rule in policy 'test'"
 openstack congress policy rule create test "dmz_server(x) :- nova:servers(id=x,status='ACTIVE'), neutronv2:ports(id, device_id, status='ACTIVE'),  neutronv2:security_group_port_bindings(pid, sg), neutronv2:security_groups(sg,name='dmz')" --name dmz_server
+
+echo "Create dmz_placement_error rule in policy 'test'"
+openstack congress policy rule create test "dmz_placement_error(id) :- nova:servers(id,name,hostId,status,tenant_id,user_id,image), not glancev2:tags(image,'dmz'), dmz_server(id)" --name dmz_placement_error
 
 echo "Create image cirros1 with non-dmz image"
 image=$(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }")
@@ -91,12 +95,18 @@ neutron router-gateway-set test_router test_public
 echo "Add router internal for internal network"
 neutron router-interface-add test_router subnet=test_internal
 
-echo "Wait 30 seconds as the previous command interrupts the neutron-api for some time..."
+echo "Wait up to a minute for as 'neutron router-interface-add' blocks the neutron-api for some time..."
 # add a delay since the previous command takes the neutron-api offline for a while (?)
-sleep 30
-
-echo "Get the internal network ID"
-test_internal_NET=$(neutron net-list | awk "/ test_internal / { print \$2 }")
+COUNTER=1
+RESULT="Failed!"
+until [[ $COUNTER -gt 6  || $RESULT == "Success!" ]]; do
+  echo "Get the internal network ID: try" $COUNTER 
+  test_internal_NET=$(neutron net-list | awk "/ test_internal / { print \$2 }")
+  if [ "$test_internal_NET" != "" ]; then RESULT="Success!"
+  fi
+  let COUNTER+=1
+  sleep 10
+done
 
 echo "Create a security group 'dmz'"
 neutron security-group-create dmz
@@ -110,8 +120,8 @@ nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$test_intern
 echo "Boot cirros2 with non-dmz image"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64-dmz --nic net-id=$test_internal_NET  --security-groups dmz cirros2
 
-echo "Wait 30 seconds for Congress polling to occur at least once"
-sleep 30
+echo "Wait 5 seconds for Congress polling to occur at least once"
+sleep 5
 
 echo "Get cirros1 instance ID"
 test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
@@ -123,15 +133,40 @@ echo "Verify cirros1 and cirros2 IDs are in the Congress policy 'test' table 'dm
 COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
-  echo "Check for presence of cirros1 ID in Congress policy 'test' table 'dmz_server'"
   dmz_cirros1=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros1_ID / { print \$2 }")
-  echo "Check for presence of cirros2 ID in Congress policy 'test' table 'dmz_server'"
   dmz_cirros2=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros2_ID / { print \$2 }")
   if [ "$dmz_cirros1" == "$test_cirros1_ID" ] &&  [ "$dmz_cirros2" == "$test_cirros2_ID" ]; then RESULT="Test Success!"
   fi
   let COUNTER-=1
-  sleep 10
+  sleep 5
 done
-echo $RESULT
+echo "dmz_server table entries present for cirros1, cirros2:" $RESULT
+
+echo "Verify cirros1 ID is in the Congress policy 'test' table 'dmz_placement_error'"
+COUNTER=5
+RESULT="Test Failed!"
+until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  dmz_cirros1=$(openstack congress policy row list test dmz_placement_error | awk "/ $test_cirros1_ID / { print \$2 }")
+  if [ "$dmz_cirros1" == "$test_cirros1_ID" ]; then RESULT="Test Success!"
+  fi
+  let COUNTER-=1
+  sleep 5
+done
+echo "dmz_placement_error table entry present for cirros2:" $RESULT
+
+echo "Create reactive 'paused_dmz_placement_error' rule in policy 'test'"
+openstack congress policy rule create test "execute[nova:servers.pause(id)] :- dmz_placement_error(id), nova:servers(id,status='ACTIVE')" --name paused_dmz_placement_error
+
+echo "Verify cirros1 is paused"
+COUNTER=5
+RESULT="Test Failed!"
+until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  cirros1_status=$(nova list | awk "/ cirros1 / { print \$6 }")
+  if [ "$cirros1_status" == "PAUSED" ]; then RESULT="Test Success!"
+  fi
+  let COUNTER-=1
+  sleep 5
+done
+echo "Verify cirros1 is paused:" $RESULT
 
 set +x #echo off
