@@ -64,10 +64,10 @@ echo "If found, delete the port with subnet 10.0.0.1 on 'test_router'"
 if [ "$test_internal_interface" != "" ]; then neutron router-interface-delete $router port=$test_internal_interface
 fi
 
-echo "Get public port ID with subnet 192.168.10.2 on 'test_router'"
+echo "Get public port ID with fixed_ip 192.168.10.2 on 'test_router'"
 test_public_interface=$(neutron router-port-list $router | grep 192.168.10.2 | awk '{print $2}')
 
-echo "If found, delete the port with subnet 192.168.10.2 on 'test_router'"
+echo "If found, delete the port with fixed_ip 192.168.10.2 on 'test_router'"
 if [ "$test_public_interface" != "" ]; then neutron router-interface-delete $router port=$test_public_interface
 fi
 
@@ -80,12 +80,12 @@ neutron router-gateway-clear test_router
 echo "Delete the router"
 neutron router-delete test_router
 
-echo "Delete neutron port on subnet 10.0.0.1"
+echo "Delete neutron port with fixed_ip 10.0.0.1"
 port=$(neutron port-list | awk "/ 10.0.0.1 / { print \$2 }")
 if [ "$port" != "" ]; then neutron port-delete $port
 fi
 
-echo "Delete neutron port on subnet 10.0.0.2"
+echo "Delete neutron port with fixed_ip 10.0.0.2"
 port=$(neutron port-list | awk "/ 10.0.0.2 / { print \$2 }")
 if [ "$port" != "" ]; then neutron port-delete $port
 fi
