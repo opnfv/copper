@@ -361,8 +361,8 @@ var TRANSLATORS = [];
         'selector-type': 'DICT_SELECTOR',
         'in-list': true,
         'field-translators':
-// TODO: Port ID added to complete table translation
-            [{'fieldname': 'port id', 'translator': value_trans},
+// TODO: Security group ID added to complete table translation
+            [{'fieldname': 'security_group_id', 'translator': value_trans},
              {'fieldname': 'id', 'translator': value_trans},
              {'fieldname': 'tenant_id', 'translator': value_trans},
              {'fieldname': 'remote_group_id', 'translator': value_trans},
