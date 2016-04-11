@@ -21,21 +21,20 @@
 # - Congress installed through install_congress_1.sh
 # - ~/env.sh created as part of Congress install (install_congress_1.sh)
 # How to use:
-#   $ source install_congress_testserver_1.sh  <controller_hostname> <user>
+#   $ source install_congress_testserver_1.sh  <controller_hostname>
 # <controller_hostname> is the name of the controller node in MAAS
-# and <user> is the name of the account where you are installing this
 
 # Create and Activate the Container
 # Earlier versions of the JOID installer installed lxc and created local templates
 # but now we have to get the ubuntu template from the controller
 
-if [ $# -lt 2 ]; then
-  echo 1>&2 "$0: arguments required <controller_hostname> <user>"
+if [ $# -lt 1 ]; then
+  echo 1>&2 "$0: arguments required <controller_hostname>"
   return 2
 fi
 
-if [ $# -eq 3 ]; then
-  if [ $3 == "debug" ]; then set -x #echo on
+if [ $# -eq 2 ]; then
+  if [ $2 == "debug" ]; then set -x #echo on
   fi
 fi
 
@@ -45,7 +44,7 @@ echo "Copy lxc-ubuntu container from the controller"
 juju scp ubuntu@$1:/usr/share/lxc/templates/lxc-ubuntu ~/lxc-ubuntu
 sudo cp ~/lxc-ubuntu /usr/share/lxc/templates/lxc-ubuntu
 echo "Create the trusty-copper container"
-sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu -l DEBUG -- -b $2 ~/$2
+sudo lxc-create -n trusty-copper -t /usr/share/lxc/templates/lxc-ubuntu -l DEBUG -- -b $USER ~/$USER
 echo "Start trusty-copper"
 sudo lxc-start -n trusty-copper -d
 if (($? > 0)); then
@@ -78,6 +77,6 @@ export NOVA_HOST=$(juju status --format=short | awk "/nova-cloud-controller\/0/ 
 EOF
 
 echo "Invoke install_congress_testserver_2.sh on trusty-copper"
-ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $2@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
+ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $USER@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
 
 set +x
