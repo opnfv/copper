@@ -81,9 +81,6 @@ neutron subnet-delete test_internal
 echo "Delete internal network"
 neutron net-delete test_internal
 
-echo "Delete public subnet"
-neutron subnet-delete test_public
-
 echo "Delete public network"
 neutron net-delete test_public
 
