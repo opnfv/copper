@@ -19,7 +19,7 @@
 # Status: this is a work in progress, under test. 
 #
 # How to use:
-#   Install test server per https://wiki.opnfv.org/copper/academy/congress/test
+#   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   $ source ~/git/copper/tests/adhoc/dmz01.sh
 #   After test, cleanup with
 #   $ source ~/git/copper/tests/adhoc/dmz01-clean.sh

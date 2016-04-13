@@ -27,8 +27,8 @@
 # Status: this is a work in progress, under test.
 #
 # How to use:
-#   Install test server per https://wiki.opnfv.org/copper/academy/congress/test
-#   # Create Congress policy and resources that exercise polity
+#   Install Congress test server per https://wiki.opnfv.org/copper/academy
+#   # Create Congress policy and resources that exercise policy
 #   $ source ~/git/copper/tests/adhoc/dmz01.sh
 #   After test, cleanup
 #   $ source ~/git/copper/tests/adhoc/dmz01-clean.sh

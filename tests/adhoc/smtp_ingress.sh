@@ -21,8 +21,8 @@
 # Status: this is a work in progress, under test. 
 #
 # How to use:
-#   Install test server per https://wiki.opnfv.org/copper/academy/congress/test
-#   # Create Congress policy and resources that exercise polity
+#   Install Congress test server per https://wiki.opnfv.org/copper/academy
+#   # Create Congress policy and resources that exercise policy
 #   $ source smtp_ingress.sh
 #   After test, cleanup
 #   $ source smtp_ingress-clean.sh
