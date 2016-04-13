@@ -22,7 +22,7 @@
 # internet and between VMs has not yet been implemented.
 #
 # How to use:
-#   Install test server per https://wiki.opnfv.org/copper/academy/congress/test
+#   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   $ source ~/git/copper/tests/adhoc/smoke01.sh
 #   After test, cleanup with
 #   $ source ~/git/copper/tests/adhoc/smoke01-clean.sh
