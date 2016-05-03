@@ -33,7 +33,7 @@ TEST_DB_URL = functest_yaml.get('results').get('test_db_url')
 logger = ft_logger.Logger("copper").getLogger()
 
 def main():
-    cmd = 'cd %s/tests && ./run.sh' % COPPER_REPO
+    cmd = ('%s/tests/run.sh' % COPPER_REPO)
     start_time = time.time()
 
     ret = functest_utils.execute_command(cmd, logger, exit_on_error=False)
