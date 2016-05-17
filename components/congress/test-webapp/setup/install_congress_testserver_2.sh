@@ -16,12 +16,14 @@
 # What this is: script 2 of 2 for installation of a test server for Congress.
 # Status: this is a work in progress, under test.
 #
-# Prequisite: OPFNV install per https://wiki.opnfv.org/copper/academy/joid
+# Prequisite: OPFNV installed per JOID or Apex installer
 # On jumphost:
 # - Congress installed through install_congress_1.sh
+# - ~/env.sh created as part of Congress install (install_congress_1.sh)
 # How to use:
-#   $ source install_congress_testserver_1.sh  <controller_hostname>
-# <controller_hostname> is the name of the controller node in MAAS
+#   $ source install_congress_testserver_1.sh  [<controller_hostname>]
+# If provided, <controller_hostname> is the name of the controller node in MAAS
+# (the parameter is not used for Apex-based installs)
 
 echo "Setup OpenStack environment variables per your OPNFV install"
 source ~/env.sh

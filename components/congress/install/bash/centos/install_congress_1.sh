@@ -18,6 +18,7 @@
 # Prequisites: 
 #   OPFNV install per https://wiki.opnfv.org/display/copper/Apex
 #   On the jumphost, logged in as stack on the undercloud VM:
+#     Download and save admin-openrc.sh from the overcloud Horizon at ~/
 #     su stack
 #   Clone the Copper repo and run the install script:
 #     git clone https://gerrit.opnfv.org/gerrit/copper
@@ -27,14 +28,12 @@ if [ $# -gt 1 ] && [ $2 == "debug" ]; then set -x #echo on
 fi
 
 cd ~
+# Setup undercloud environment so we can get overcloud Controller server address
 source ~/stackrc
 
 # Get addresses of Controller node(s)
 export CONTROLLER_HOST1=$(openstack server list | awk "/overcloud-controller-0/ { print \$8 }" | sed 's/ctlplane=//g')
 export CONTROLLER_HOST2=$(openstack server list | awk "/overcloud-controller-1/ { print \$8 }" | sed 's/ctlplane=//g')
-
-# puppet apply -e "user { 'congress': ensure => present, password => sha1('congress'), }"
-# ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ssh heat-admin@$CONTROLLER_HOST1 "useradd congress; exit"
 
 echo "Create the environment file and copy to the congress server"
 cat <<EOF >~/env.sh
@@ -47,23 +46,27 @@ export NEUTRON_HOST=$CONTROLLER_HOST1
 export NOVA_HOST=$CONTROLLER_HOST1
 EOF
 source ~/env.sh
-scp ~/stackrc heat-admin@$CONTROLLER_HOST1:/home/heat-admin/admin-openrc.sh
-scp ~/env.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin
+scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/env.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin
+
+# Setup env for overcloud
+source ~/overcloudrc
+sed -i -- 's/echo "Please/# echo "Please/g' ~/admin-openrc.sh
+sed -i -- 's/read -sr OS_PASSWORD_INPUT/# read -sr OS_PASSWORD_INPUT/g' ~/admin-openrc.sh
+sed -i -- 's/export OS_PASSWORD=$OS_PASSWORD_INPUT/export OS_PASSWORD='$OS_PASSWORD'/g' ~/admin-openrc.sh
+source ~/admin-openrc.sh
+scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/admin-openrc.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin
 
 echo "Copy install_congress_2.sh to the congress server and execute"
-scp ~/git/copper/components/congress/joid/install_congress_2.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin
+scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/git/copper/components/congress/joid/install_congress_2.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin
 ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONTROLLER_HOST1 "source ~/install_congress_2.sh; exit"
 
 echo "Install jumphost dependencies"
 
-echo "Update package repos"
-sudo apt-get update
-
 echo "install pip"
-sudo apt-get install python-pip -y
+sudo yum install python-pip -y
 
 echo "install other dependencies"
-sudo apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
+sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
 sudo pip install --upgrade pip virtualenv setuptools pbr tox
 
 echo "Clone congress"
@@ -123,7 +126,7 @@ openstack endpoint create $CONGRESS_SERVICE \
   --internalurl http://$CONGRESS_HOST:1789/
 
 echo "Start the Congress service"
-ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$CONGRESS_HOST "~/git/congress/bin/congress-server &>/dev/null &"
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONGRESS_HOST "~/git/congress/bin/congress-server &>/dev/null &"
 
 echo "Wait 30 seconds for Congress service to startup"
 sleep 30
@@ -162,7 +165,7 @@ openstack congress datasource create keystone "keystone" \
   --config auth_url=http://$KEYSTONE_HOST:5000/v2.0 
 
 echo "Install tox test dependencies"
-sudo apt-get install -y libffi-dev libssl-dev
+sudo yum install -y libffi-devel openssl-devel
 
 echo "Run Congress tox Tests"
 cd ~/git/congress

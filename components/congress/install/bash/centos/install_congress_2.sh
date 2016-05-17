@@ -31,21 +31,12 @@ echo "install pip"
 sudo yum install python-pip -y
 
 echo "install java"
-sudo yum install default-jre -y
+# sudo yum install default-jre -y
 # No package default-jre available.
 
 echo "install other dependencies"
-sudo yum install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
-# No package python-dev available.
-# No package libxslt1-dev available.
-# No package libzip-dev available.
+sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
 sudo pip install --upgrade pip virtualenv setuptools pbr tox
-
-echo "set mysql root user password and install mysql"
-export MYSQL_PASSWORD=$(/usr/bin/apg -n 1 -m 16 -c cl_seed)
-sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password password '$MYSQL_PASSWORD
-sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password '$MYSQL_PASSWORD
-sudo -E yum -q -y install mysql-server python-mysqldb
 
 echo "Clone congress"
 mkdir ~/git
@@ -60,17 +51,15 @@ source bin/activate
 
 echo "Setup Congress"
 sudo mkdir -p /etc/congress
-sudo chown ubuntu /etc/congress
+sudo chown heat-admin /etc/congress
 mkdir -p /etc/congress/snapshot
 sudo mkdir /var/log/congress
-sudo chown ubuntu /var/log/congress
+sudo chown heat-admin /var/log/congress
 cp etc/api-paste.ini /etc/congress
 cp etc/policy.json /etc/congress
 
 echo "install requirements.txt and tox dependencies (detected by errors during 'tox -egenconfig')"
-sudo yum install libffi-dev -y
-sudo yum install openssl -y
-sudo yum install libssl-dev -y
+sudo yum install libffi-devel openssl openssl-devel -y
 
 echo "install dependencies of Congress"
 cd ~/git/congress
@@ -97,16 +86,15 @@ sed -i -- 's/#auth_protocol = https/auth_protocol = http/g' etc/congress.conf.sa
 sed -i -- 's/#admin_tenant_name = admin/admin_tenant_name = admin/g' etc/congress.conf.sample
 sed -i -- 's/#admin_user = <None>/admin_user = congress/g' etc/congress.conf.sample
 sed -i -- 's/#admin_password = <None>/admin_password = congress/g' etc/congress.conf.sample
-sed -i -- 's/#connection = <None>/connection = mysql:\/\/ubuntu:'$MYSQL_PASSWORD'@localhost:3306\/congress/g' etc/congress.conf.sample
+sed -i -- 's/#connection = <None>/connection = mysql:\/\/congress@localhost:3306\/congress/g' etc/congress.conf.sample
 
 echo "copy congress.conf.sample to /etc/congress"
 cp etc/congress.conf.sample /etc/congress/congress.conf
 
 echo "create congress database"
-sudo mysql --user=root --password=$MYSQL_PASSWORD -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu@localhost' IDENTIFIED BY '"$MYSQL_PASSWORD"'; GRANT ALL PRIVILEGES ON congress.* TO 'ubuntu'@'%' IDENTIFIED BY '"$MYSQL_PASSWORD"';"
+sudo mysql -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'congress';"
 
 echo "install congress-db-manage dependencies (detected by errors)"
-sudo yum build-dep python-mysqldb -y
 bin/pip install MySQL-python
 
 echo "create database schema"
@@ -122,7 +110,7 @@ git checkout stable/liberty
 
 function _congress_setup_horizon {
   local HORIZON_DIR="/usr/share/openstack-dashboard"
-  local CONGRESS_HORIZON_DIR="/home/ubuntu/git/congress/contrib/horizon"
+  local CONGRESS_HORIZON_DIR="/home/heat-admin/git/congress/contrib/horizon"
   sudo cp -r $CONGRESS_HORIZON_DIR/datasources $HORIZON_DIR/openstack_dashboard/dashboards/admin/
   sudo cp -r $CONGRESS_HORIZON_DIR/policies $HORIZON_DIR/openstack_dashboard/dashboards/admin/
   sudo cp -r $CONGRESS_HORIZON_DIR/static $HORIZON_DIR/openstack_dashboard/dashboards/admin/
