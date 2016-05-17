@@ -20,13 +20,13 @@
 #   On the jumphost, logged in as stack on the undercloud VM:
 #     su stack
 #   Clone the Copper repo and run the install script:
-#     git clone https://gerrit.opnfv.org/gerrit/copper
+#     mkdir ~/git; cd git; git clone https://gerrit.opnfv.org/gerrit/copper
 #     cd copper
 #     source components/congress/install/bash/centos/install_congress_1.sh
 
 set -x
-source ~/admin-openrc.sh
-source ~/env.sh
+source ~/congress/admin-openrc.sh
+source ~/congress/env.sh
 
 echo "install pip"
 sudo yum install python-pip -y
@@ -40,7 +40,6 @@ sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
 sudo pip install --upgrade pip virtualenv setuptools pbr tox
 
 echo "Clone congress"
-mkdir ~/congress
 cd ~/congress
 git clone https://github.com/openstack/congress.git
 cd congress

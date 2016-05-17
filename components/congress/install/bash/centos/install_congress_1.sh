@@ -20,7 +20,7 @@
 #   On the jumphost, logged in as stack on the undercloud VM:
 #     su stack
 #   Clone the Copper repo and run the install script:
-#     git clone https://gerrit.opnfv.org/gerrit/copper
+#     mkdir ~/git; cd git; git clone https://gerrit.opnfv.org/gerrit/copper
 #     cd copper
 #     source components/congress/install/bash/centos/install_congress_1.sh
 
@@ -36,7 +36,8 @@ export CONTROLLER_HOST1=$(openstack server list | awk "/overcloud-controller-0/ 
 export CONTROLLER_HOST2=$(openstack server list | awk "/overcloud-controller-1/ { print \$8 }" | sed 's/ctlplane=//g')
 
 echo "Create the environment file and copy to the congress server"
-cat <<EOF >~/env.sh
+mkdir ~/congress
+cat <<EOF >~/congress/env.sh
 export CONGRESS_HOST=$CONTROLLER_HOST1
 export KEYSTONE_HOST=$CONTROLLER_HOST1
 export CEILOMETER_HOST=$CONTROLLER_HOST1
@@ -45,22 +46,23 @@ export GLANCE_HOST=$CONTROLLER_HOST1
 export NEUTRON_HOST=$CONTROLLER_HOST1
 export NOVA_HOST=$CONTROLLER_HOST1
 EOF
-source ~/env.sh
-scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/env.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin
+source ~/congress/env.sh
+scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/congress/env.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin
 
-# Setup env for overcloud API access
+# Setup env for overcloud API access and copy to congress server
 source ~/overcloudrc
 export OS_REGION_NAME=$(openstack endpoint list | awk "/ nova / { print \$4 }")
-cp ~/overcloudrc ~/admin-openrc.sh
+cp ~/overcloudrc ~/congress/admin-openrc.sh
 # sed command below is a workaound for a bug - region shows up twice for some reason
-cat <<EOF | sed '$d' >>~/admin-openrc.sh
+cat <<EOF | sed '$d' >>~/congress/admin-openrc.sh
 export OS_REGION_NAME=$OS_REGION_NAME
 EOF
-scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/admin-openrc.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin/
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONTROLLER_HOST1 "mkdir ~/congress; exit"
+scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/congress/admin-openrc.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin/congress
 
 echo "Copy install_congress_2.sh to the congress server and execute"
-scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/congress/copper/components/congress/install/bash/centos/install_congress_2.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin
-ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONTROLLER_HOST1 "source ~/install_congress_2.sh; exit"
+scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/git/copper/components/congress/install/bash/centos/install_congress_2.sh heat-admin@$CONTROLLER_HOST1:/home/heat-admin/congress
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONTROLLER_HOST1 "source ~/congress/install_congress_2.sh; exit"
 
 echo "Install jumphost dependencies"
 
@@ -72,7 +74,6 @@ sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
 sudo pip install --upgrade pip virtualenv setuptools pbr tox
 
 echo "Clone congress"
-mkdir ~/congress
 cd ~/congress
 git clone https://github.com/openstack/congress.git
 cd congress
@@ -83,7 +84,7 @@ virtualenv ~/congress/congress
 source bin/activate
 
 echo "Setup overcloud OpenStack API"
-admin-openrc.sh
+source ~/congress/admin-openrc.sh
 
 echo "Install OpenStack client"
 cd ~/congress

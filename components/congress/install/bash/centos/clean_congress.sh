@@ -22,7 +22,7 @@
 # Prequisite: 
 #  OPFNV install per https://wiki.opnfv.org/display/copper/Apex
 # How to use:
-#  cd ~/congress/copper/ (or wherever you cloned the copper repo)
+#  cd ~/git/copper/
 #  source /components/congress/install/bash/centos/clean_congress.sh
 
 cd ~
@@ -37,7 +37,7 @@ echo "Stop the Congress service"
 ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONGRESS_HOST "pkill congress-server; exit"
 
 echo "Remove the Congress virtualenv and code"
-ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONGRESS_HOST "rm -rf ~/congress/congress; rm ~/admin-openrc.sh; rm ~/admin-openrc.sh; exit"
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONGRESS_HOST "rm -rf ~/congress; exit"
 
 # Setup env for overcloud API access
 source ~/overcloudrc
