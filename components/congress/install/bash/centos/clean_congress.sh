@@ -13,23 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This is a cleanup script for installation of Congress on an Ubuntu 14.04 
-# LXC container in the OPNFV Controller node.
+# This is a cleanup script for installation of Congress on the Centos 7 based
+# OPNFV Controller node as installed per the OPNFV Apex project.
+# Prequisites: 
 # Presumably something has failed, and any record of the Congress feature
 # in OpenStack needs to be removed, so you can try the install again.
 #
-# Prequisite: OPFNV install per https://wiki.opnfv.org/copper/academy/joid
+# Prequisite: 
+#  OPFNV install per https://wiki.opnfv.org/display/copper/Apex
 # How to use:
-# Install OPNFV per https://wiki.opnfv.org/copper/academy/joid
-# $ source ~/git/copper/components/congress/joid/clean_congress.sh <controller_hostname>
-# <controller_hostname> is the name of the controller node in MAAS.
+#  cd ~/congress/copper/ (or wherever you cloned the copper repo)
+#  source /components/congress/install/bash/centos/clean_congress.sh
 
-source ~/admin-openrc.sh <<EOF
-openstack
-EOF
-source ~/env.sh
-set -x echo on
-juju ssh ubuntu@$1 "sudo lxc-stop --name juju-trusty-congress; sudo lxc-destroy --name juju-trusty-congress; exit"
+cd ~
+# Setup undercloud environment so we can get overcloud Controller server address
+source ~/stackrc
+
+# Get addresses of Controller node(s)
+export CONTROLLER_HOST1=$(openstack server list | awk "/overcloud-controller-0/ { print \$8 }" | sed 's/ctlplane=//g')
+export CONTROLLER_HOST2=$(openstack server list | awk "/overcloud-controller-1/ { print \$8 }" | sed 's/ctlplane=//g')
+
+echo "Stop the Congress service"
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONGRESS_HOST "pkill congress-server; exit"
+
+echo "Remove the Congress virtualenv and code"
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no heat-admin@$CONGRESS_HOST "rm -rf ~/congress/congress; rm ~/admin-openrc.sh; rm ~/admin-openrc.sh; exit"
+
+# Setup env for overcloud API access
+source ~/overcloudrc
 
 # Delete Congress user
 export CONGRESS_USER=$(openstack user list | awk "/ congress / { print \$2 }")
@@ -42,5 +53,7 @@ export CONGRESS_SERVICE=$(openstack service list | awk "/ congress / { print \$2
 if [ "$CONGRESS_SERVICE" != "" ]; then
   openstack service delete $CONGRESS_SERVICE
 fi
-set -x echo off
+
+# Delete Congress and other installed code in virtualenv
+rm -rf ~/congress
 

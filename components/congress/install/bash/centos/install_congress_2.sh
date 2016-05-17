@@ -21,7 +21,8 @@
 #     su stack
 #   Clone the Copper repo and run the install script:
 #     git clone https://gerrit.opnfv.org/gerrit/copper
-#     source  copper/components/install/bash/centos/install_congress_1.sh
+#     cd copper
+#     source components/congress/install/bash/centos/install_congress_1.sh
 
 set -x
 source ~/admin-openrc.sh
@@ -39,14 +40,14 @@ sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
 sudo pip install --upgrade pip virtualenv setuptools pbr tox
 
 echo "Clone congress"
-mkdir ~/git
-cd ~/git
+mkdir ~/congress
+cd ~/congress
 git clone https://github.com/openstack/congress.git
 cd congress
 git checkout stable/liberty
 
 echo "Create virtualenv"
-virtualenv ~/git/congress
+virtualenv ~/congress/congress
 source bin/activate
 
 echo "Setup Congress"
@@ -62,7 +63,7 @@ echo "install requirements.txt and tox dependencies (detected by errors during '
 sudo yum install libffi-devel openssl openssl-devel -y
 
 echo "install dependencies of Congress"
-cd ~/git/congress
+cd ~/congress/congress
 bin/pip install -r requirements.txt
 bin/pip install .
 
@@ -101,7 +102,7 @@ echo "create database schema"
 congress-db-manage --config-file /etc/congress/congress.conf upgrade head
 
 echo "Install Congress client"
-cd ~/git
+cd ~/congress
 git clone https://github.com/openstack/python-congressclient.git
 cd python-congressclient
 git checkout stable/liberty
