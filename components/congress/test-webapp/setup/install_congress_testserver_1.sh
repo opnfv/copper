@@ -106,7 +106,7 @@ EOF
   sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/www/html/proxy/index.php
 
   echo "Start webapp container"
-  cd /tmp/copper/
+  cd /tmp/copper/www
   sudo docker build -t centos .
   sudo docker run -d --name copper copper
 
