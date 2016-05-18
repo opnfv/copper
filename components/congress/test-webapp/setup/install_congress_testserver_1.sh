@@ -97,22 +97,21 @@ EOF
   sudo service docker start
 
   echo "Setup webapp files"
-  mkdir /tmp/copper/log
-  mkdir /tmp/copper
+  if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
+  if [ ! -d /tmp/copper/log ]; then mkdir /tmp/copper/log; fi
   cp ~/congress/*.sh /tmp/copper
   cp -r ~/git/copper/components/congress/test-webapp/* /tmp/copper/
   echo "Point proxy.php to the Congress server"
   source /tmp/copper/env.sh
-  sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/html/proxy/index.php
+  sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/www/html/proxy/index.php
 
-  chmod 755 /tmp/copper/setup/install_congress_testserver_2.sh
-
-  sudo docker build -t copper /tmp/copper/
+  echo "Start webapp container"
+  cd /tmp/copper/
+  sudo docker build -t centos .
   sudo docker run -d --name copper copper
 
   echo "Start Centos container"
-  sudo docker pull centos
-  export CID=$(sudo docker run -it -P --name copper -v /tmp/copper:/opt/copper centos)
+  export CID=$(sudo docker run -d -t -P --name copper -v /tmp/copper:/opt/copper centos)
   echo "Attach to the Centos container"
   echo "Once logged in, enter the command 'source /opt/copper/setup/install_congress_testserver_2.sh'"
   sudo docker attach $CID
