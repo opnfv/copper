@@ -19,7 +19,7 @@
 # Prequisite: OPFNV installed per JOID or Apex installer
 # On jumphost:
 # - Congress installed through install_congress_1.sh
-# - ~/env.sh created as part of Congress install (install_congress_1.sh)
+# - ~/congress/env.sh created as part of Congress install (install_congress_1.sh)
 # How to use:
 #   $ source install_congress_testserver_1.sh  [<controller_hostname>]
 # If provided, <controller_hostname> is the name of the controller node in MAAS
@@ -42,43 +42,35 @@ if [ "$dist" == "Ubuntu" ]; then
   fi
 
   sudo apt-get install -y lxc
+
   echo "Copy lxc-ubuntu container from the controller"
   juju scp ubuntu@$1:/usr/share/lxc/templates/lxc-ubuntu ~/lxc-ubuntu
   sudo cp ~/lxc-ubuntu /usr/share/lxc/templates/lxc-ubuntu
+
   echo "Create the copper container"
   sudo lxc-create -n copper -t /usr/share/lxc/templates/lxc-ubuntu -l DEBUG -- -b $USER ~/$USER
-else
-  sudo yum install -y epel-release
-  sudo yum install -y debootstrap perl
-  sudo yum install -y lxc lxc-templates
-  sudo systemctl start lxc.service
-  echo "Create the copper container"
-  brctl addbr virbr0
-  # TODO: this is not yet working - need additional config
-  sudo lxc-create -t download -n copper -- -d ubuntu -r trusty -a amd64 -- -b $USER ~/$USER
-fi
 
-echo "Start copper"
-sudo lxc-start -n copper -d
-if (($? > 0)); then
-  echo Error starting copper lxc container
-  return
-fi
+  echo "Start copper"
+  sudo lxc-start -n copper -d
+  if (($? > 0)); then
+    echo Error starting copper lxc container
+    return
+  fi
 
-echo "Get the CONGRESS_HOST value from env.sh"
-source ~/env.sh
+  echo "Get the CONGRESS_HOST value from env.sh"
+  source ~/congress/env.sh
 
-echo "Get copper address"
-sleep 5
-export COPPER_HOST=""
-while [ "$COPPER_HOST" == "" ]; do 
+  echo "Get copper address"
   sleep 5
-  export COPPER_HOST=$(sudo lxc-info --name copper | grep IP | awk "/ / { print \$2 }")
-done
-echo COPPER_HOST = $COPPER_HOST
+  export COPPER_HOST=""
+  while [ "$COPPER_HOST" == "" ]; do 
+    sleep 5
+    export COPPER_HOST=$(sudo lxc-info --name copper | grep IP | awk "/ / { print \$2 }")
+  done
+  echo COPPER_HOST = $COPPER_HOST
 
-echo "Create the environment file"
-cat <<EOF >~/env.sh
+  echo "Create the environment file"
+  cat <<EOF >~/congress/env.sh
 export COPPER_HOST=$COPPER_HOST
 export CONGRESS_HOST=$CONGRESS_HOST
 export KEYSTONE_HOST=$KEYSTONE_HOST
@@ -89,7 +81,29 @@ export NEUTRON_HOST=$NEUTRON_HOST
 export NOVA_HOST=$NOVA_HOST
 EOF
 
-echo "Invoke install_congress_testserver_2.sh on copper"
-ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $USER@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
+  echo "Invoke install_congress_testserver_2.sh on copper"
+  ssh -t -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $USER@$COPPER_HOST "source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh; exit"
+
+else
+  sudo tee /etc/yum.repos.d/docker.repo <<-'EOF'
+[dockerrepo]
+name=Docker Repository
+baseurl=https://yum.dockerproject.org/repo/main/centos/$releasever/
+enabled=1
+gpgcheck=1
+gpgkey=https://yum.dockerproject.org/gpg
+EOF
+  sudo yum install -y docker-engine
+  sudo service docker start
+  sudo docker pull centos
+  mkdir /tmp/copper
+  cp ~/congress/*.sh /tmp/copper
+  cp -r ~/git/copper/components/congress/test-webapp/* /tmp/copper/
+  CID=$(sudo docker run -d -t centos -P --name copper -v /tmp/copper:/opt/copper centos source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh)
+#  CIP=$(sudo docker inspect $CID | grep IPAddress | cut -d '"' -f 4 | tail -1)
+#  sudo docker attach $CID
+
+fi
+
 
 set +x
