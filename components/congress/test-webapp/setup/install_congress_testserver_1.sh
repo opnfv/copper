@@ -95,15 +95,33 @@ gpgkey=https://yum.dockerproject.org/gpg
 EOF
   sudo yum install -y docker-engine
   sudo service docker start
-  sudo docker pull centos
+
+  echo "Setup webapp files"
+  mkdir /tmp/copper/log
   mkdir /tmp/copper
   cp ~/congress/*.sh /tmp/copper
   cp -r ~/git/copper/components/congress/test-webapp/* /tmp/copper/
+  echo "Point proxy.php to the Congress server"
+  source /tmp/copper/env.sh
+  sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/html/proxy/index.php
+
   chmod 755 /tmp/copper/setup/install_congress_testserver_2.sh
-  CID=$(sudo docker run -d -P --name copper -v /tmp/copper:/opt/copper centos /opt/copper/setup/install_congress_testserver_2.sh)
-# sudo docker run -i -P --name copper -v /tmp/copper:/opt/copper centos /opt/copper/setup/install_congress_testserver_2.sh
-#  CIP=$(sudo docker inspect $CID | grep IPAddress | cut -d '"' -f 4 | tail -1)
-#  sudo docker attach $CID
+
+  sudo docker build -t copper /tmp/copper/
+  sudo docker run -d --name copper copper
+
+  echo "Start Centos container"
+  sudo docker pull centos
+  export CID=$(sudo docker run -it -P --name copper -v /tmp/copper:/opt/copper centos)
+  echo "Attach to the Centos container"
+  echo "Once logged in, enter the command 'source /opt/copper/setup/install_congress_testserver_2.sh'"
+  sudo docker attach $CID
+# sudo docker run -it -P --name copper -v /tmp/copper:/opt/copper centos /opt/copper/setup/install_congress_testserver_2.sh
+# CIP=$(sudo docker inspect $CID | grep IPAddress | cut -d '"' -f 4 | tail -1)
+# sudo docker ps -a
+fi
+
+set +x
 
 fi
 

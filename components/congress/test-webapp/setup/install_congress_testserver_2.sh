@@ -70,35 +70,14 @@ if [ "$dist" == "Ubuntu" ]; then
   /etc/init.d/apache2 restart
 
 else
+  echo "Add epel repo"
+  yum install epel-release -y
 
   echo "install pip"
   yum install python-pip -y
 
   echo "install other dependencies"
   yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
-
-  echo "Install Apache, PHP"
-  yum install -y httpd php
-
-  echo "Setup the Congress Test Webappp"
-
-  echo "Copy the Apache config"
-  cp /opt/copper/www/centos-httpd.conf /etc/httpd/conf/httpd.conf
-
-  echo "Copy the webapp to the Apache root directory and fix permissions"
-  cp -R /opt/copper/www/html/* /var/www/html
-  chmod 755 /var/www/html -R
-
-  echo "Point copper.js to the trusty-copper server per your install"
-  sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
-
-  echo "Point proxy.php to the Congress server per your install"
-  sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
-
-  echo "Make webapp log directory"
-  mkdir /tmp/copper/log
-
-  systemctl restart httpd.service
 
 fi
 
