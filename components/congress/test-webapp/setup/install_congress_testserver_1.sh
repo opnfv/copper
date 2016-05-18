@@ -103,26 +103,23 @@ EOF
   cp -r ~/git/copper/components/congress/test-webapp/* /tmp/copper/
   echo "Point proxy.php to the Congress server"
   source /tmp/copper/env.sh
-  sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/www/html/proxy/index.php
+  sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/www/proxy/index.php
 
   echo "Start webapp container"
-  cd /tmp/copper/www
-  sudo docker build -t centos .
-  sudo docker run -d --name copper copper
+  sudo docker build -t copper-webapp /tmp/copper
+  CID=$(sudo docker run -p 8080:80 -d copper-webapp)
+  CIP=$(sudo docker inspect $CID | grep IPAddress | cut -d '"' -f 4 | tail -1)
+  echo "Copper Webapp ID address: $CIP"
 
   echo "Start Centos container"
-  export CID=$(sudo docker run -d -t -P --name copper -v /tmp/copper:/opt/copper centos)
+  sudo docker pull centos
+  export CID=$(sudo docker run -d -t -P --name copper-cli -v /tmp/copper:/opt/copper centos /bin/bash)
   echo "Attach to the Centos container"
   echo "Once logged in, enter the command 'source /opt/copper/setup/install_congress_testserver_2.sh'"
   sudo docker attach $CID
 # sudo docker run -it -P --name copper -v /tmp/copper:/opt/copper centos /opt/copper/setup/install_congress_testserver_2.sh
-# CIP=$(sudo docker inspect $CID | grep IPAddress | cut -d '"' -f 4 | tail -1)
 # sudo docker ps -a
 fi
 
 set +x
 
-fi
-
-
-set +x

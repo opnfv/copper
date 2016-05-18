@@ -18,7 +18,7 @@
 # Status: this is a work in progress, under test.
 #
 
-FROM ubuntu:trusty
+FROM ubuntu:latest
 
 MAINTAINER Bryan Sullivan
 
