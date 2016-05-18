@@ -99,7 +99,9 @@ EOF
   mkdir /tmp/copper
   cp ~/congress/*.sh /tmp/copper
   cp -r ~/git/copper/components/congress/test-webapp/* /tmp/copper/
-  CID=$(sudo docker run -d -t centos -P --name copper -v /tmp/copper:/opt/copper centos source ~/git/copper/components/congress/test-webapp/setup/install_congress_testserver_2.sh)
+  chmod 755 /tmp/copper/setup/install_congress_testserver_2.sh
+  CID=$(sudo docker run -d -P --name copper -v /tmp/copper:/opt/copper centos /opt/copper/setup/install_congress_testserver_2.sh)
+# sudo docker run -i -P --name copper -v /tmp/copper:/opt/copper centos /opt/copper/setup/install_congress_testserver_2.sh
 #  CIP=$(sudo docker inspect $CID | grep IPAddress | cut -d '"' -f 4 | tail -1)
 #  sudo docker attach $CID
 

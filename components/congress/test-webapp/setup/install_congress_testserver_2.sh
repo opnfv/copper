@@ -34,76 +34,76 @@ dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 if [ "$dist" == "Ubuntu" ]; then
   echo "Update the base server"
   set -x
-  sudo apt-get update
-  #sudo apt-get -y upgrade
+  apt-get update
+  #apt-get -y upgrade
 
   echo "Install pip"
-  sudo apt-get install -y python-pip
+  apt-get install -y python-pip
 
   echo "Install java"
-  sudo apt-get install -y default-jre
+  apt-get install -y default-jre
 
   echo "Install other dependencies"
-  sudo apt-get install -y git gcc python-dev libxml2 libxslt1-dev libzip-dev php5-curl
+  apt-get install -y git gcc python-dev libxml2 libxslt1-dev libzip-dev php5-curl
 
   echo "Install Apache, PHP"
-  sudo apt-get install -y apache2 php5 libapache2-mod-php5
+  apt-get install -y apache2 php5 libapache2-mod-php5
 
   echo "Setup the Congress Test Webappp"
 
   echo "Copy the Apache config"
-  sudo cp /opt/copper/www/ubuntu-apache2.conf /etc/apache2/apache2.conf
+  cp /opt/copper/www/ubuntu-apache2.conf /etc/apache2/apache2.conf
 
   echo "Copy the webapp to the Apache root directory and fix permissions"
-  sudo cp -R /opt/copper/www/html /var/www
-  sudo chmod 755 /var/www/html -R
+  cp -R /opt/copper/www/html /var/www
+  chmod 755 /var/www/html -R
 
   echo "Point copper.js to the trusty-copper server per your install"
-  sudo sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
+  sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
 
   echo "Point proxy.php to the Congress server per your install"
-  sudo sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
+  sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
 
   echo "Make webapp log directory"
   mkdir /tmp/copper/log
 
-  sudo /etc/init.d/apache2 restart
+  /etc/init.d/apache2 restart
 
 else
 
   echo "install pip"
-  sudo yum install python-pip -y
+  yum install python-pip -y
 
   echo "install other dependencies"
-  sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
+  yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
 
   echo "Install Apache, PHP"
-  sudo yum install -y httpd php
+  yum install -y httpd php
 
   echo "Setup the Congress Test Webappp"
 
   echo "Copy the Apache config"
-  sudo cp /opt/copper/www/centos-httpd.conf /etc/httpd/conf/httpd.conf
+  cp /opt/copper/www/centos-httpd.conf /etc/httpd/conf/httpd.conf
 
   echo "Copy the webapp to the Apache root directory and fix permissions"
-  sudo cp -R /opt/copper/www/html/* /var/www/html
-  sudo chmod 755 /var/www/html -R
+  cp -R /opt/copper/www/html/* /var/www/html
+  chmod 755 /var/www/html -R
 
   echo "Point copper.js to the trusty-copper server per your install"
-  sudo sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
+  sed -i -- "s/COPPER_HOST/$COPPER_HOST/g" /var/www/html/copper.js
 
   echo "Point proxy.php to the Congress server per your install"
-  sudo sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
+  sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /var/www/html/proxy/index.php
 
   echo "Make webapp log directory"
   mkdir /tmp/copper/log
 
-  sudo systemctl restart httpd.service
+  systemctl restart httpd.service
 
 fi
 
 echo "Install python dependencies"
-sudo pip install --upgrade pip setuptools pbr tox
+pip install --upgrade pip setuptools pbr tox
 
 echo "Install OpenStack client"
 mkdir /opt/copper/git
@@ -111,48 +111,48 @@ cd /opt/copper/git
 git clone https://github.com/openstack/python-openstackclient.git
 cd python-openstackclient
 git checkout stable/liberty
-sudo pip install -r requirements.txt
-sudo pip install .
+pip install -r requirements.txt
+pip install .
 
 echo "Install Congress client"
 cd /opt/copper/git
 git clone https://github.com/openstack/python-congressclient.git
 cd python-congressclient
 git checkout stable/liberty
-sudo pip install -r requirements.txt
-sudo pip install .
+pip install -r requirements.txt
+pip install .
 
 echo "Install Glance client"
 cd /opt/copper/git
 git clone https://github.com/openstack/python-glanceclient.git
 cd python-glanceclient
 git checkout stable/liberty
-sudo pip install -r requirements.txt
-sudo pip install .
+pip install -r requirements.txt
+pip install .
 
 echo "Install Neutron client"
 cd /opt/copper/git
 git clone https://github.com/openstack/python-neutronclient.git
 cd python-neutronclient
 git checkout stable/liberty
-sudo pip install -r requirements.txt
-sudo pip install .
+pip install -r requirements.txt
+pip install .
 
 echo "Install Nova client"
 cd /opt/copper/git
 git clone https://github.com/openstack/python-novaclient.git
 cd python-novaclient
 git checkout stable/liberty
-sudo pip install -r requirements.txt
-sudo pip install .
+pip install -r requirements.txt
+pip install .
 
 echo "Install Keystone client"
 cd /opt/copper/git
 git clone https://github.com/openstack/python-keystoneclient.git
 cd python-keystoneclient
 git checkout stable/liberty
-sudo pip install -r requirements.txt
-sudo pip install .
+pip install -r requirements.txt
+pip install .
 
 set +x
 
