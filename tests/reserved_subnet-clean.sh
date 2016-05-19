@@ -24,13 +24,15 @@
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
-#   $ source reserved_subnet.sh
+#   $ sh reserved_subnet.sh
 #   After test, cleanup
-#   $ source reserved_subnet-clean.sh
+#   $ sh reserved_subnet-clean.sh
 
-if [ $1 == "debug" ]; then set -x #echo on
+if [  $# -eq 1 ]; then
+  if [ $1 == "debug" ]; then 
+    set -x #echo on
+  fi
 fi
-
 source /opt/copper/admin-openrc.sh
 
 echo "Get Congress policy 'test' ID"

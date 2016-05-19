@@ -29,25 +29,37 @@
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
-#   $ source ~/git/copper/tests/adhoc/dmz01.sh
+#   $ sh dmz.sh
 #   After test, cleanup
-#   $ source ~/git/copper/tests/adhoc/dmz01-clean.sh
+#   $ sh dmz-clean.sh
 
-if [ $1 == "debug" ]; then set -x #echo on
+pass() {
+  echo "Hooray!"
+}
+
+# Use this to trigger fail() at the right places
+# if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+fail() {
+  echo "Test Failed!"
+  set +x
+  exit 1
+}
+
+unclean() {
+  echo "Unclean environment!"
+  fail
+}
+
+if [  $# -eq 1 ]; then
+  if [ $1 == "debug" ]; then 
+    set -x #echo on
+  fi
 fi
 
 source /opt/copper/admin-openrc.sh
 
-echo "Delete Congress policy 'test' if it exists"
-test_policy_ID=$(openstack congress policy show test | awk "/ id / { print \$4 }")
-
-if [ "$test_policy_ID" != "" ]; then 
-# TODO: report bug - should be able to delete by name
-  openstack congress policy delete $test_policy_ID
-  echo "Existing policy 'test' deleted"
-fi
-
 echo "Create Congress policy 'test'"
+if [[ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]]; then unclean; fi
 openstack congress policy create test
 
 echo "Create dmz_server rule in policy 'test'"
@@ -73,18 +85,21 @@ echo "Add 'dmz' image tag to the cirros dmz image"
 glance --os-image-api-version 2 image-tag-update $IMAGE_ID "dmz"
 
 echo "Create external network"
-neutron net-create test_public --router:external=true --provider:network_type=flat --provider:physical_network=physnet1
+if [[ $(neutron net-list | awk "/ test_public / { print \$2 }") ]]; then unclean; fi
+neutron net-create test_public --router:external=true
 
 echo "Create external subnet"
 neutron subnet-create --disable-dhcp test_public 192.168.10.0/24
 
 echo "Create internal network"
+if [[ $(neutron net-list | awk "/ test_internal / { print \$2 }") ]]; then unclean; fi
 neutron net-create test_internal
 
 echo "Create internal subnet"
 neutron subnet-create test_internal 10.0.0.0/24 --name test_internal --gateway 10.0.0.1 --enable-dhcp --allocation-pool start=10.0.0.2,end=10.0.0.254 --dns-nameserver 8.8.8.8
 
 echo "Create router"
+if [[ $(neutron router-list | awk "/ test_router / { print \$2 }") ]]; then unclean; fi
 neutron router-create test_router
 
 echo "Create router gateway"
@@ -100,13 +115,14 @@ RESULT="Failed!"
 until [[ $COUNTER -gt 6  || $RESULT == "Success!" ]]; do
   echo "Get the internal network ID: try" $COUNTER 
   test_internal_NET=$(neutron net-list | awk "/ test_internal / { print \$2 }")
-  if [ "$test_internal_NET" != "" ]; then RESULT="Success!"
+  if [ "$test_internal_NET" != "" ]; then RESULT="c0546c94-436e-4624-aa1a-4393e2981c15Success!"
   fi
   let COUNTER+=1
   sleep 10
 done
 
 echo "Create a security group 'dmz'"
+if [[ $(neutron security-group-list | awk "/ dmz / { print \$2 }") ]]; then unclean; fi
 neutron security-group-create dmz
 
 echo "Create security group ingress rule for 'dmz'"
@@ -139,6 +155,7 @@ until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   sleep 5
 done
 echo "dmz_server table entries present for cirros1, cirros2:" $RESULT
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 
 echo "Verify cirros1 ID is in the Congress policy 'test' table 'dmz_placement_error'"
 COUNTER=5
@@ -151,6 +168,7 @@ until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   sleep 5
 done
 echo "dmz_placement_error table entry present for cirros2:" $RESULT
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 
 echo "Create reactive 'paused_dmz_placement_error' rule in policy 'test'"
 openstack congress policy rule create test "execute[nova:servers.pause(id)] :- dmz_placement_error(id), nova:servers(id,status='ACTIVE')" --name paused_dmz_placement_error
@@ -166,5 +184,6 @@ until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   sleep 5
 done
 echo "Verify cirros1 is paused:" $RESULT
-
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+pass
 set +x #echo off

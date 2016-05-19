@@ -23,25 +23,37 @@
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
-#   $ source smtp_ingress.sh
+#   $ sh smtp_ingress.sh
 #   After test, cleanup
-#   $ source smtp_ingress-clean.sh
+#   $ sh smtp_ingress-clean.sh
 
-if [ $1 == "debug" ]; then set -x #echo on
+pass() {
+  echo "Hooray!"
+}
+
+# Use this to trigger fail() at the right places
+# if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+fail() {
+  echo "Test Failed!"
+  set +x
+  exit 1
+}
+
+unclean() {
+  echo "Unclean environment!"
+  fail
+}
+
+if [  $# -eq 1 ]; then
+  if [ $1 == "debug" ]; then 
+    set -x #echo on
+  fi
 fi
 
 source /opt/copper/admin-openrc.sh
 
-echo "Delete Congress policy 'test' if it exists"
-test_policy_ID=$(openstack congress policy show test | awk "/ id / { print \$4 }")
-
-if [ "$test_policy_ID" != "" ]; then 
-# TODO: report bug - should be able to delete by name
-  openstack congress policy delete $test_policy_ID
-  echo "Existing policy 'test' deleted"
-fi
-
 echo "Create Congress policy 'test'"
+if [[ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]]; then unclean; fi
 openstack congress policy create test
 
 echo "Create smtp_ingress rule in policy 'test'"
@@ -53,18 +65,21 @@ if [ "$image" == "" ]; then glance --os-image-api-version 1 image-create --name 
 fi
 
 echo "Create external network"
-neutron net-create test_public --router:external=true --provider:network_type=flat --provider:physical_network=physnet1
+if [[ $(neutron net-list | awk "/ test_public / { print \$2 }") ]]; then unclean; fi
+neutron net-create test_public --router:external=true
 
 echo "Create external subnet"
 neutron subnet-create --disable-dhcp test_public 192.168.10.0/24
 
 echo "Create internal network"
+if [[ $(neutron net-list | awk "/ test_internal / { print \$2 }") ]]; then unclean; fi
 neutron net-create test_internal
 
 echo "Create internal subnet"
 neutron subnet-create test_internal 10.0.0.0/24 --name test_internal --gateway 10.0.0.1 --enable-dhcp --allocation-pool start=10.0.0.2,end=10.0.0.254 --dns-nameserver 8.8.8.8
 
 echo "Create router"
+if [[ $(neutron router-list | awk "/ test_router / { print \$2 }") ]]; then unclean; fi
 neutron router-create test_router
 
 echo "Create router gateway"
@@ -81,9 +96,10 @@ echo "Get the internal network ID"
 test_internal_NET=$(neutron net-list | awk "/ test_internal / { print \$2 }")
 
 echo "Create a security group 'smtp_ingress'"
+if [[ $(neutron security-group-list | awk "/ smtp_ingress / { print \$2 }") ]]; then unclean; fi
 neutron security-group-create smtp_ingress
 
-echo "Create security group ingress rule for 'ingress'"
+echo "Create security group ingress rule for 'smtp_ingress'"
 neutron security-group-rule-create --direction ingress --protocol=TCP --port-range-min=25 --port-range-max=25 smtp_ingress
 
 echo "Boot cirros1 with smtp_ingress security group"
@@ -107,5 +123,6 @@ until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   sleep 10
 done
 echo $RESULT
-
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+pass
 set +x #echo off

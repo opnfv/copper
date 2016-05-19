@@ -20,9 +20,9 @@
 #
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
-#   $ source ~/git/copper/tests/adhoc/dmz01.sh
+#   $ sh dmz.sh
 #   After test, cleanup with
-#   $ source ~/git/copper/tests/adhoc/dmz01-clean.sh
+#   $ sh dmz-clean.sh
 
 if [ $1 == "debug" ]; then set -x #echo on
 fi
@@ -43,22 +43,17 @@ instance=$(nova list | awk "/ cirros1 / { print \$2 }")
 if [ "$instance" != "" ]; then nova delete $instance
 fi
 
-echo "Delete cirros2 instance"
-instance=$(nova list | awk "/ cirros2 / { print \$2 }")
-if  [ "$instance" != "" ]; then nova delete $instance
-fi
-
-echo "Delete 'dmz' security group"
-sg=$(neutron security-group-list | awk "/ dmz / { print \$2 }")
+echo "Delete 'smtp_ingress' security group"
+sg=$(neutron security-group-list | awk "/ smtp_ingress / { print \$2 }")
 neutron security-group-delete $sg
 
 echo "Get 'test_router' ID"
 router=$(neutron router-list | awk "/ test_router / { print \$2 }")
 
-echo "Get internal port ID with subnet 10.0.0.1 on 'test_router'"
+echo "Get internal port ID with fixed_ip 10.0.0.1 on 'test_router'"
 test_internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk '{print $2}')
 
-echo "If found, delete the port with subnet 10.0.0.1 on 'test_router'"
+echo "If found, delete the port with fixed_ip 10.0.0.1 on 'test_router'"
 if [ "$test_internal_interface" != "" ]; then neutron router-interface-delete $router port=$test_internal_interface
 fi
 
@@ -78,24 +73,11 @@ neutron router-gateway-clear test_router
 echo "Delete the router"
 neutron router-delete test_router
 
-echo "Delete neutron port with fixed_ip 10.0.0.1"
-port=$(neutron port-list | awk "/ 10.0.0.1 / { print \$2 }")
-if [ "$port" != "" ]; then neutron port-delete $port
-fi
-
-echo "Delete neutron port with fixed_ip 10.0.0.2"
-port=$(neutron port-list | awk "/ 10.0.0.2 / { print \$2 }")
-if [ "$port" != "" ]; then neutron port-delete $port
-fi
-
 echo "Delete internal subnet"
 neutron subnet-delete test_internal
 
 echo "Delete internal network"
 neutron net-delete test_internal
-
-echo "Delete public subnet"
-neutron subnet-delete test_public
 
 echo "Delete public network"
 neutron net-delete test_public
