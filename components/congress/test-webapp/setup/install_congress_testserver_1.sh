@@ -93,13 +93,13 @@ enabled=1
 gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 EOF
-  sudo yum install -y docker-engine
   sudo service docker start
 
   echo "Setup webapp files"
   if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
   if [ ! -d /tmp/copper/log ]; then mkdir /tmp/copper/log; fi
-  cp ~/congress/*.sh /tmp/copper
+  sudo scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no stack@192.0.2.1:/home/stack/congress/*.sh /tmp/copper
+  source /tmp/copper/env.sh
   cp -r ~/git/copper/components/congress/test-webapp/* /tmp/copper/
   echo "Point proxy.php to the Congress server"
   source /tmp/copper/env.sh
@@ -113,10 +113,10 @@ EOF
 
   echo "Start Centos container"
   sudo docker pull centos
-  export CID=$(sudo docker run -d -t -P --name copper-cli -v /tmp/copper:/opt/copper centos /bin/bash)
   echo "Attach to the Centos container"
   echo "Once logged in, enter the command 'source /opt/copper/setup/install_congress_testserver_2.sh'"
-  sudo docker attach $CID
+  sudo docker run -i -t -P --name copper-cli -v /tmp/copper:/opt/copper centos /bin/bash)
+# sudo docker attach $CID
 # sudo docker run -it -P --name copper -v /tmp/copper:/opt/copper centos /opt/copper/setup/install_congress_testserver_2.sh
 # sudo docker ps -a
 fi

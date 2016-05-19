@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-var origin = "http://localhost/proxy/?~url=";
+var origin = "http://localhost:2257/proxy/?~url=";
 var dataSources = [];
 var datasource_tables = [];
 var datasource_rows = [];

@@ -44,14 +44,14 @@ $req_time=time();
 
 $info = curl_getinfo($curlop);
 $result = file_put_contents("/tmp/copper/log/".date('ymd').".log", "proxy.php, ".$req_time.", ".$url.", ".$type.", ".$body."\n",FILE_APPEND);
-if ($result === false) $response = "PHP error in index.php";
+//if ($result === false) $response = "PHP error in index.php";
 $responseCode=curl_getinfo($curlop,CURLINFO_HTTP_CODE);
 $header_size = curl_getinfo($response, CURLINFO_HEADER_SIZE);
 $header = substr($response, 0, $header_size);
 $type = curl_getinfo($curlop,CURLINFO_CONTENT_TYPE);
 $body = substr($response, $header_size);
 $result = file_put_contents("/tmp/copper/log/".date('ymd').".log", "proxy.php, ".$req_time.", ".$responseCode.", ".$type.", ".$header.", ".$body."\n",FILE_APPEND);
-if ($result === false) $response = "PHP error in index.php";
+//if ($result === false) $response = "PHP error in index.php";
 
 //    header("Location: ".$url);
 header("Content-Type: ".$type);
