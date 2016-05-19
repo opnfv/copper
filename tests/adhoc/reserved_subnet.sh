@@ -31,9 +31,7 @@
 if [ $1 == "debug" ]; then set -x #echo on
 fi
 
-source ~/admin-openrc.sh <<EOF
-openstack
-EOF
+source /opt/copper/admin-openrc.sh
 
 echo "Delete Congress policy 'test' if it exists"
 test_policy_ID=$(openstack congress policy show test | awk "/ id / { print \$4 }")

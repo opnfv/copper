@@ -29,9 +29,7 @@
 
 set -x #echo on
 
-source ~/admin-openrc.sh <<EOF
-openstack
-EOF
+source /opt/copper/admin-openrc.sh
 
 openstack service list
 

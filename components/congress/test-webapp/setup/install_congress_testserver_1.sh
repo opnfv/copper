@@ -101,6 +101,8 @@ EOF
   sudo scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no stack@192.0.2.1:/home/stack/congress/*.sh /tmp/copper
   source /tmp/copper/env.sh
   cp -r ~/git/copper/components/congress/test-webapp/* /tmp/copper/
+  if [ ! -d /tmp/copper/tests ]; then mkdir /tmp/copper/tests; fi
+  cp -r ~/git/copper/tests/* /tmp/copper/tests
   echo "Point proxy.php to the Congress server"
   source /tmp/copper/env.sh
   sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/www/proxy/index.php
