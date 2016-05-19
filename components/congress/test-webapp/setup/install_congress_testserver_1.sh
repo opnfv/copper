@@ -115,7 +115,7 @@ EOF
   sudo docker pull centos
   echo "Attach to the Centos container"
   echo "Once logged in, enter the command 'source /opt/copper/setup/install_congress_testserver_2.sh'"
-  sudo docker run -i -t -P --name copper-cli -v /tmp/copper:/opt/copper centos /bin/bash)
+  sudo docker run -i -t -P --name copper-cli -v /tmp/copper:/opt/copper centos /bin/bash
 # sudo docker attach $CID
 # sudo docker run -it -P --name copper -v /tmp/copper:/opt/copper centos /opt/copper/setup/install_congress_testserver_2.sh
 # sudo docker ps -a
