@@ -24,21 +24,40 @@
 #   $ source install_congress_testserver_1.sh
 #
 
+start=`date +%s`
+
 echo "============"
 echo "Test: dmz.sh"
 echo "============"
 sh dmz.sh
+if (($? == 0)); then dmz="Passed"
+else dmz="Failed"; fi
 sh dmz-clean.sh
 
 echo "========================"
 echo "Test: reserved_subnet.sh"
 echo "========================"
 sh reserved_subnet.sh
+if (($? == 0)); then reserved_subnet="Passed"
+else reserved_subnet="Failed"; fi
 sh reserved_subnet-clean.sh
 
 echo "====================="
 echo "Test: smtp_ingress.sh"
 echo "====================="
 sh smtp_ingress.sh
+if (($? == 0)); then smtp_ingress="Passed"
+else smtp_ingress="Failed"; fi
 sh smtp_ingress-clean.sh
+
+end=`date +%s`
+runtime=$((end-start))
+runtime=$((runtime/60))
+echo "======================"
+echo "Test Execution Summary"
+echo "======================"
+echo "Test Duration = $runtime minutes"
+echo "$dmz : dmz.sh"
+echo "$reserved_subnet : reserved_subnet.sh"
+echo "$smtp_ingress: smtp_ingress.sh"
 

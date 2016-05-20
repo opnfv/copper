@@ -24,7 +24,10 @@
 #   After test, cleanup with
 #   $ sh dmz-clean.sh
 
-if [ $1 == "debug" ]; then set -x #echo on
+if [  $# -eq 1 ]; then
+  if [ $1 == "debug" ]; then 
+    set -x #echo on
+  fi
 fi
 
 source /opt/copper/admin-openrc.sh
