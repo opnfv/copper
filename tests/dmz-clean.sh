@@ -30,7 +30,7 @@ if [  $# -eq 1 ]; then
   fi
 fi
 
-source /opt/copper/admin-openrc.sh
+source /tmp/copper/admin-openrc.sh
 
 echo "Get Congress policy 'test' ID"
 test_policy_ID=$(openstack congress policy show test | awk "/ id / { print \$4 }")

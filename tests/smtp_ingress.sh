@@ -50,7 +50,7 @@ if [  $# -eq 1 ]; then
   fi
 fi
 
-source /opt/copper/admin-openrc.sh
+source /tmp/copper/admin-openrc.sh
 
 echo "Create Congress policy 'test'"
 if [[ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]]; then unclean; fi
