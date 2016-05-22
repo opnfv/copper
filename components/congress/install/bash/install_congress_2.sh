@@ -13,61 +13,104 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This is script 2 of 2 for installation of Congress on the Centos 7 based
-# OPNFV Controller node as installed per the OPNFV Apex project.
-# Prequisites: 
-#   OPFNV install per https://wiki.opnfv.org/display/copper/Apex
-#   On the jumphost, logged in as stack on the undercloud VM:
-#     su stack
-#   Clone the Copper repo and run the install script:
-#     mkdir ~/git; cd git; git clone https://gerrit.opnfv.org/gerrit/copper
-#     cd copper
-#     source components/congress/install/bash/centos/install_congress_1.sh
+# This is script 2 of 2 for installation of Congress on the OPNFV Controller
+# node as installed via JOID or Apex (Fuel and Compass not yet verified).
+# Prerequisites: 
+# - OPFNV installed via JOID or Apex
+# - For Apex installs, on the jumphost, ssh to the undercloud VM and
+#     $ su stack
+# - For JOID installs, admin-openrc.sh saved from Horizon to ~/admin-openrc.sh
+# - Retrieve the copper install script as below, optionally specifying the 
+#   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
+# $ cd ~
+# $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/install/bash/install_congress_1.sh
+# $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/install/bash/install_congress_2.sh
+# $ source install_congress_1.sh [openstack-branch]
+#   optionally specifying the branch identifier to use for OpenStack
+#     
 
 set -x
-source ~/congress/admin-openrc.sh
-source ~/congress/env.sh
 
-echo "install pip"
-sudo yum install python-pip -y
+if [ $# -eq 1 ]; then osbranch=$1; fi
 
-echo "install java"
-# sudo yum install default-jre -y
-# No package default-jre available.
+echo "OS-specific prerequisite steps"
+dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 
-echo "install other dependencies"
-sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
-sudo pip install --upgrade pip virtualenv setuptools pbr tox
+if [ "$dist" == "Ubuntu" ]; then
+  # Ubuntu
+  echo "Ubuntu-based install"
+  export CTLUSER="ubuntu"
+  source ~/congress/admin-openrc.sh <<EOF
+openstack
+EOF
+  source ~/congress/env.sh
+  echo "Update/upgrade package repos"
+  sudo apt-get update
+  echo "install pip"
+  sudo apt-get install python-pip -y
+  echo "install java"
+  sudo apt-get install default-jre -y
+  echo "install other dependencies"
+  sudo apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
+  sudo pip install --upgrade pip virtualenv setuptools pbr tox
+  echo "set mysql root user password and install mysql"
+  export MYSQL_PASSWORD=$(/usr/bin/apg -n 1 -m 16 -c cl_seed)
+  sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password password '$MYSQL_PASSWORD
+  sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password '$MYSQL_PASSWORD
+  sudo -E apt-get -q -y install mysql-server python-mysqldb
+  echo "install tox dependencies (detected by errors during 'tox -egenconfig')"
+  sudo apt-get install libffi-dev openssl libssl-dev -y
+else
+  # Centos
+  echo "Centos-based install"
+  export CTLUSER="heat-admin"
+  source ~/congress/admin-openrc.sh
+  source ~/congress/env.sh
+  echo "install pip"
+  sudo yum install python-pip -y
+  echo "install other dependencies"
+  sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
+  sudo pip install --upgrade pip virtualenv setuptools pbr tox
+  echo "install tox dependencies (detected by errors during 'tox -egenconfig')"
+  sudo yum install libffi-devel openssl openssl-devel -y
+fi
+
+echo "Create virtualenv"
+virtualenv ~/congress/venv
+cd ~/congress/venv
+source bin/activate
 
 echo "Clone congress"
 cd ~/congress
 git clone https://github.com/openstack/congress.git
 cd congress
-git checkout stable/liberty
+if [ $# -eq 1 ]; then git checkout $1; fi
 
-echo "Create virtualenv"
-virtualenv ~/congress/congress
-source bin/activate
+echo "Install OpenStack client"
+cd ~/congress
+git clone https://github.com/openstack/python-openstackclient.git
+cd python-openstackclient
+if [ $# -eq 1 ]; then git checkout $1; fi
+pip install -r requirements.txt
+pip install .
 
 echo "Setup Congress"
+cd ~/congress/congress
 sudo mkdir -p /etc/congress
-sudo chown heat-admin /etc/congress
-mkdir -p /etc/congress/snapshot
+sudo chown $CTLUSER /etc/congress
+sudo mkdir -p /etc/congress/snapshot
 sudo mkdir /var/log/congress
-sudo chown heat-admin /var/log/congress
+sudo chown $CTLUSER  /var/log/congress
 cp etc/api-paste.ini /etc/congress
 cp etc/policy.json /etc/congress
 
-echo "install requirements.txt and tox dependencies (detected by errors during 'tox -egenconfig')"
-sudo yum install libffi-devel openssl openssl-devel -y
-
 echo "install dependencies of Congress"
 cd ~/congress/congress
-bin/pip install -r requirements.txt
-bin/pip install .
+pip install -r requirements.txt
+pip install .
 
 echo "install tox"
-bin/pip install tox
+pip install tox
 
 echo "generate congress.conf.sample"
 tox -egenconfig
@@ -95,7 +138,8 @@ echo "create congress database"
 sudo mysql -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'congress';"
 
 echo "install congress-db-manage dependencies (detected by errors)"
-bin/pip install MySQL-python
+if [ "$dist" == "Ubuntu" ]; then sudo apt-get build-dep python-mysqldb -y; fi
+pip install MySQL-python
 
 echo "create database schema"
 congress-db-manage --config-file /etc/congress/congress.conf upgrade head
@@ -104,10 +148,15 @@ echo "Install Congress client"
 cd ~/congress
 git clone https://github.com/openstack/python-congressclient.git
 cd python-congressclient
-git checkout stable/liberty
-../congress/bin/pip install -r requirements.txt
-../congress/bin/pip install .
+if [ $# -eq 1 ]; then git checkout $1; fi
+pip install -r requirements.txt
+pip install .
 
+# Fix error found during startup of congress server
+echo "Install python fixtures"
+pip install fixtures
+
+# TODO: The rest of this script is not yet tested
 function _congress_setup_horizon {
   local HORIZON_DIR="/usr/share/openstack-dashboard"
   local CONGRESS_HORIZON_DIR="/home/heat-admin/git/congress/contrib/horizon"
