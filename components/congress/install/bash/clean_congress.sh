@@ -24,7 +24,7 @@
 # - For JOID installs, admin-openrc.sh saved from Horizon to ~/admin-openrc.sh
 # - Retrieve the copper remova script as below
 # $ cd ~
-# $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/install/bash/clean_congress.sh
+# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/clean_congress.sh
 
 echo "OS-specific prerequisite steps"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
@@ -62,6 +62,9 @@ export CONGRESS_SERVICE=$(openstack service list | awk "/ congress / { print \$2
 if [ "$CONGRESS_SERVICE" != "" ]; then
   openstack service delete $CONGRESS_SERVICE
 fi
+
+echo "Delete congress database"
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "sudo mysql -e \"DROP DATABASE congress\"; exit"
 
 echo "Deactivate virtualenv"
 deactivate

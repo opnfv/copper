@@ -25,7 +25,7 @@
 # $ cd ~
 # $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/install/bash/install_congress_1.sh
 # $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/install/bash/install_congress_2.sh
-# $ source install_congress_1.sh [openstack-branch]
+# $ sh install_congress_1.sh [openstack-branch]
 #   optionally specifying the branch identifier to use for OpenStack
 #     
 
@@ -100,7 +100,7 @@ EOF
   # sed command below is a workaound for a bug - region shows up twice for some reason
   cat <<EOF | sed '$d' >>~/admin-openrc.sh
 export OS_REGION_NAME=$OS_REGION_NAME
-EOFif [ "$dist" == "Ubuntu" ]; then
+EOF
   scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/admin-openrc.sh $CTLUSER@$CONTROLLER_HOST1:/home/$CTLUSER/congress
   echo "Copy install_congress_2.sh to the congress server and execute"
   scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/install_congress_2.sh $CTLUSER@$CONTROLLER_HOST1:/home/$CTLUSER/congress

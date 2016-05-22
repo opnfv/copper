@@ -23,8 +23,8 @@
 # - Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
 # $ cd ~
-# $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/install/bash/install_congress_1.sh
-# $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/install/bash/install_congress_2.sh
+# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_1.sh
+# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_2.sh
 # $ source install_congress_1.sh [openstack-branch]
 #   optionally specifying the branch identifier to use for OpenStack
 #     
