@@ -24,118 +24,34 @@
 # How to use:
 #   Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
-# $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/test-webapp/setup/install_congress_cli_test_environment.sh
-# $ source install_congress_testserver.sh [copper-branch openstack-branch]
-#   optionally specifying the branch identifier to use for copper and OpenStack
+# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_cli_test_environment.sh
+# $ source install_congress_cli_test_environment.sh [copper-branch]
+#   optionally specifying the branch identifier to use for copper
 
 set -x
 
-if [ $# -eq 1 ]; then
-  echo 1>&2 "$0: specify both copper-branch and openstack-branch"
-  set +x
-  return 2
-fi
-if [ $# -eq 2 ]; then
-  cubranch=$1
-  osbranch=$2
-fi
+if [ $# -eq 1 ]; then cubranch=$1; fi
 
-cubranch=$1
-osbranch=$2
-
-echo "Install prerequisites"
+echo "Copy environment files to /tmp/copper"
+if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
-
 if [ "$dist" == "Ubuntu" ]; then
-  echo "Update the base server"
-  set -x
-  sudo apt-get update
-  #apt-get -y upgrade
-  echo "Install pip"
-  sudo apt-get install -y python-pip
-  echo "Install java"
-  sudo apt-get install -y default-jre
-  echo "Install other dependencies"
-  apt-get install -y git gcc python-dev libxml2 libxslt1-dev libzip-dev php5-curl
+  cp ~/congress/env.sh /tmp/copper/
+  cp ~/congress/admin-openrc.sh /tmp/copper/
 else
-  echo "Add epel repo"
-  sudo yum install epel-release -y
-  echo "install pip"
-  sudo yum install python-pip -y
-  echo "install other dependencies"
-  sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
+  echo "Copy copper environment files" 
+  sudo scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no stack@192.0.2.1:/home/stack/congress/*.sh /tmp/copper
 fi
-
-echo "Install python dependencies"
-sudo pip install --upgrade pip virtualenv setuptools pbr tox
-
-echo "Create virtualenv"
-mkdir /tmp/copper
-cd /tmp/copper
-virtualenv venv
-source venv/bin/activate
 
 echo "Clone copper"
-git clone https://gerrit.opnfv.org/gerrit/copper
-cd copper
-if [ $# -eq 2 ]; then git checkout $1; fi
-
-echo "Setup OpenStack environment variables per your OPNFV install"
-source env.sh
-source admin-openrc.sh
-
-echo "Clone congress"
-git clone https://github.com/openstack/congress.git
-cd congress
-if [ $# -eq 2 ]; then git checkout $2; fi
-
-echo "Install OpenStack client"
-cd /tmp/copper
-git clone https://github.com/openstack/python-openstackclient.git
-cd python-openstackclient
-if [ $# -eq 2 ]; then git checkout $2; fi
-pip install -r requirements.txt
-pip install .
-
-echo "Install Congress client"
-cd /tmp/copper
-git clone https://github.com/openstack/python-congressclient.git
-cd python-congressclient
-if [ $# -eq 2 ]; then git checkout $2; fi
-pip install -r requirements.txt
-pip install .
-
-echo "Install Glance client"
-cd /tmp/copper
-git clone https://github.com/openstack/python-glanceclient.git
-cd python-glanceclient
-if [ $# -eq 2 ]; then git checkout $2; fi
-pip install -r requirements.txt
-pip install .
-
-echo "Install Neutron client"
-cd /tmp/copper
-git clone https://github.com/openstack/python-neutronclient.git
-cd python-neutronclient
-if [ $# -eq 2 ]; then git checkout $2; fi
-pip install -r requirements.txt
-pip install .
-
-echo "Install Nova client"
-cd /tmp/copper
-git clone https://github.com/openstack/python-novaclient.git
-cd python-novaclient
-if [ $# -eq 2 ]; then git checkout $2; fi
-pip install -r requirements.txt
-pip install .
-
-echo "Install Keystone client"
-cd /tmp/copper
-git clone https://github.com/openstack/python-keystoneclient.git
-cd python-keystoneclient
-if [ $# -eq 2 ]; then git checkout $2; fi
-pip install -r requirements.txt
-pip install .
+if [ ! -d /tmp/copper/copper ]; then 
+  cd /tmp/copper
+  git clone https://gerrit.opnfv.org/gerrit/copper
+  cd copper
+  if [ $# -eq 1 ]; then git checkout $1; fi 
+else
+  echo "/tmp/copper exists: run 'rm -rf /tmp/copper' to start clean if needed"
+fi
 
 cd /tmp/copper/copper/tests
 ls

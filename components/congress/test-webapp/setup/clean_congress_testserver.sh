@@ -14,25 +14,19 @@
 # limitations under the License.
 #
 # This is a cleanup script for installation of the Congress testserver
-# on an Ubuntu 14.04 LXC container in the jumphost.
-# Presumably something has failed, and any record of the testserver
-# needs to be removed, so you can try the install again.
+# as installed under JOID or Apex (Fuel and Compass not yet verified).
+# Prequisite: OPFNV installed per JOID or Apex installer
 # On jumphost:
-# source ~/clean_congress_testserver.sh <debug>
-# <debug> indicates whether to turn on command echoing
-
-source ~/admin-openrc.sh <<EOF
-openstack
-EOF
-
-source ~/env.sh
-
-if [ $# -gt 0 ]; then
-  if [ $1 == "debug" ]; then set -x #echo on
-  fi
-fi
-
-sudo lxc-stop --name trusty-copper
-sudo lxc-destroy --name trusty-copper
-rm -rf ~/coppertest
+# - Congress installed through install_congress_1.sh
+# How to use:
+#   Retrieve the testserver uninstall script as below
+# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/clean_congress_testserver.sh
+# $ source clean_congress_testserver.sh
+set -x
+echo "Get copper-webapp container ID"
+CID=$(sudo docker ps | awk "/copper-webapp/ { print \$1 }")
+echo "Stop copper-webapp container"
+sudo docker stop $CID
+echo "Remove copper-webapp container"
+sudo docker rm $CID
 set +x

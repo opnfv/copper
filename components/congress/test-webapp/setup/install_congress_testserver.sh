@@ -24,7 +24,7 @@
 # How to use:
 #   Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
-# $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/test-webapp/setup/install_congress_testserver.sh
+# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_testserver.sh
 # $ source install_congress_testserver.sh [copper-branch]
 #   optionally specifying the branch identifier to use for copper
 
@@ -36,9 +36,22 @@ echo "Install prerequisites"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 
 if [ "$dist" == "Ubuntu" ]; then
-  sudo apt-get install -y docker
-  cp env.sh /tmp/copper/
-  cp admin-openrc.sh /tmp/copper/
+  # Docker setup procedure from https://docs.docker.com/engine/installation/linux/ubuntulinux/
+  echo "Install docker and prerequisites"
+  sudo apt-get update
+  sudo apt-get install -y apt-transport-https ca-certificates
+  sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+  sudo tee /etc/apt/sources.list.d/docker.list <<- 'EOF'
+deb https://apt.dockerproject.org/repo ubuntu-trusty main
+EOF
+  sudo apt-get update
+  sudo apt-get purge lxc-docker
+  apt-cache policy docker-engine
+  sudo apt-get install -y linux-image-extra-$(uname -r)
+  sudo apt-get install -y docker docker-engine
+  echo "Copy copper environment files" 
+  cp ~/congress/env.sh /tmp/copper/
+  cp ~/congress/admin-openrc.sh /tmp/copper/
 else
   sudo tee /etc/yum.repos.d/docker.repo <<-'EOF'
 [dockerrepo]
@@ -48,18 +61,25 @@ enabled=1
 gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 EOF
+  echo "Copy copper environment files" 
   sudo scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no stack@192.0.2.1:/home/stack/congress/*.sh /tmp/copper
 fi
 
 echo "Clone copper"
-if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
-cd /tmp/copper
-if [ -d copper ]; then rm -rf copper 
-git clone https://gerrit.opnfv.org/gerrit/copper; fi
-cd copper
-if [ $# -eq 1 ]; then git checkout $1; fi
+if [ ! -d /tmp/copper ]; then 
+  mkdir /tmp/copper
+  cd /tmp/copper
+  git clone https://gerrit.opnfv.org/gerrit/copper
+  cd copper
+  if [ $# -eq 1 ]; then git checkout $1; fi 
+else
+  echo "/tmp/copper exists: run 'rm -rf /tmp/copper' to start clean if needed"
+fi
 
 sudo service docker start
+
+echo "Setup copper environment"
+source /tmp/copper/env.sh
 
 echo "Setup webapp files"
 if [ ! -d /tmp/copper/log ]; then mkdir /tmp/copper/log; fi
