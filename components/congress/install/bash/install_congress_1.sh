@@ -23,8 +23,8 @@
 # - Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
 # $ cd ~
-# $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/install/bash/install_congress_1.sh
-# $ wget https://git.opnfv.org/cgit/copper/tree/components/congress/install/bash/install_congress_2.sh
+# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_1.sh
+# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_2.sh
 # $ sh install_congress_1.sh [openstack-branch]
 #   optionally specifying the branch identifier to use for OpenStack
 #     
@@ -146,6 +146,30 @@ cd ~/congress
 git clone https://github.com/openstack/python-keystoneclient.git
 cd python-keystoneclient
 if [ $# -eq 1 ]; then git checkout $1; fi
+pip install -r requirements.txt
+pip install .
+
+echo "Install Glance client"
+cd ~/congress
+git clone https://github.com/openstack/python-glanceclient.git
+cd python-glanceclient
+if [ $# -eq 2 ]; then git checkout $2; fi
+pip install -r requirements.txt
+pip install .
+
+echo "Install Neutron client"
+cd ~/congress
+git clone https://github.com/openstack/python-neutronclient.git
+cd python-neutronclient
+if [ $# -eq 2 ]; then git checkout $2; fi
+pip install -r requirements.txt
+pip install .
+
+echo "Install Nova client"
+cd ~/congress
+git clone https://github.com/openstack/python-novaclient.git
+cd python-novaclient
+if [ $# -eq 2 ]; then git checkout $2; fi
 pip install -r requirements.txt
 pip install .
 

@@ -29,6 +29,8 @@
 echo "OS-specific prerequisite steps"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 
+source ~/congress/env.sh
+
 if [ "$dist" == "Ubuntu" ]; then
   # Ubuntu
   echo "Ubuntu-based install"
@@ -63,7 +65,7 @@ if [ "$CONGRESS_SERVICE" != "" ]; then
   openstack service delete $CONGRESS_SERVICE
 fi
 
-echo "Delete congress database"
+echo "Delete Congress database"
 ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "sudo mysql -e \"DROP DATABASE congress\"; exit"
 
 echo "Deactivate virtualenv"
