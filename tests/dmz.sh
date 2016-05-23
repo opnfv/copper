@@ -142,7 +142,7 @@ if [ -z $test_cirros1_ID ]; then
   fail
 fi
 
-echo "Boot cirros2 with non-dmz image"
+echo "Boot cirros2 with dmz image"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64-dmz --nic net-id=$test_internal_NET  --security-groups dmz cirros2
 test_cirros2_ID=$(nova list | awk "/ cirros2 / { print \$2 }")
 if [ -z $test_cirros1_ID ]; then 

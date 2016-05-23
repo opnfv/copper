@@ -25,8 +25,7 @@
 #   Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_cli_test_environment.sh
-# $ bash install_congress_cli_test_environment.sh [copper-branch]
-#   optionally specifying the branch identifier to use for copper
+# $ bash install_congress_cli_test_environment.sh
 
 set -x
 
@@ -38,9 +37,23 @@ dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 if [ "$dist" == "Ubuntu" ]; then
   cp ~/congress/env.sh /tmp/copper/
   cp ~/admin-openrc.sh /tmp/copper/
+  echo "Install jumphost dependencies"
+  echo "Update package repos"
+  sudo apt-get update
+  echo "install pip"
+  sudo apt-get install python-pip -y
+  echo "install other dependencies"
+  sudo apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
+  sudo pip install --upgrade pip virtualenv setuptools pbr tox
 else
   echo "Copy copper environment files" 
   sudo scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no stack@192.0.2.1:/home/stack/congress/*.sh /tmp/copper
+  echo "Install jumphost dependencies"
+  echo "install pip"
+  sudo yum install python-pip -y
+  echo "install other dependencies"
+  sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
+  sudo pip install --upgrade pip virtualenv setuptools pbr tox
 fi
 
 echo "Clone copper"
@@ -48,10 +61,57 @@ if [ ! -d /tmp/copper/copper ]; then
   cd /tmp/copper
   git clone https://gerrit.opnfv.org/gerrit/copper
   cd copper
-  if [ $# -eq 1 ]; then git checkout $1; fi 
 else
   echo "/tmp/copper exists: run 'rm -rf /tmp/copper' to start clean if needed"
 fi
+
+echo "Create virtualenv"
+mkdir ~/congress
+virtualenv ~/congress/venv
+cd ~/congress/venv
+source bin/activate
+
+echo "Install OpenStack client"
+cd ~/congress
+git clone https://github.com/openstack/python-openstackclient.git
+cd python-openstackclient
+pip install -r requirements.txt
+pip install .
+
+echo "Install Congress client"
+cd ~/congress
+git clone https://github.com/openstack/python-congressclient.git
+cd python-congressclient
+pip install -r requirements.txt
+pip install .
+
+echo "Install Keystone client"
+cd ~/congress
+git clone https://github.com/openstack/python-keystoneclient.git
+cd python-keystoneclient
+pip install -r requirements.txt
+pip install .
+
+echo "Install Glance client"
+cd ~/congress
+git clone https://github.com/openstack/python-glanceclient.git
+cd python-glanceclient
+pip install -r requirements.txt
+pip install .
+
+echo "Install Neutron client"
+cd ~/congress
+git clone https://github.com/openstack/python-neutronclient.git
+cd python-neutronclient
+pip install -r requirements.txt
+pip install .
+
+echo "Install Nova client"
+cd ~/congress
+git clone https://github.com/openstack/python-novaclient.git
+cd python-novaclient
+pip install -r requirements.txt
+pip install .
 
 cd /tmp/copper/copper/tests
 ls
