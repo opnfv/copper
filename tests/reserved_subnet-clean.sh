@@ -24,9 +24,9 @@
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
-#   $ sh reserved_subnet.sh
+#   $ bash reserved_subnet.sh
 #   After test, cleanup
-#   $ sh reserved_subnet-clean.sh
+#   $ bash reserved_subnet-clean.sh
 
 if [  $# -eq 1 ]; then
   if [ $1 == "debug" ]; then 

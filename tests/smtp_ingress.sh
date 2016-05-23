@@ -23,9 +23,9 @@
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
-#   $ sh smtp_ingress.sh
+#   $ bash smtp_ingress.sh
 #   After test, cleanup
-#   $ sh smtp_ingress-clean.sh
+#   $ bash smtp_ingress-clean.sh
 
 pass() {
   echo "Hooray!"

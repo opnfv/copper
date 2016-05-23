@@ -29,9 +29,9 @@
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
-#   $ sh dmz.sh
+#   $ bash dmz.sh
 #   After test, cleanup
-#   $ sh dmz-clean.sh
+#   $ bash dmz-clean.sh
 
 pass() {
   echo "Hooray!"
@@ -56,26 +56,29 @@ if [  $# -eq 1 ]; then
   fi
 fi
 
+echo "Activate virtualenv if needed"
+cd ~/congress/venv
+source bin/activate
 source /tmp/copper/admin-openrc.sh
 
 echo "Create Congress policy 'test'"
-if [[ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]]; then unclean; fi
+if [ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]; then unclean; fi
 openstack congress policy create test
 
 echo "Create dmz_server rule in policy 'test'"
 openstack congress policy rule create test "dmz_server(x) :- nova:servers(id=x,status='ACTIVE'), neutronv2:ports(id, device_id, status='ACTIVE'),  neutronv2:security_group_port_bindings(pid, sg), neutronv2:security_groups(sg,name='dmz')" --name dmz_server
 
 echo "Create dmz_placement_error rule in policy 'test'"
-openstack congress policy rule create test "dmz_placement_error(id) :- nova:servers(id,name,hostId,status,tenant_id,user_id,image), not glancev2:tags(image,'dmz'), dmz_server(id)" --name dmz_placement_error
+openstack congress policy rule create test "dmz_placement_error(id) :- nova:servers(id,name,hostId,status,tenant_id,user_id,image,flavor,az,hh), not glancev2:tags(image,'dmz'), dmz_server(id)" --name dmz_placement_error
 
 echo "Create image cirros1 with non-dmz image"
 image=$(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }")
-if [ "$image" == "" ]; then glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64 --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare
+if [ -z $image ]; then glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64 --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare
 fi
 
 echo "Create image cirros2 with dmz image"
 image=$(openstack image list | awk "/ cirros-0.3.3-x86_64-dmz / { print \$2 }")
-if [ "$image" == "" ]; then glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64-dmz --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare
+if [ -z $image ]; then glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64-dmz --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare
 fi
 
 echo "Get image ID of cirros dmz image"
@@ -85,21 +88,21 @@ echo "Add 'dmz' image tag to the cirros dmz image"
 glance --os-image-api-version 2 image-tag-update $IMAGE_ID "dmz"
 
 echo "Create external network"
-if [[ $(neutron net-list | awk "/ test_public / { print \$2 }") ]]; then unclean; fi
+if [ $(neutron net-list | awk "/ test_public / { print \$2 }") ]; then unclean; fi
 neutron net-create test_public --router:external=true
 
 echo "Create external subnet"
 neutron subnet-create --disable-dhcp test_public 192.168.10.0/24
 
 echo "Create internal network"
-if [[ $(neutron net-list | awk "/ test_internal / { print \$2 }") ]]; then unclean; fi
+if [ $(neutron net-list | awk "/ test_internal / { print \$2 }") ]; then unclean; fi
 neutron net-create test_internal
 
 echo "Create internal subnet"
 neutron subnet-create test_internal 10.0.0.0/24 --name test_internal --gateway 10.0.0.1 --enable-dhcp --allocation-pool start=10.0.0.2,end=10.0.0.254 --dns-nameserver 8.8.8.8
 
 echo "Create router"
-if [[ $(neutron router-list | awk "/ test_router / { print \$2 }") ]]; then unclean; fi
+if [ $(neutron router-list | awk "/ test_router / { print \$2 }") ]; then unclean; fi
 neutron router-create test_router
 
 echo "Create router gateway"
@@ -108,40 +111,47 @@ neutron router-gateway-set test_router test_public
 echo "Add router internal for internal network"
 neutron router-interface-add test_router subnet=test_internal
 
-echo "Wait up to a minute for as 'neutron router-interface-add' blocks the neutron-api for some time..."
+echo "Wait up to a minute as 'neutron router-interface-add' blocks the neutron-api for some time..."
 # add a delay since the previous command takes the neutron-api offline for a while (?)
 COUNTER=1
 RESULT="Failed!"
-until [[ $COUNTER -gt 6  || $RESULT == "Success!" ]]; do
+until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
   echo "Get the internal network ID: try" $COUNTER 
   test_internal_NET=$(neutron net-list | awk "/ test_internal / { print \$2 }")
-  if [ "$test_internal_NET" != "" ]; then RESULT="c0546c94-436e-4624-aa1a-4393e2981c15Success!"
-  fi
+  if [ "$test_internal_NET" != "" ]; then RESULT="Success!"; fi
   let COUNTER+=1
   sleep 10
 done
 
 echo "Create a security group 'dmz'"
-if [[ $(neutron security-group-list | awk "/ dmz / { print \$2 }") ]]; then unclean; fi
+if [ $(neutron security-group-list | awk "/ dmz / { print \$2 }") ]; then unclean; fi
 neutron security-group-create dmz
+if [ -z $(neutron security-group-list | awk "/ dmz / { print \$2 }") ]; then 
+  echo "Unable to create security group"
+  fail
+fi
 
 echo "Create security group ingress rule for 'dmz'"
 neutron security-group-rule-create --direction ingress dmz
 
 echo "Boot cirros1 with non-dmz image"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$test_internal_NET --security-groups dmz cirros1
+test_cirros1_ID=$(nova list | awk "/ cirros1 / { print \$2 }")
+if [ -z $test_cirros1_ID ]; then 
+  echo "Unable to boot cirros1"
+  fail
+fi
 
 echo "Boot cirros2 with non-dmz image"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64-dmz --nic net-id=$test_internal_NET  --security-groups dmz cirros2
+test_cirros2_ID=$(nova list | awk "/ cirros2 / { print \$2 }")
+if [ -z $test_cirros1_ID ]; then 
+  echo "Unable to boot cirros2"
+  fail
+fi
 
 echo "Wait 5 seconds for Congress polling to occur at least once"
 sleep 5
-
-echo "Get cirros1 instance ID"
-test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
-
-echo "Get cirros2 instance ID"
-test_cirros2_ID=$(openstack server list | awk "/ cirros2 / { print \$2 }")
 
 echo "Verify cirros1 and cirros2 IDs are in the Congress policy 'test' table 'dmz_server'"
 COUNTER=5
@@ -149,8 +159,7 @@ RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   dmz_cirros1=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros1_ID / { print \$2 }")
   dmz_cirros2=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros2_ID / { print \$2 }")
-  if [ "$dmz_cirros1" == "$test_cirros1_ID" ] &&  [ "$dmz_cirros2" == "$test_cirros2_ID" ]; then RESULT="Test Success!"
-  fi
+  if [ "$dmz_cirros1" == "$test_cirros1_ID" ] &&  [ "$dmz_cirros2" == "$test_cirros2_ID" ]; then RESULT="Test Success!"; fi
   let COUNTER-=1
   sleep 5
 done
@@ -162,8 +171,7 @@ COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   dmz_cirros1=$(openstack congress policy row list test dmz_placement_error | awk "/ $test_cirros1_ID / { print \$2 }")
-  if [ "$dmz_cirros1" == "$test_cirros1_ID" ]; then RESULT="Test Success!"
-  fi
+  if [ "$dmz_cirros1" == "$test_cirros1_ID" ]; then RESULT="Test Success!"; fi
   let COUNTER-=1
   sleep 5
 done
@@ -178,12 +186,10 @@ COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   cirros1_status=$(nova list | awk "/ cirros1 / { print \$6 }")
-  if [ "$cirros1_status" == "PAUSED" ]; then RESULT="Test Success!"
-  fi
+  if [ "$cirros1_status" == "PAUSED" ]; then RESULT="Test Success!"; fi
   let COUNTER-=1
   sleep 5
 done
 echo "Verify cirros1 is paused:" $RESULT
 if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 pass
-set +x #echo off

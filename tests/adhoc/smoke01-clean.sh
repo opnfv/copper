@@ -26,7 +26,7 @@
 
 set -x #echo on
 
-source /opt/copper/admin-openrc.sh
+source /tmp/copper/admin-openrc.sh
 
 instance=$(nova list | awk "/ cirros1 / { print \$2 }")
 if [ "$instance" != "" ]; then nova delete $instance

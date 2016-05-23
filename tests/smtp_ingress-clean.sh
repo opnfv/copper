@@ -20,9 +20,9 @@
 #
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
-#   $ sh dmz.sh
+#   $ bash dmz.sh
 #   After test, cleanup with
-#   $ sh dmz-clean.sh
+#   $ bash dmz-clean.sh
 
 if [  $# -eq 1 ]; then
   if [ $1 == "debug" ]; then 
