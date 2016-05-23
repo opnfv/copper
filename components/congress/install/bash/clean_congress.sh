@@ -25,6 +25,7 @@
 # - Retrieve the copper remova script as below
 # $ cd ~
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/clean_congress.sh
+# $ bash clean_congress.sh
 
 echo "OS-specific prerequisite steps"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`

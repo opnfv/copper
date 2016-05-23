@@ -25,7 +25,7 @@
 # $ cd ~
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_1.sh
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_2.sh
-# $ source install_congress_1.sh [openstack-branch]
+# $ bash install_congress_1.sh [openstack-branch]
 #   optionally specifying the branch identifier to use for OpenStack
 #     
 
@@ -40,9 +40,7 @@ if [ "$dist" == "Ubuntu" ]; then
   # Ubuntu
   echo "Ubuntu-based install"
   export CTLUSER="ubuntu"
-  source ~/congress/admin-openrc.sh <<EOF
-openstack
-EOF
+  source ~/congress/admin-openrc.sh
   source ~/congress/env.sh
   echo "Update/upgrade package repos"
   sudo apt-get update

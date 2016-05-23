@@ -25,7 +25,7 @@
 # $ cd ~
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_1.sh
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_2.sh
-# $ sh install_congress_1.sh [openstack-branch]
+# $ bash install_congress_1.sh [openstack-branch]
 #   optionally specifying the branch identifier to use for OpenStack
 #     
 
@@ -69,9 +69,10 @@ EOF
   echo "install other dependencies"
   sudo apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
   sudo pip install --upgrade pip virtualenv setuptools pbr tox
-  source ~/admin-openrc.sh <<EOF
-openstack
-EOF
+  sed -i -- 's/echo/#echo/g' ~/admin-openrc.sh  
+  sed -i -- 's/read -sr OS_PASSWORD_INPUT/#read -sr OS_PASSWORD_INPUT/g' ~/admin-openrc.sh
+  sed -i -- 's/$OS_PASSWORD_INPUT/openstack/g' ~/admin-openrc.sh
+  cp ~/admin-openrc.sh ~/congress
 else
   # Centos
   echo "Centos-based install"
