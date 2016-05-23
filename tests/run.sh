@@ -21,7 +21,7 @@
 # - Congress installed through install_congress_1.sh
 # - Copper test environment installed per 
 # How to use:
-#   $ source install_congress_testserver_1.sh
+#   $ bash install_congress_testserver_1.sh
 #
 
 start=`date +%s`
@@ -29,26 +29,26 @@ start=`date +%s`
 echo "============"
 echo "Test: dmz.sh"
 echo "============"
-sh dmz.sh
+bash dmz.sh
 if (($? == 0)); then dmz="Passed"
 else dmz="Failed"; fi
-sh dmz-clean.sh
+bash dmz-clean.sh
 
 echo "========================"
 echo "Test: reserved_subnet.sh"
 echo "========================"
-sh reserved_subnet.sh
+bash reserved_subnet.sh
 if (($? == 0)); then reserved_subnet="Passed"
 else reserved_subnet="Failed"; fi
-sh reserved_subnet-clean.sh
+bash reserved_subnet-clean.sh
 
 echo "====================="
 echo "Test: smtp_ingress.sh"
 echo "====================="
-sh smtp_ingress.sh
+bash smtp_ingress.sh
 if (($? == 0)); then smtp_ingress="Passed"
 else smtp_ingress="Failed"; fi
-sh smtp_ingress-clean.sh
+bash smtp_ingress-clean.sh
 
 end=`date +%s`
 runtime=$((end-start))

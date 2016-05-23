@@ -35,6 +35,8 @@ if [ $# -eq 1 ]; then cubranch=$1; fi
 echo "Install prerequisites"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 
+if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
+
 if [ "$dist" == "Ubuntu" ]; then
   # Docker setup procedure from https://docs.docker.com/engine/installation/linux/ubuntulinux/
   echo "Install docker and prerequisites"
@@ -49,7 +51,7 @@ EOF
   apt-cache policy docker-engine
   sudo apt-get install -y linux-image-extra-$(uname -r)
   sudo apt-get install -y docker docker-engine
-  echo "Copy copper environment files" 
+  echo "Copy copper environment files"
   cp ~/congress/env.sh /tmp/copper/
   cp ~/congress/admin-openrc.sh /tmp/copper/
 else
@@ -66,8 +68,7 @@ EOF
 fi
 
 echo "Clone copper"
-if [ ! -d /tmp/copper ]; then 
-  mkdir /tmp/copper
+if [ ! -d /tmp/copper/copper ]; then 
   cd /tmp/copper
   git clone https://gerrit.opnfv.org/gerrit/copper
   cd copper
@@ -82,7 +83,10 @@ echo "Setup copper environment"
 source /tmp/copper/env.sh
 
 echo "Setup webapp files"
-if [ ! -d /tmp/copper/log ]; then mkdir /tmp/copper/log; fi
+if [ ! -d /tmp/copper/log ]; then 
+  mkdir /tmp/copper/log
+  chmod 777 /tmp/copper/log
+fi
 source /tmp/copper/env.sh
 echo "Point proxy.php to the Congress server"
 sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
