@@ -23,7 +23,7 @@
 # - Congress installed through install_congress_1.sh
 # - ~/env.sh created as part of Congress install (install_congress_1.sh)
 # How to use:
-#   $ source restart_congress_testserver.sh 
+#   $ bash restart_congress_testserver.sh 
 
 set -x 
 

@@ -21,7 +21,7 @@
 # How to use:
 #   Retrieve the testserver uninstall script as below
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/clean_congress_testserver.sh
-# $ source clean_congress_testserver.sh
+# $ bash clean_congress_testserver.sh
 set -x
 echo "Get copper-webapp container ID"
 CID=$(sudo docker ps | awk "/copper-webapp/ { print \$1 }")

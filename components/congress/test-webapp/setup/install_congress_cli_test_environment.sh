@@ -25,7 +25,7 @@
 #   Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_cli_test_environment.sh
-# $ source install_congress_cli_test_environment.sh [copper-branch]
+# $ bash install_congress_cli_test_environment.sh [copper-branch]
 #   optionally specifying the branch identifier to use for copper
 
 set -x
@@ -37,7 +37,7 @@ if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 if [ "$dist" == "Ubuntu" ]; then
   cp ~/congress/env.sh /tmp/copper/
-  cp ~/congress/admin-openrc.sh /tmp/copper/
+  cp ~/admin-openrc.sh /tmp/copper/
 else
   echo "Copy copper environment files" 
   sudo scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no stack@192.0.2.1:/home/stack/congress/*.sh /tmp/copper

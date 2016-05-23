@@ -23,7 +23,7 @@ if ($method == 'OPTIONS') {
 	exit();
 }
 
-$url = "http://CONGRESS_HOST:1789".$_GET['~url'];
+$url = "http://192.168.10.117:1789".$_GET['~url'];
 $curlop = curl_init();
 curl_setopt($curlop, CURLOPT_URL, $url);
 curl_setopt($curlop, CURLOPT_CUSTOMREQUEST, $method);
@@ -43,15 +43,15 @@ $response = curl_exec($curlop);
 $req_time=time();
 
 $info = curl_getinfo($curlop);
-$result = file_put_contents("/tmp/copper/log/".date('ymd').".log", "proxy.php, ".$req_time.", ".$url.", ".$type.", ".$body."\n",FILE_APPEND);
-//if ($result === false) $response = "PHP error in index.php";
+$result = file_put_contents("/tmp/".date('ymd').".log", "proxy.php, ".$req_time.", ".$url.", ".$type.", ".$body."\n",FILE_APPEND);
+if ($result === false) $response = "PHP error in index.php";
 $responseCode=curl_getinfo($curlop,CURLINFO_HTTP_CODE);
 $header_size = curl_getinfo($response, CURLINFO_HEADER_SIZE);
 $header = substr($response, 0, $header_size);
 $type = curl_getinfo($curlop,CURLINFO_CONTENT_TYPE);
 $body = substr($response, $header_size);
-$result = file_put_contents("/tmp/copper/log/".date('ymd').".log", "proxy.php, ".$req_time.", ".$responseCode.", ".$type.", ".$header.", ".$body."\n",FILE_APPEND);
-//if ($result === false) $response = "PHP error in index.php";
+$result = file_put_contents("/tmp/".date('ymd').".log", "proxy.php, ".$req_time.", ".$responseCode.", ".$type.", ".$header.", ".$body."\n",FILE_APPEND);
+if ($result === false) $response = "PHP error in index.php";
 
 //    header("Location: ".$url);
 header("Content-Type: ".$type);

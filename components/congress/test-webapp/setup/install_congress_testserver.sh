@@ -25,7 +25,7 @@
 #   Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_testserver.sh
-# $ source install_congress_testserver.sh [copper-branch]
+# $ bash install_congress_testserver.sh [copper-branch]
 #   optionally specifying the branch identifier to use for copper
 
 set -x
@@ -89,7 +89,7 @@ sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/copper/components/congr
 
 echo "Start webapp container"
 sudo docker build -t copper-webapp /tmp/copper/copper/components/congress/test-webapp/
-CID=$(sudo docker run -p 8080:80 -d copper-webapp)
+CID=$(sudo docker run -v /tmp/copper/log:/tmp -p 8080:80 -d copper-webapp)
 CIP=$(sudo docker inspect $CID | grep IPAddress | cut -d '"' -f 4 | tail -1)
 echo "Copper Webapp IP address: $CIP"
 
