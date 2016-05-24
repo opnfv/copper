@@ -22,7 +22,7 @@
 # - For Apex installs, on the jumphost, ssh to the undercloud VM and
 #     $ su stack
 # - For JOID installs, admin-openrc.sh saved from Horizon to ~/admin-openrc.sh
-# - Retrieve the copper remova script as below
+# - Retrieve the copper removal script as below
 # $ cd ~
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/clean_congress.sh
 # $ bash clean_congress.sh
@@ -39,15 +39,13 @@ if [ "$dist" == "Ubuntu" ]; then
   echo "Stop the Congress service"
   # Have to use "python" here as congress-server does not show up in the process list (?)
   ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "pkill python; exit"
-  source ~/admin-openrc.sh <<EOF
-openstack
-EOF
 else 
   export CTLUSER="heat-admin"
   echo "Stop the Congress service"
   ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "pkill congress-server; exit"
-  source ~/admin-openrc.sh 
 fi
+
+source ~/admin-openrc.sh
 
 echo "Remove systemd integration"
 ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "sudo rm -f /usr/lib/systemd/system/openstack-congress.service; sudo rm -f /etc/init.d/congress-server; exit"

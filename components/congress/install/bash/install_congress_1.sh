@@ -72,7 +72,6 @@ EOF
   sed -i -- 's/echo/#echo/g' ~/admin-openrc.sh  
   sed -i -- 's/read -sr OS_PASSWORD_INPUT/#read -sr OS_PASSWORD_INPUT/g' ~/admin-openrc.sh
   sed -i -- 's/$OS_PASSWORD_INPUT/openstack/g' ~/admin-openrc.sh
-  cp ~/admin-openrc.sh ~/congress
 else
   # Centos
   echo "Centos-based install"
@@ -96,8 +95,8 @@ EOF
   scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/congress/env.sh $CTLUSER@$CONTROLLER_HOST1:/home/$CTLUSER/congress
   echo "Setup env for overcloud API access and copy to congress server"
   source ~/overcloudrc
+																														  cp ~/overcloudrc ~/admin-openrc.sh
   export OS_REGION_NAME=$(openstack endpoint list | awk "/ nova / { print \$4 }")
-  cp ~/overcloudrc ~/congress/admin-openrc.sh
   # sed command below is a workaound for a bug - region shows up twice for some reason
   cat <<EOF | sed '$d' >>~/admin-openrc.sh
 export OS_REGION_NAME=$OS_REGION_NAME
