@@ -52,8 +52,6 @@ fi
 echo "Remove systemd integration"
 ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "sudo rm -f /usr/lib/systemd/system/openstack-congress.service; sudo rm -f /etc/init.d/congress-server; exit"
 
-cd ~
-
 echo "Remove the Congress virtualenv and code"
 ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "rm -rf ~/congress; exit"
 
@@ -72,6 +70,7 @@ fi
 echo "Delete Congress database"
 ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "sudo mysql -e \"DROP DATABASE congress\"; exit"
 
+echo "Cleanup remaining Congress files etc on jumphost"
 echo "Deactivate virtualenv"
 deactivate
 
