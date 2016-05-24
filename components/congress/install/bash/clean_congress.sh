@@ -49,6 +49,9 @@ else
   source ~/admin-openrc.sh 
 fi
 
+echo "Remove systemd integration"
+ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "sudo rm -f /usr/lib/systemd/system/openstack-congress.service; sudo rm -f /etc/init.d/congress-server; exit"
+
 cd ~
 
 echo "Remove the Congress virtualenv and code"
