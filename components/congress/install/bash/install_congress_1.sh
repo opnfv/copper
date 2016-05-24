@@ -92,7 +92,7 @@ EOF
   source ~/congress/env.sh
   CTLUSER="heat-admin"
   ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONTROLLER_HOST1 "mkdir ~/congress; exit"
-  scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/congress/env.sh $CTLUSER@$CONTROLLER_HOST1:/home/$CTLUSER/congress
+  scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/congress/env.sh $CTLUSER@$CONTROLLER_HOST1:/home/$CTLUSER/congress/
   echo "Setup env for overcloud API access and copy to congress server"
   source ~/overcloudrc
   cp ~/overcloudrc ~/admin-openrc.sh
