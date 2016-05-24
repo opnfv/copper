@@ -198,7 +198,7 @@ ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CON
 
 echo "Wait 30 seconds for Congress service to startup"
 sleep 30
-
+Creates and activates a virtualenv environment for Congress in the repo clone, to avoid messing up the Jumphost
 echo "Create data sources"
 # To remove datasources: openstack congress datasource delete <name> 
 openstack congress datasource create nova "nova" \

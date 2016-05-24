@@ -154,6 +154,34 @@ pip install .
 echo "Install python fixtures"
 pip install fixtures
 
+echo "Setup congress-server in init.d"
+cat > /tmp/congress-server << EOC
+#!/bin/bash
+source ~/congress/venv/bin/activate 
+~/congress/congress/bin/congress-server &>/dev/null
+EOC
+sudo mv /tmp/congress-server /etc/init.d/congress-server
+
+echo "Setup systemd service"
+cat > /tmp/openstack-congress.service << EOC
+[Unit]
+Description=OpenStack Congress Server
+After=syslog.target network.target
+[Service]
+Type=notify
+NotifyAccess=all
+TimeoutStartSec=0
+Restart=always
+User=root
+ExecStart=/etc/init.d/congress-server start
+ExecStop=/etc/init.d/congress-server stop
+[Install]
+WantedBy=multi-user.target
+EOC
+sudo mv /tmp/openstack-congress.service /usr/lib/systemd/system/openstack-congress.service
+chmod 644 /usr/lib/systemd/system/openstack-congress.service
+sudo systemctl daemon-reload
+
 # TODO: The rest of this script is not yet tested
 function _congress_setup_horizon {
   local HORIZON_DIR="/usr/share/openstack-dashboard"
