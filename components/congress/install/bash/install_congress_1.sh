@@ -95,7 +95,7 @@ EOF
   scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/congress/env.sh $CTLUSER@$CONTROLLER_HOST1:/home/$CTLUSER/congress
   echo "Setup env for overcloud API access and copy to congress server"
   source ~/overcloudrc
-																														  cp ~/overcloudrc ~/admin-openrc.sh
+  cp ~/overcloudrc ~/admin-openrc.sh
   export OS_REGION_NAME=$(openstack endpoint list | awk "/ nova / { print \$4 }")
   # sed command below is a workaound for a bug - region shows up twice for some reason
   cat <<EOF | sed '$d' >>~/admin-openrc.sh
