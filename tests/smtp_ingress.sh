@@ -57,7 +57,7 @@ if [[ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]]; th
 openstack congress policy create test
 
 echo "Create smtp_ingress rule in policy 'test'"
-openstack congress policy rule create test "smtp_ingress(x) :- nova:servers(id=x,status='ACTIVE'), neutronv2:ports(port_id, status='ACTIVE'), neutronv2:security_groups(sg), neutronv2:security_group_port_bindings(port_id, sg), neutronv2:security_group_rules(sg, rule_id, tenant_id, remote_group_id, 'ingress', ethertype, 'tcp', port_range_min, port_range_max, remote_ip), lt(port_range_min, 26), gt(port_range_max, 24)" --name smtp_ingress
+openstack congress policy rule create test "smtp_ingress(x) :- nova:servers(id=x,status='ACTIVE'), neutronv2:ports(port_id, status='ACTIVE'), neutronv2:security_groups(sg, tenant_id, sgn, sgd), neutronv2:security_group_port_bindings(port_id, sg), neutronv2:security_group_rules(sg, rule_id, tenant_id, remote_group_id, 'ingress', ethertype, 'tcp', port_range_min, port_range_max, remote_ip), lt(port_range_min, 26), gt(port_range_max, 24)" --name smtp_ingress
 
 echo "Create image cirros1"
 image=$(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }")
