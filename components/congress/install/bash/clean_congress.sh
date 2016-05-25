@@ -27,6 +27,8 @@
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/clean_congress.sh
 # $ bash clean_congress.sh
 
+sudo -i
+
 echo "OS-specific prerequisite steps"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 
@@ -67,10 +69,6 @@ fi
 
 echo "Delete Congress database"
 ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONGRESS_HOST "sudo mysql -e \"DROP DATABASE congress\"; exit"
-
-echo "Cleanup remaining Congress files etc on jumphost"
-echo "Deactivate virtualenv"
-deactivate
 
 echo "Delete Congress and other installed code in virtualenv"
 rm -rf ~/congress

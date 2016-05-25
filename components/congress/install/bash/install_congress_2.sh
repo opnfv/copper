@@ -31,6 +31,8 @@
 
 set -x
 
+sudo -i
+
 if [ $# -eq 1 ]; then osbranch=$1; fi
 
 echo "OS-specific prerequisite steps"
@@ -43,21 +45,21 @@ if [ "$dist" == "Ubuntu" ]; then
   source ~/congress/admin-openrc.sh
   source ~/congress/env.sh
   echo "Update/upgrade package repos"
-  sudo apt-get update
+  apt-get update
   echo "install pip"
-  sudo apt-get install python-pip -y
+  apt-get install python-pip -y
   echo "install java"
-  sudo apt-get install default-jre -y
+  apt-get install default-jre -y
   echo "install other dependencies"
-  sudo apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
-  sudo pip install --upgrade pip virtualenv setuptools pbr tox
+  apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
+  pip install --upgrade pip virtualenv setuptools pbr tox
   echo "set mysql root user password and install mysql"
   export MYSQL_PASSWORD=$(/usr/bin/apg -n 1 -m 16 -c cl_seed)
-  sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password password '$MYSQL_PASSWORD
-  sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password '$MYSQL_PASSWORD
-  sudo -E apt-get -q -y install mysql-server python-mysqldb
+  debconf-set-selections <<< 'mysql-server mysql-server/root_password password '$MYSQL_PASSWORD
+  debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password '$MYSQL_PASSWORD
+  -E apt-get -q -y install mysql-server python-mysqldb
   echo "install tox dependencies (detected by errors during 'tox -egenconfig')"
-  sudo apt-get install libffi-dev openssl libssl-dev -y
+  apt-get install libffi-dev openssl libssl-dev -y
 else
   # Centos
   echo "Centos-based install"
@@ -65,18 +67,13 @@ else
   source ~/congress/admin-openrc.sh
   source ~/congress/env.sh
   echo "install pip"
-  sudo yum install python-pip -y
+  yum install python-pip -y
   echo "install other dependencies"
-  sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
-  sudo pip install --upgrade pip virtualenv setuptools pbr tox
+  yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
+  pip install --upgrade pip virtualenv setuptools pbr tox
   echo "install tox dependencies (detected by errors during 'tox -egenconfig')"
-  sudo yum install libffi-devel openssl openssl-devel -y
+  yum install libffi-devel openssl openssl-devel -y
 fi
-
-echo "Create virtualenv"
-virtualenv ~/congress/venv
-cd ~/congress/venv
-source bin/activate
 
 echo "Clone congress"
 cd ~/congress
@@ -94,11 +91,11 @@ pip install .
 
 echo "Setup Congress"
 cd ~/congress/congress
-sudo mkdir -p /etc/congress
-sudo chown $CTLUSER /etc/congress
-sudo mkdir -p /etc/congress/snapshot
-sudo mkdir /var/log/congress
-sudo chown $CTLUSER  /var/log/congress
+mkdir -p /etc/congress
+chown $CTLUSER /etc/congress
+mkdir -p /etc/congress/snapshot
+mkdir /var/log/congress
+chown $CTLUSER  /var/log/congress
 cp etc/api-paste.ini /etc/congress
 cp etc/policy.json /etc/congress
 
@@ -133,10 +130,10 @@ echo "copy congress.conf.sample to /etc/congress"
 cp etc/congress.conf.sample /etc/congress/congress.conf
 
 echo "create congress database"
-sudo mysql -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'congress';"
+mysql -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'congress';"
 
 echo "install congress-db-manage dependencies (detected by errors)"
-if [ "$dist" == "Ubuntu" ]; then sudo apt-get build-dep python-mysqldb -y; fi
+if [ "$dist" == "Ubuntu" ]; then apt-get build-dep python-mysqldb -y; fi
 pip install MySQL-python
 
 echo "create database schema"
@@ -154,50 +151,22 @@ pip install .
 echo "Install python fixtures"
 pip install fixtures
 
-echo "Setup congress-server in init.d"
-cat > /tmp/congress-server << EOC
-#!/bin/bash
-source ~/congress/venv/bin/activate 
-~/congress/congress/bin/congress-server &>/dev/null
-EOC
-sudo mv /tmp/congress-server /etc/init.d/congress-server
-
-echo "Setup systemd service"
-cat > /tmp/openstack-congress.service << EOC
-[Unit]
-Description=OpenStack Congress Server
-After=syslog.target network.target
-[Service]
-Type=notify
-NotifyAccess=all
-TimeoutStartSec=0
-Restart=always
-User=root
-ExecStart=/etc/init.d/congress-server start
-ExecStop=/etc/init.d/congress-server stop
-[Install]
-WantedBy=multi-user.target
-EOC
-sudo mv /tmp/openstack-congress.service /usr/lib/systemd/system/openstack-congress.service
-chmod 644 /usr/lib/systemd/system/openstack-congress.service
-sudo systemctl daemon-reload
-
 # TODO: The rest of this script is not yet tested
 function _congress_setup_horizon {
   local HORIZON_DIR="/usr/share/openstack-dashboard"
   local CONGRESS_HORIZON_DIR="/home/heat-admin/git/congress/contrib/horizon"
-  sudo cp -r $CONGRESS_HORIZON_DIR/datasources $HORIZON_DIR/openstack_dashboard/dashboards/admin/
-  sudo cp -r $CONGRESS_HORIZON_DIR/policies $HORIZON_DIR/openstack_dashboard/dashboards/admin/
-  sudo cp -r $CONGRESS_HORIZON_DIR/static $HORIZON_DIR/openstack_dashboard/dashboards/admin/
-  sudo cp -r $CONGRESS_HORIZON_DIR/templates $HORIZON_DIR/openstack_dashboard/dashboards/admin/
-  sudo cp $CONGRESS_HORIZON_DIR/congress.py $HORIZON_DIR/openstack_dashboard/api/
-  sudo cp $CONGRESS_HORIZON_DIR/_50_policy.py $HORIZON_DIR/openstack_dashboard/local/enabled/
-  sudo cp $CONGRESS_HORIZON_DIR/_60_policies.py $HORIZON_DIR/openstack_dashboard/local/enabled/
-  sudo cp $CONGRESS_HORIZON_DIR/_70_datasources.py $HORIZON_DIR/openstack_dashboard/local/enabled/
+  cp -r $CONGRESS_HORIZON_DIR/datasources $HORIZON_DIR/openstack_dashboard/dashboards/admin/
+  cp -r $CONGRESS_HORIZON_DIR/policies $HORIZON_DIR/openstack_dashboard/dashboards/admin/
+  cp -r $CONGRESS_HORIZON_DIR/static $HORIZON_DIR/openstack_dashboard/dashboards/admin/
+  cp -r $CONGRESS_HORIZON_DIR/templates $HORIZON_DIR/openstack_dashboard/dashboards/admin/
+  cp $CONGRESS_HORIZON_DIR/congress.py $HORIZON_DIR/openstack_dashboard/api/
+  cp $CONGRESS_HORIZON_DIR/_50_policy.py $HORIZON_DIR/openstack_dashboard/local/enabled/
+  cp $CONGRESS_HORIZON_DIR/_60_policies.py $HORIZON_DIR/openstack_dashboard/local/enabled/
+  cp $CONGRESS_HORIZON_DIR/_70_datasources.py $HORIZON_DIR/openstack_dashboard/local/enabled/
 
   # For unit tests
-  sudo sh -c 'echo "python-congressclient" >> '$HORIZON_DIR'/requirements.txt'
-  sudo sh -c 'echo -e \
+  sh -c 'echo "python-congressclient" >> '$HORIZON_DIR'/requirements.txt'
+  sh -c 'echo -e \
 "\n# Load the pluggable dashboard settings"\
 "\nimport openstack_dashboard.local.enabled"\
 "\nfrom openstack_dashboard.utils import settings"\
@@ -219,7 +188,7 @@ function _congress_setup_horizon {
   DJANGO_SETTINGS_MODULE=openstack_dashboard.settings $django_admin compress --force
 
   # Restart Horizon
-  sudo service apache2 restart
+  service apache2 restart
 }
 # Commented out as the procedure is not yet working
 #echo "Install Horizon Policy plugin"

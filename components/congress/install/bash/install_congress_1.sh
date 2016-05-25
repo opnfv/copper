@@ -31,6 +31,8 @@
 
 set -x
 
+sudo -i
+
 if [ $# -eq 1 ]; then osbranch=$1; fi
 
 if [ -d ~/congress ]; then rm -rf ~/congress; fi
@@ -65,13 +67,14 @@ EOF
   echo "Update package repos"
   sudo apt-get update
   echo "install pip"
-  sudo apt-get install python-pip -y
+  apt-get install python-pip -y
   echo "install other dependencies"
-  sudo apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
-  sudo pip install --upgrade pip virtualenv setuptools pbr tox
+  apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
+  pip install --upgrade pip virtualenv setuptools pbr tox
   sed -i -- 's/echo/#echo/g' ~/admin-openrc.sh  
   sed -i -- 's/read -sr OS_PASSWORD_INPUT/#read -sr OS_PASSWORD_INPUT/g' ~/admin-openrc.sh
   sed -i -- 's/$OS_PASSWORD_INPUT/openstack/g' ~/admin-openrc.sh
+  cp ~/admin-openrc.sh ~/congress
 else
   # Centos
   echo "Centos-based install"
@@ -92,11 +95,11 @@ EOF
   source ~/congress/env.sh
   CTLUSER="heat-admin"
   ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONTROLLER_HOST1 "mkdir ~/congress; exit"
-  scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/congress/env.sh $CTLUSER@$CONTROLLER_HOST1:/home/$CTLUSER/congress/
+  scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/congress/env.sh $CTLUSER@$CONTROLLER_HOST1:/home/$CTLUSER/congress
   echo "Setup env for overcloud API access and copy to congress server"
   source ~/overcloudrc
-  cp ~/overcloudrc ~/admin-openrc.sh
   export OS_REGION_NAME=$(openstack endpoint list | awk "/ nova / { print \$4 }")
+  cp ~/overcloudrc ~/congress/admin-openrc.sh
   # sed command below is a workaound for a bug - region shows up twice for some reason
   cat <<EOF | sed '$d' >>~/admin-openrc.sh
 export OS_REGION_NAME=$OS_REGION_NAME
@@ -107,17 +110,12 @@ EOF
   ssh -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $CTLUSER@$CONTROLLER_HOST1 "source ~/congress/install_congress_2.sh; exit"
   echo "Install jumphost dependencies"
   echo "install pip"
-  sudo yum install python-pip -y
+  yum install python-pip -y
   echo "install other dependencies"
-  sudo yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
-  sudo pip install --upgrade pip virtualenv setuptools pbr tox
+  yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
+  pip install --upgrade pip virtualenv setuptools pbr tox
   source ~/admin-openrc.sh
 fi
-
-echo "Create virtualenv"
-virtualenv ~/congress/venv
-cd ~/congress/venv
-source bin/activate
 
 echo "Clone congress"
 cd ~/congress
@@ -233,9 +231,9 @@ openstack congress datasource create keystone "keystone" \
 
 echo "Install tox test dependencies"
 if [ "$dist" == "Ubuntu" ]; then
-  sudo apt-get install -y libffi-dev libssl-dev
+  apt-get install -y libffi-dev libssl-dev
 else
-  sudo yum install -y libffi-devel openssl-devel
+  yum install -y libffi-devel openssl-devel
 fi
 
 echo "Run Congress tox Tests"
