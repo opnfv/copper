@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a91bd0f_0f903142",
+        "filename": "ci/build.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 232
+      },
+      "writtenOn": "2016-05-26T18:54:08Z",
+      "side": 1,
+      "message": "Don\u0027t you have to be in the congress folder to do the git command?",
+      "revId": "132cee434f99df039e027471b3ca9868256a60e9",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a91bd0f_cf99e96f",
+        "filename": "rpm/openstack-congress.spec",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 232
+      },
+      "writtenOn": "2016-05-26T18:54:08Z",
+      "side": 1,
+      "message": "Don\u0027t you need the contents of https://github.com/openstack/congress/blob/stable/mitaka/requirements.txt also?",
+      "revId": "132cee434f99df039e027471b3ca9868256a60e9",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a91bd0f_4fc4f93f",
+        "filename": "rpm/python-congressclient.spec",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 232
+      },
+      "writtenOn": "2016-05-26T18:54:08Z",
+      "side": 1,
+      "message": "Do you need to list the items from https://github.com/openstack/python-congressclient/blob/stable/mitaka/requirements.txt as well?",
+      "revId": "132cee434f99df039e027471b3ca9868256a60e9",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
