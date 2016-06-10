@@ -14,13 +14,22 @@
 # limitations under the License.
 #
 # What this is: Installer for an OpenStack API test environment for Congress.
+# Generally, this script is only needed if you want to setup an environment
+# not already provided by the OPNFV installer. In most cases it's expected
+# that adhoc tests will be run on the Jumphost with the needed OpenStack
+# CLI clients etc already installed, and the OpenStack CLI credentials 
+# needed by the test commands already EXPORTed to the shell environment.
+# To avoid potential conflicts with the test user account setup (e.g. 
+# installed python packages), this script sets up and activates a virtualenv,
+# then installs the needed OpenStack CLI clients under it.
+#
 # Status: this is a work in progress, under test.
 #
 # Prequisite: OPFNV installed per JOID or Apex installer
 # On jumphost:
-# - Congress installed through install_congress_1.sh
-# - admin-openrc.sh downloaded from Horizon
-# - env.sh and admin-openrc.sh in the current folder
+# - Congress installed through JOID or Apex, or install_congress_1.sh
+# - For Apex installs, on the jumphost, ssh to the undercloud VM and
+#     $ su stack
 # How to use:
 #   Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
@@ -29,14 +38,16 @@
 
 set -x
 
-if [ $# -eq 1 ]; then cubranch=$1; fi
+if [ $# -eq 1 ]; then osbranch=$1; fi
 
-echo "Copy environment files to /tmp/copper"
-if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
+if [ -d ~/congress ]; then rm -rf ~/congress; fi
+mkdir ~/congress
+
+echo "OS-specific prerequisite steps"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
+
 if [ "$dist" == "Ubuntu" ]; then
-  cp ~/congress/env.sh /tmp/copper/
-  cp ~/admin-openrc.sh /tmp/copper/
+  echo "Ubuntu-based install"
   echo "Install jumphost dependencies"
   echo "Update package repos"
   sudo apt-get update
@@ -45,9 +56,44 @@ if [ "$dist" == "Ubuntu" ]; then
   echo "install other dependencies"
   sudo apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
   sudo pip install --upgrade pip virtualenv setuptools pbr tox
+  echo "Get the congress server address"
+  CONGRESS_HOST=""
+  while [ "$CONGRESS_HOST" == "" ]; do 
+    sleep 5
+    CONGRESS_HOST=$(juju status ssh ubuntu@node1-control.maas "sudo lxc-info --name juju-trusty-congress | grep IP" | awk "/ / { print \$2 }" | tr -d '\r')
+  done
+  KEYSTONE_HOST=$(juju status --format=short | awk "/keystone\/0/ { print \$3 }")
+  cat <<EOF >~/congress/env.sh
+export CONGRESS_HOST=$CONGRESS_HOST
+export HORIZON_HOST=$(juju status --format=short | awk "/openstack-dashboard/ { print \$3 }")
+export KEYSTONE_HOST=$KEYSTONE_HOST
+export CEILOMETER_HOST=$(juju status --format=short | awk "/ceilometer\/0/ { print \$3 }")
+export CINDER_HOST=$(juju status --format=short | awk "/cinder\/0/ { print \$3 }")
+export GLANCE_HOST=$(juju status --format=short | awk "/glance\/0/ { print \$3 }")
+export NEUTRON_HOST=$(juju status --format=short | awk "/neutron-api\/0/ { print \$3 }")
+export NOVA_HOST=$(juju status --format=short | awk "/nova-cloud-controller\/0/ { print \$3 }")
+export OS_USERNAME=admin
+export OS_PASSWORD=openstack
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL=http://$KEYSTONE_HOST:5000/v2.0
+export OS_REGION_NAME=Canonical
+EOF
 else
-  echo "Copy copper environment files" 
-  sudo scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no stack@192.0.2.1:/home/stack/congress/*.sh /tmp/copper
+  echo "Centos-based install"
+  echo "Setup undercloud environment so we can get overcloud Controller server address"
+  source ~/stackrc
+  echo "Get address of Controller node"
+  export CONTROLLER_HOST1=$(openstack server list | awk "/overcloud-controller-0/ { print \$8 }" | sed 's/ctlplane=//g')
+  echo "Create the environment file and copy to the congress server"
+  cat <<EOF >~/congress/env.sh
+export CONGRESS_HOST=$CONTROLLER_HOST1
+export KEYSTONE_HOST=$CONTROLLER_HOST1
+export CEILOMETER_HOST=$CONTROLLER_HOST1
+export CINDER_HOST=$CONTROLLER_HOST1
+export GLANCE_HOST=$CONTROLLER_HOST1
+export NEUTRON_HOST=$CONTROLLER_HOST1
+export NOVA_HOST=$CONTROLLER_HOST1
+EOF
   echo "Install jumphost dependencies"
   echo "install pip"
   sudo yum install python-pip -y
@@ -56,64 +102,35 @@ else
   sudo pip install --upgrade pip virtualenv setuptools pbr tox
 fi
 
+bash ~/congress/env.sh
+
 echo "Clone copper"
-if [ ! -d /tmp/copper/copper ]; then 
-  cd /tmp/copper
-  git clone https://gerrit.opnfv.org/gerrit/copper
-  cd copper
-else
-  echo "/tmp/copper exists: run 'rm -rf /tmp/copper' to start clean if needed"
-fi
+cd ~/congress
+git clone https://gerrit.opnfv.org/gerrit/copper
 
 echo "Create virtualenv"
-mkdir ~/congress
 virtualenv ~/congress/venv
 cd ~/congress/venv
 source bin/activate
 
-echo "Install OpenStack client"
-cd ~/congress
-git clone https://github.com/openstack/python-openstackclient.git
-cd python-openstackclient
-pip install -r requirements.txt
-pip install .
+install_client () {
+  cd ~/congress
+  git clone https://github.com/openstack/$1
+  cd $1
+  if [ $# -eq 2 ]; then git checkout $2; fi
+  pip install -r requirements.txt
+  pip install .
+}
 
-echo "Install Congress client"
-cd ~/congress
-git clone https://github.com/openstack/python-congressclient.git
-cd python-congressclient
-pip install -r requirements.txt
-pip install .
+echo "Install OpenStack clients"
+install_client python-openstackclient.git $1
+install_client python-congressclient.git $1
+install_client python-keystoneclient.git $1
+install_client python-glanceclient.git $1
+install_client python-neutronclient.git $1
+install_client python-novaclient.git
 
-echo "Install Keystone client"
-cd ~/congress
-git clone https://github.com/openstack/python-keystoneclient.git
-cd python-keystoneclient
-pip install -r requirements.txt
-pip install .
-
-echo "Install Glance client"
-cd ~/congress
-git clone https://github.com/openstack/python-glanceclient.git
-cd python-glanceclient
-pip install -r requirements.txt
-pip install .
-
-echo "Install Neutron client"
-cd ~/congress
-git clone https://github.com/openstack/python-neutronclient.git
-cd python-neutronclient
-pip install -r requirements.txt
-pip install .
-
-echo "Install Nova client"
-cd ~/congress
-git clone https://github.com/openstack/python-novaclient.git
-cd python-novaclient
-pip install -r requirements.txt
-pip install .
-
-cd /tmp/copper/copper/tests
+cd ~/congress/copper/tests
 ls
 
 echo "You can run tests individually, or as a collection with run.sh"
