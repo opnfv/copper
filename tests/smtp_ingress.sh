@@ -20,6 +20,8 @@
 #
 # Status: this is a work in progress, under test. 
 #
+# Prequisite: OPFNV installed per JOID or Apex installer
+# - OpenStack CLI environment variables setup
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
@@ -49,8 +51,6 @@ if [  $# -eq 1 ]; then
     set -x #echo on
   fi
 fi
-
-source /tmp/copper/admin-openrc.sh
 
 echo "Create Congress policy 'test'"
 if [[ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]]; then unclean; fi

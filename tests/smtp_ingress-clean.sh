@@ -18,6 +18,8 @@
 #
 # Status: this is a work in progress, under test. 
 #
+# Prequisite: OPFNV installed per JOID or Apex installer
+# - OpenStack CLI environment variables setup
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   $ bash dmz.sh
@@ -29,8 +31,6 @@ if [  $# -eq 1 ]; then
     set -x #echo on
   fi
 fi
-
-source /tmp/copper/admin-openrc.sh
 
 echo "Get Congress policy 'test' ID"
 test_policy_ID=$(openstack congress policy show test | awk "/ id / { print \$4 }")
