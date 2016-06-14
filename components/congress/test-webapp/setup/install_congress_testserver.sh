@@ -87,7 +87,6 @@ if [ ! -d /tmp/copper/log ]; then
   mkdir /tmp/copper/log
   chmod 777 /tmp/copper/log
 fi
-source /tmp/copper/env.sh
 
 echo "Point proxy.php to the Congress server"
 sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
@@ -98,7 +97,7 @@ sed -i -- "s/OS_PASSWORD/$OS_PASSWORD/g" /tmp/copper/copper/components/congress/
 
 echo "Start webapp container"
 sudo docker build -t copper-webapp /tmp/copper/copper/components/congress/test-webapp/
-CID=$(sudo docker run -v /tmp/copper/log:/tmp -p 8080:80 -d copper-webapp)
+CID=$(sudo docker run -v /tmp/copper/log:/tmp -p 8257:80 -d copper-webapp)
 CIP=$(sudo docker inspect $CID | grep IPAddress | cut -d '"' -f 4 | tail -1)
 echo "Copper Webapp IP address: $CIP"
 
