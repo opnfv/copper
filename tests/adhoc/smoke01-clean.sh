@@ -28,7 +28,7 @@ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/se
 source ~/setenv.sh
 
 echo "Disassociate cirros1 floating IP address"
-nova floating-ip-disassociate cirros1 192.168.10.201
+nova floating-ip-disassociate cirros1 192.168.10.6
 
 echo "Delete cirros1 instance"
 instance=$(nova list | awk "/ cirros1 / { print \$2 }")

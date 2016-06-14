@@ -21,6 +21,8 @@
 # - Congress installed through install_congress_1.sh
 # - admin-openrc.sh downloaded from Horizon
 # - env.sh and admin-openrc.sh in the current folder
+# - For Apex installs, on the jumphost, ssh to the undercloud VM and
+#     $ su stack
 # How to use:
 #   Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
@@ -36,6 +38,8 @@ echo "Install prerequisites"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 
 if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
+wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/setenv.sh -O /tmp/copper/setenv.sh
+source /tmp/copper/setenv.sh
 
 if [ "$dist" == "Ubuntu" ]; then
   # Docker setup procedure from https://docs.docker.com/engine/installation/linux/ubuntulinux/
@@ -51,9 +55,6 @@ EOF
   apt-cache policy docker-engine
   sudo apt-get install -y linux-image-extra-$(uname -r)
   sudo apt-get install -y docker docker-engine
-  echo "Copy copper environment files"
-  cp ~/congress/env.sh /tmp/copper/
-  cp ~/congress/admin-openrc.sh /tmp/copper/
 else
   sudo tee /etc/yum.repos.d/docker.repo <<-'EOF'
 [dockerrepo]
@@ -63,8 +64,7 @@ enabled=1
 gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 EOF
-  echo "Copy copper environment files" 
-  sudo scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no stack@192.0.2.1:/home/stack/congress/*.sh /tmp/copper
+  sudo yum install docker
 fi
 
 echo "Clone copper"

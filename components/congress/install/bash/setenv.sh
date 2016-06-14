@@ -22,6 +22,8 @@
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/setenv.sh
 # $ bash setenv.sh
 
+if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
+
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 
 if [ "$dist" == "Ubuntu" ]; then
@@ -29,7 +31,7 @@ if [ "$dist" == "Ubuntu" ]; then
   echo "Ubuntu-based install"
   echo "Create the environment file"
   KEYSTONE_HOST=$(juju status --format=short | awk "/keystone\/0/ { print \$3 }")
-  cat <<EOF >~/env.sh
+  cat <<EOF >/tmp/copper/env.sh
 export CONGRESS_HOST=$(juju status --format=short | awk "/openstack-dashboard/ { print \$3 }")
 export HORIZON_HOST=$(juju status --format=short | awk "/openstack-dashboard/ { print \$3 }")
 export KEYSTONE_HOST=$KEYSTONE_HOST
@@ -52,7 +54,7 @@ else
   echo "Get address of Controller node"
   export CONTROLLER_HOST1=$(openstack server list | awk "/overcloud-controller-0/ { print \$8 }" | sed 's/ctlplane=//g')
   echo "Create the environment file"
-  cat <<EOF >~/env.sh
+  cat <<EOF >/tmp/copper/env.sh
 export CONGRESS_HOST=$CONTROLLER_HOST1
 export KEYSTONE_HOST=$CONTROLLER_HOST1
 export CEILOMETER_HOST=$CONTROLLER_HOST1
@@ -61,13 +63,13 @@ export GLANCE_HOST=$CONTROLLER_HOST1
 export NEUTRON_HOST=$CONTROLLER_HOST1
 export NOVA_HOST=$CONTROLLER_HOST1
 EOF
-  cat ~/overcloudrc >>~/env.sh
+  cat ~/overcloudrc >>/tmp/copper/env.sh
   source ~/overcloudrc
   export OS_REGION_NAME=$(openstack endpoint list | awk "/ nova / { print \$4 }")
   # sed command below is a workaound for a bug - region shows up twice for some reason
-  cat <<EOF | sed '$d' >>~/env.sh
+  cat <<EOF | sed '$d' >>/tmp/copper/env.sh
 export OS_REGION_NAME=$OS_REGION_NAME
 EOF
 fi
-source ~/env.sh
+source /tmp/copper/env.sh
 
