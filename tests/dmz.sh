@@ -63,7 +63,7 @@ if [ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]; then
 openstack congress policy create test
 
 echo "Create dmz_server rule in policy 'test'"
-openstack congress policy rule create test "dmz_server(x) :- nova:servers(id=x,status='ACTIVE'), neutronv2:ports(id, device_id, status='ACTIVE'),  neutronv2:security_group_port_bindings(pid, sg), neutronv2:security_groups(sg,name='dmz')" --name dmz_server
+openstack congress policy rule create test "dmz_server(x) :- nova:servers(id=x,status='ACTIVE'), neutronv2:ports(id, device_id, status='ACTIVE'),  neutronv2:security_group_port_bindings(id, sg), neutronv2:security_groups(sg,name='dmz')" --name dmz_server
 
 echo "Create dmz_placement_error rule in policy 'test'"
 openstack congress policy rule create test "dmz_placement_error(id) :- nova:servers(id,name,hostId,status,tenant_id,user_id,image,flavor,az,hh), not glancev2:tags(image,'dmz'), dmz_server(id)" --name dmz_placement_error

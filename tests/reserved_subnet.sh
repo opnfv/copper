@@ -57,7 +57,7 @@ echo "Create Congress policy 'test'"
 if [[ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]]; then unclean; fi
 openstack congress policy create test
 
-echo "Create smtp_ingress rule in policy 'test'"
+echo "Create reserved_subnet_error rule in policy 'test'"
 openstack congress policy rule create test "reserved_subnet_error(x) :- neutronv2:subnets(id=x, cidr='10.7.1.0/24')" --name rsv_subnet_adm
 openstack congress policy rule create test "reserved_subnet_error(x) :- neutronv2:subnets(id=x, cidr='10.7.12.0/24')" --name rsv_subnet_prv
 openstack congress policy rule create test "reserved_subnet_error(x) :- neutronv2:subnets(id=x, cidr='10.7.13.0/24')" --name rsv_subnet_stg

@@ -24,52 +24,65 @@
 #   After test, cleanup with
 #   $ source ~/git/copper/tests/adhoc/smoke01-clean.sh
 
-set -x #echo on
+wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/setenv.sh -O ~/setenv.sh
+source ~/setenv.sh
 
-source /tmp/copper/admin-openrc.sh
+echo "Disassociate cirros1 floating IP address"
+nova floating-ip-disassociate cirros1 192.168.10.201
 
+echo "Delete cirros1 instance"
 instance=$(nova list | awk "/ cirros1 / { print \$2 }")
-if [ "$instance" != "" ]; then nova delete $instance
-fi
+if [ "$instance" != "" ]; then nova delete $instance; fi
 
+echo "Delete cirros2 instance"
 instance=$(nova list | awk "/ cirros2 / { print \$2 }")
-if  [ "$instance" != "" ]; then nova delete $instance
-fi
+if  [ "$instance" != "" ]; then nova delete $instance; fi
 
-router=$(neutron router-list | awk "/ test_router / { print \$2 }")
+echo "Delete 'ssh_ingress' security group"
+sg=$(neutron security-group-list | awk "/ ssh_ingress / { print \$2 }")
+neutron security-group-delete $sg
 
-test_internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk '{print $2}')
+echo "Get 'router' ID"
+router=$(neutron router-list | awk "/ public_router / { print \$2 }")
 
-if [ "$test_internal_interface" != "" ]; then neutron router-interface-delete $router port=$test_internal_interface
-fi
+echo "Get internal port ID with subnet 10.0.0.1 on 'public_router'"
+internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk '{print $2}')
 
-test_public_interface=$(neutron router-port-list $router | grep 191.168.10.2 | awk '{print $2}')
+echo "If found, delete the port with subnet 10.0.0.1 on 'public_router'"
+if [ "$internal_interface" != "" ]; then neutron router-interface-delete $router port=$internal_interface; fi
 
-if [ "$test_public_interface" != "" ]; then neutron router-interface-delete $router port=$test_public_interface
-fi
+echo "Get public port ID with fixed_ip 192.168.10.2 on 'public_router'"
+public_interface=$(neutron router-port-list $router | grep 192.168.10.2 | awk '{print $2}')
 
-neutron router-interface-delete $router $test_internal_interface
+echo "If found, delete the port with fixed_ip 192.168.10.2 on 'public_router'"
+if [ "$public_interface" != "" ]; then neutron router-interface-delete $router port=$public_interface; fi
 
-neutron router-gateway-clear test_router
+echo "Delete the router internal interface"
+neutron router-interface-delete $router $internal_interface
 
-neutron router-delete test_router
+echo "Clear the router gateway"
+neutron router-gateway-clear public_router
 
+echo "Delete the router"
+neutron router-delete public_router
+
+echo "Delete neutron port with fixed_ip 10.0.0.1"
 port=$(neutron port-list | awk "/ 10.0.0.1 / { print \$2 }")
+if [ "$port" != "" ]; then neutron port-delete $port; fi
 
-if [ "$port" != "" ]; then neutron port-delete $port
-fi
-
+echo "Delete neutron port with fixed_ip 10.0.0.2"
 port=$(neutron port-list | awk "/ 10.0.0.2 / { print \$2 }")
+if [ "$port" != "" ]; then neutron port-delete $port; fi
 
-if [ "$port" != "" ]; then neutron port-delete $port
-fi
+echo "Delete internal subnet"
+neutron subnet-delete internal
 
-neutron subnet-delete test_internal
+echo "Delete internal network"
+neutron net-delete internal
 
-neutron net-delete test_internal
+echo "Delete public subnet"
+neutron subnet-delete public
 
-neutron subnet-delete test_public
+echo "Delete public network"
+neutron net-delete public
 
-neutron net-delete test_public
-
-set +x #echo off
