@@ -24,7 +24,7 @@ if ($method == 'OPTIONS') {
 }
 
 $token = file_get_contents("/tmp/os_token");
-if ($result === false) {
+if ($token === false) {
   $url = "http://KEYSTONE_HOST:5000/v2.0/tokens";
   $curlop = curl_init();
   curl_setopt($curlop, CURLOPT_URL, $url);
