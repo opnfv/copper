@@ -51,14 +51,14 @@ $url = "http://CONGRESS_HOST:1789".$_GET['~url'];
 $curlop = curl_init();
 curl_setopt($curlop, CURLOPT_URL, $url);
 curl_setopt($curlop, CURLOPT_CUSTOMREQUEST, $method);
-curl_setopt($curlop, CURLOPT_HEADER, array('X-Auth-Token: '.$token.''));
+curl_setopt($curlop, CURLOPT_HTTPHEADER, array("X-Auth-Token: '.$token'"));
 //curl_setopt($curlop, CURLINFO_HEADER_OUT, 0);
 curl_setopt($curlop, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($curlop, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($curlop, CURLINFO_HEADER_OUT, true);
 
 if ($method == "POST") {
-	curl_setopt($curlop, CURLOPT_HTTPHEADER, array("Content-Type: application/json"));
+	curl_setopt($curlop, CURLOPT_HTTPHEADER, array("Content-Type: application/json","X-Auth-Token: '.$token'"));
 	$body = file_get_contents('php://input');
 	curl_setopt($curlop, CURLOPT_POSTFIELDS, $body);
 }
