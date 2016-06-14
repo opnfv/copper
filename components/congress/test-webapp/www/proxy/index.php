@@ -23,11 +23,29 @@ if ($method == 'OPTIONS') {
 	exit();
 }
 
+$token = file_get_contents("/tmp/os_token");
+if ($result === false) {
+  $url = "http://KEYSTONE_HOST:5000/v2.0/tokens";
+  $curlop = curl_init();
+  curl_setopt($curlop, CURLOPT_URL, $url);
+  curl_setopt($curlop, CURLOPT_CUSTOMREQUEST, "POST");
+  curl_setopt($curlop, CURLOPT_RETURNTRANSFER, 1);
+  curl_setopt($curlop, CURLOPT_SSL_VERIFYPEER, false);
+  curl_setopt($curlop, CURLINFO_HEADER_OUT, true);
+  curl_setopt($curlop, CURLOPT_HTTPHEADER, array("Content-Type: application/json"));
+  $body = '{"auth": {"passwordCredentials": {"username": "OS_USERNAME", "password": "OS_PASSWORD"}}}';
+  curl_setopt($curlop, CURLOPT_POSTFIELDS, $body);
+  $response = curl_exec($curlop);
+  $response = json_decode($response);
+  $token = $response->access->token->id;
+  file_put_contents("/tmp/os_token",$token);
+}
+
 $url = "http://CONGRESS_HOST:1789".$_GET['~url'];
 $curlop = curl_init();
 curl_setopt($curlop, CURLOPT_URL, $url);
 curl_setopt($curlop, CURLOPT_CUSTOMREQUEST, $method);
-//curl_setopt($curlop, CURLOPT_HEADER, 0);
+curl_setopt($curlop, CURLOPT_HEADER, array('X-Auth-Token: '.$token.''));
 //curl_setopt($curlop, CURLINFO_HEADER_OUT, 0);
 curl_setopt($curlop, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($curlop, CURLOPT_SSL_VERIFYPEER, false);

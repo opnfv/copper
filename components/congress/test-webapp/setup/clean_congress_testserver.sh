@@ -29,5 +29,6 @@ echo "Stop copper-webapp container"
 sudo docker stop $CID
 echo "Remove copper-webapp container"
 sudo docker rm $CID
+# Use this if the server is not running
 # docker rm `docker ps -aq`
 set +x

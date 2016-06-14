@@ -88,8 +88,12 @@ if [ ! -d /tmp/copper/log ]; then
   chmod 777 /tmp/copper/log
 fi
 source /tmp/copper/env.sh
+
 echo "Point proxy.php to the Congress server"
 sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
+echo "Add parameters for API authentication"
+sed -i -- "s/OS_USERNAME/$OS_USERNAME/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
+sed -i -- "s/OS_PASSWORD/$OS_PASSWORD/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
 
 echo "Start webapp container"
 sudo docker build -t copper-webapp /tmp/copper/copper/components/congress/test-webapp/
