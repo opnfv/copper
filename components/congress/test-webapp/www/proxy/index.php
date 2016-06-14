@@ -35,8 +35,14 @@ if ($result === false) {
   curl_setopt($curlop, CURLOPT_HTTPHEADER, array("Content-Type: application/json"));
   $body = '{"auth": {"passwordCredentials": {"username": "OS_USERNAME", "password": "OS_PASSWORD"}}}';
   curl_setopt($curlop, CURLOPT_POSTFIELDS, $body);
+  $req_time=time();
+  $result = file_put_contents("/tmp/".date('ymd').".log", "proxy.php, ".$req_time.", ".$url.", ".$type.", ".$body."\n",FILE_APPEND);
+  if ($result === false) $response = "PHP error in index.php";
   $response = curl_exec($curlop);
-  $response = json_decode($response);
+  $body = substr($response, $header_size);
+  $result = file_put_contents("/tmp/".date('ymd').".log", "proxy.php, ".$req_time.", ".$responseCode.", ".$type.", ".$header.", ".$body."\n",FILE_APPEND);
+  if ($result === false) $response = "PHP error in index.php";
+  $response = json_decode($body);
   $token = $response->access->token->id;
   file_put_contents("/tmp/os_token",$token);
 }
