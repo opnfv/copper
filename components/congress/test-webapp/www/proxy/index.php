@@ -23,8 +23,12 @@ if ($method == 'OPTIONS') {
 	exit();
 }
 
-$token = file_get_contents("/tmp/os_token");
-if ($token === false) {
+
+if (file_exists("/tmp/os_token")) {
+  $token = file_get_contents("/tmp/os_token");
+  file_put_contents("/tmp/".date('ymd').".log", "proxy.php, auth token=".$token."\n",FILE_APPEND);
+}
+else {
   $url = "http://KEYSTONE_HOST:5000/v2.0/tokens";
   $curlop = curl_init();
   curl_setopt($curlop, CURLOPT_URL, $url);
@@ -33,7 +37,7 @@ if ($token === false) {
   curl_setopt($curlop, CURLOPT_SSL_VERIFYPEER, false);
   curl_setopt($curlop, CURLINFO_HEADER_OUT, true);
   curl_setopt($curlop, CURLOPT_HTTPHEADER, array("Content-Type: application/json"));
-  $body = '{"auth": {"passwordCredentials": {"username": "OS_USERNAME", "password": "OS_PASSWORD"}}}';
+  $body = '{"auth": {"tenantName": "OS_TENANT_NAME", "passwordCredentials": {"username": "OS_USERNAME", "password": "OS_PASSWORD"}}}';
   curl_setopt($curlop, CURLOPT_POSTFIELDS, $body);
   $req_time=time();
   $result = file_put_contents("/tmp/".date('ymd').".log", "proxy.php, ".$req_time.", ".$url.", ".$type.", ".$body."\n",FILE_APPEND);

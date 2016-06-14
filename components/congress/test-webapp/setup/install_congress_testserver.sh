@@ -92,6 +92,7 @@ echo "Point proxy.php to the Congress server"
 sed -i -- "s/CONGRESS_HOST/$CONGRESS_HOST/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
 echo "Add parameters for API authentication"
 sed -i -- "s/KEYSTONE_HOST/$KEYSTONE_HOST/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
+sed -i -- "s/OS_TENANT_NAME/$OS_TENANT_NAME/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
 sed -i -- "s/OS_USERNAME/$OS_USERNAME/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
 sed -i -- "s/OS_PASSWORD/$OS_PASSWORD/g" /tmp/copper/copper/components/congress/test-webapp/www/proxy/index.php
 
