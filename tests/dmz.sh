@@ -157,7 +157,7 @@ until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   openstack congress policy row list test dmz_server
   dmz_cirros1=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros1_ID / { print \$2 }")
   dmz_cirros2=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros2_ID / { print \$2 }")
-  if [ "$dmz_cirros1" == "$test_cirros1_ID" ] &&  [ "$dmz_cirros2" == "$test_cirros2_ID" ]; then RESULT="Test Success!"; fi
+  if [[ "$dmz_cirros1" == "$test_cirros1_ID" && "$dmz_cirros2" == "$test_cirros2_ID" ]]; then RESULT="Test Success!"; fi
   let COUNTER-=1
   sleep 5
 done
