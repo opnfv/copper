@@ -31,13 +31,15 @@
 
 pass() {
   echo "Hooray!"
+  set +x #echo off
+  exit 0
 }
 
 # Use this to trigger fail() at the right places
 # if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 fail() {
   echo "Test Failed!"
-  set +x
+  set +x #echo off
   exit 1
 }
 
@@ -105,9 +107,6 @@ neutron security-group-rule-create --direction ingress --protocol=TCP --port-ran
 echo "Boot cirros1 with smtp_ingress security group"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$test_internal_NET --security-groups smtp_ingress cirros1
 
-echo "Wait 30 seconds for Congress polling to occur at least once"
-sleep 30
-
 echo "Get cirros1 instance ID"
 test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
 
@@ -115,7 +114,7 @@ echo "Verify cirros1 is in the Congress policy 'test' table 'smtp_ingress'"
 COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
-  echo "Check for presence of cirros1 ID in Congress policy 'test' table 'smtp_ingress'"
+  openstack congress policy row list test smtp_ingress 
   cirros1_ID=$(openstack congress policy row list test smtp_ingress | awk "/ $test_cirros1_ID / { print \$2 }")
   if [ "$cirros1_ID" == "$test_cirros1_ID" ]; then RESULT="Test Success!"
   fi
@@ -125,4 +124,3 @@ done
 echo $RESULT
 if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 pass
-set +x #echo off

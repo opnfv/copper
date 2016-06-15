@@ -32,6 +32,8 @@
 
 pass() {
   echo "Hooray!"
+  set +x #echo off
+  exit 0
 }
 
 # Use this to trigger fail() at the right places
@@ -57,7 +59,7 @@ echo "Create Congress policy 'test'"
 if [[ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]]; then unclean; fi
 openstack congress policy create test
 
-echo "Create reserved_subnet_error rule in policy 'test'"
+echo "Create reserved_subnet_error rules in policy 'test'"
 openstack congress policy rule create test "reserved_subnet_error(x) :- neutronv2:subnets(id=x, cidr='10.7.1.0/24')" --name rsv_subnet_adm
 openstack congress policy rule create test "reserved_subnet_error(x) :- neutronv2:subnets(id=x, cidr='10.7.12.0/24')" --name rsv_subnet_prv
 openstack congress policy rule create test "reserved_subnet_error(x) :- neutronv2:subnets(id=x, cidr='10.7.13.0/24')" --name rsv_subnet_stg
@@ -88,6 +90,7 @@ echo "Verify test_public subnet ID is in the Congress policy 'test' table 'reser
 COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  openstack congress policy row list test reserved_subnet_error
   test_public_ID=$(openstack congress policy row list test reserved_subnet_error | awk "/ $test_public_SUBNET / { print \$2 }")
   if [ "$test_public_SUBNET" == "$test_public_ID" ]; then RESULT="Test Success!"
   fi
@@ -101,6 +104,7 @@ echo "Verify test_internal subnet ID is in the Congress policy 'test' table 'res
 COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  openstack congress policy row list test reserved_subnet_error
   test_internal_ID=$(openstack congress policy row list test reserved_subnet_error | awk "/ $test_internal_SUBNET / { print \$2 }")
   if [ "$test_internal_SUBNET" == "$test_internal_ID" ]; then RESULT="Test Success!"
   fi
@@ -117,6 +121,7 @@ echo "Verify test_internal subnet is deleted"
 COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  neutron subnet-list 
   test_internal_ID=$(neutron subnet-list | awk "/ test_internal / { print \$2 }")
   if [ "$test_internal_SUBNET" != "$test_internal_ID" ]; then RESULT="Test Success!"
   fi
@@ -130,6 +135,7 @@ echo "Verify test_public subnet is deleted"
 COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  neutron subnet-list 
   test_public_ID=$(neutron subnet-list | awk "/ test_public / { print \$2 }")
   if [ "$test_public_SUBNET" != "$test_public_ID" ]; then RESULT="Test Success!"
   fi
@@ -139,4 +145,3 @@ done
 echo "Verify test_public subnet is deleted:" $RESULT
 if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 pass
-set +x #echo off

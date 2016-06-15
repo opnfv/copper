@@ -37,6 +37,8 @@
 
 pass() {
   echo "Hooray!"
+  set +x #echo off
+  exit 0
 }
 
 # Use this to trigger fail() at the right places
@@ -108,8 +110,6 @@ neutron router-gateway-set test_router test_public
 echo "Add router internal for internal network"
 neutron router-interface-add test_router subnet=test_internal
 
-echo "Wait up to a minute as 'neutron router-interface-add' blocks the neutron-api for some time..."
-# add a delay since the previous command takes the neutron-api offline for a while (?)
 COUNTER=1
 RESULT="Failed!"
 until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
@@ -154,6 +154,7 @@ echo "Verify cirros1 and cirros2 IDs are in the Congress policy 'test' table 'dm
 COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  openstack congress policy row list test dmz_server
   dmz_cirros1=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros1_ID / { print \$2 }")
   dmz_cirros2=$(openstack congress policy row list test dmz_server | awk "/ $test_cirros2_ID / { print \$2 }")
   if [ "$dmz_cirros1" == "$test_cirros1_ID" ] &&  [ "$dmz_cirros2" == "$test_cirros2_ID" ]; then RESULT="Test Success!"; fi
@@ -167,6 +168,7 @@ echo "Verify cirros1 ID is in the Congress policy 'test' table 'dmz_placement_er
 COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  openstack congress policy row list test dmz_placement_error
   dmz_cirros1=$(openstack congress policy row list test dmz_placement_error | awk "/ $test_cirros1_ID / { print \$2 }")
   if [ "$dmz_cirros1" == "$test_cirros1_ID" ]; then RESULT="Test Success!"; fi
   let COUNTER-=1
@@ -182,6 +184,7 @@ echo "Verify cirros1 is paused"
 COUNTER=5
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  nova list
   cirros1_status=$(nova list | awk "/ cirros1 / { print \$6 }")
   if [ "$cirros1_status" == "PAUSED" ]; then RESULT="Test Success!"; fi
   let COUNTER-=1
