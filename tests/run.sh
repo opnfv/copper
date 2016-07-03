@@ -18,37 +18,37 @@
 # Prequisite: 
 # - OPFNV installed per JOID or Apex installer
 # On jumphost:
-# - Congress installed through install_congress_1.sh
-# - Copper test environment installed per 
+# - Congress installed through OPNFV installer or install_congress_1.sh
+# - OpenStack CLI clients installed 
+#   python-openstackclient
+#   python-congressclient
+#   python-keystoneclient
+#   python-glanceclient
+#   python-neutronclient
+#   python-novaclient
 # How to use:
-#   $ bash install_congress_testserver_1.sh
+#   $ bash run.sh
 #
 
 start=`date +%s`
+tests="dmz smtp_ingress reserved_subnet"
+overall_result=0
 
-echo "============"
-echo "Test: dmz.sh"
-echo "============"
-bash dmz.sh
-if (($? == 0)); then dmz="Passed"
-else dmz="Failed"; fi
-bash dmz-clean.sh
-
-echo "========================"
-echo "Test: reserved_subnet.sh"
-echo "========================"
-bash reserved_subnet.sh
-if (($? == 0)); then reserved_subnet="Passed"
-else reserved_subnet="Failed"; fi
-bash reserved_subnet-clean.sh
-
-echo "====================="
-echo "Test: smtp_ingress.sh"
-echo "====================="
-bash smtp_ingress.sh
-if (($? == 0)); then smtp_ingress="Passed"
-else smtp_ingress="Failed"; fi
-bash smtp_ingress-clean.sh
+n=0
+for test in $tests; do
+  echo "============"
+  echo "Test: $test.sh"
+  echo "============"
+  bash $test.sh  
+	result=$?
+	n+=1
+  if (($result == 0)); then test_result[$n]="Passed"
+  else 
+	  test_result[$n]="Failed"
+		overall_result=1
+	fi
+  bash $test-clean.sh
+done
 
 end=`date +%s`
 runtime=$((end-start))
@@ -57,7 +57,12 @@ echo "======================"
 echo "Test Execution Summary"
 echo "======================"
 echo "Test Duration = $runtime minutes"
-echo "$dmz : dmz.sh"
-echo "$reserved_subnet : reserved_subnet.sh"
-echo "$smtp_ingress: smtp_ingress.sh"
-
+n=0
+for test in $tests; do
+	n+=1
+  echo "${test_result[$n]} : $test"
+done
+if (($overall_result == 0)); then echo "Test run overall: PASSED";
+else echo "Test run overall: FAILED"
+fi
+exit $overall_result
