@@ -30,6 +30,8 @@
 #   $ bash run.sh
 #
 
+wd=dirname "$0"
+cd $wd
 start=`date +%s`
 tests="dmz smtp_ingress reserved_subnet"
 overall_result=0
