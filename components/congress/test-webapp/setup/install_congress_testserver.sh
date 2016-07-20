@@ -64,7 +64,7 @@ enabled=1
 gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 EOF
-  sudo yum install docker
+  sudo yum install -y docker
 fi
 
 echo "Clone copper"
