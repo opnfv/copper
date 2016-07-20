@@ -30,8 +30,8 @@
 #   $ bash run.sh
 #
 
-wd=dirname "$0"
-cd $wd
+if [ $# -eq 1 ]; then cd $1; fi
+
 start=`date +%s`
 tests="dmz smtp_ingress reserved_subnet"
 overall_result=0
