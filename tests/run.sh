@@ -42,13 +42,13 @@ for test in $tests; do
   echo "Test: $test.sh"
   echo "============"
   bash $test.sh  
-	result=$?
-	n+=1
+  result=$?
+  n+=1
   if (($result == 0)); then test_result[$n]="Passed"
   else 
-	  test_result[$n]="Failed"
-		overall_result=1
-	fi
+    test_result[$n]="Failed"
+    overall_result=1
+  fi
   bash $test-clean.sh
 done
 
@@ -61,7 +61,7 @@ echo "======================"
 echo "Test Duration = $runtime minutes"
 n=0
 for test in $tests; do
-	n+=1
+  n+=1
   echo "${test_result[$n]} : $test"
 done
 if (($overall_result == 0)); then echo "Test run overall: PASSED";
