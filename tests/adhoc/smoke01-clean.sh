@@ -38,11 +38,15 @@ echo "Delete cirros2 instance"
 instance=$(nova list | awk "/ cirros2 / { print \$2 }")
 if  [ "$instance" != "" ]; then nova delete $instance; fi
 
-echo "Delete 'ssh_ingress' security group"
-sg=$(neutron security-group-list | awk "/ ssh_ingress / { print \$2 }")
+echo "Delete smoke01 key pair"
+nova keypair-delete smoke01
+rm /tmp/smoke01
+
+echo "Delete 'smoke01' security group"
+sg=$(neutron security-group-list | awk "/ smoke01 / { print \$2 }")
 neutron security-group-delete $sg
 
-echo "Get 'router' ID"
+echo "Get 'public_router' ID"
 router=$(neutron router-list | awk "/ public_router / { print \$2 }")
 
 echo "Get internal port ID with subnet 10.0.0.1 on 'public_router'"
@@ -50,15 +54,6 @@ internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk '{pr
 
 echo "If found, delete the port with subnet 10.0.0.1 on 'public_router'"
 if [ "$internal_interface" != "" ]; then neutron router-interface-delete $router port=$internal_interface; fi
-
-echo "Get public port ID with fixed_ip 192.168.10.2 on 'public_router'"
-public_interface=$(neutron router-port-list $router | grep 192.168.10.2 | awk '{print $2}')
-
-echo "If found, delete the port with fixed_ip 192.168.10.2 on 'public_router'"
-if [ "$public_interface" != "" ]; then neutron router-interface-delete $router port=$public_interface; fi
-
-echo "Delete the router internal interface"
-neutron router-interface-delete $router $internal_interface
 
 echo "Clear the router gateway"
 neutron router-gateway-clear public_router
@@ -79,10 +74,4 @@ neutron subnet-delete internal
 
 echo "Delete internal network"
 neutron net-delete internal
-
-echo "Delete public subnet"
-neutron subnet-delete public
-
-echo "Delete public network"
-neutron net-delete public
 

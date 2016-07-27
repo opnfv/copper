@@ -26,6 +26,52 @@
 #   After test, cleanup with
 #   $ bash ~/git/copper/tests/adhoc/smoke01-clean.sh
 
+pass() {
+  echo "Hooray!"
+  set +x #echo off
+  exit 0
+}
+
+# Use this to trigger fail() at the right places
+# if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+fail() {
+  echo "Test Failed!"
+  set +x
+  exit 1
+}
+
+unclean() {
+  echo "Unclean environment!"
+  fail
+}
+
+# Find external network if any, and details
+function get_external_net () {
+  echo "Find external network"
+  LINE=4
+  ID=$(openstack network list | awk "NR==$LINE{print \$2}")
+  while [[ $ID ]]
+    do
+    if [[ $(openstack network show $ID | awk "/ router:external / { print \$4 }") == "External" ]]; then break; fi
+    ((LINE+=1))
+    ID=$(openstack network list | awk "NR==$LINE{print \$2}")
+  done 
+  if [[ $ID ]]; then 
+    EXTERNAL_NETWORK_NAME=$(openstack network show $ID | awk "/ name / { print \$4 }")
+    EXTERNAL_SUBNET_ID=$(openstack network show $EXTERNAL_NETWORK_NAME | awk "/ subnets / { print \$4 }")
+    FLOATING_IP=$(openstack subnet show $EXTERNAL_SUBNET_ID | awk "/ allocation_pools / { print \$4 }" | cut -d - -f 1)
+  else
+    echo "External network not found"
+    echo "Create external network"
+    neutron net-create public --router:external
+    EXTERNAL_NETWORK_NAME="public"
+    echo "Create external subnet"
+    neutron subnet-create public 192.168.10.0/24 --name public --enable_dhcp=False --allocation_pool start=192.168.10.6,end=192.168.10.49 --gateway 192.168.10.1
+    EXTERNAL_SUBNET_ID=$(openstack subnet show public | awk "/ id / { print \$4 }")
+    FLOATING_IP="192.168.10.6"
+  fi
+}
+
 wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/setenv.sh -O ~/setenv.sh
 source ~/setenv.sh
 
@@ -34,14 +80,10 @@ image=$(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }")
 if [ -z $image ]; then glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64 --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare
 fi
 
-echo "Create external network"
-neutron net-create public --router:external
-
-echo "Create external subnet"
-neutron subnet-create public 192.168.10.0/24 --name public --enable_dhcp=False --allocation_pool start=192.168.10.6,end=192.168.10.49 --gateway 192.168.10.1
+get_external_net
 
 echo "Create floating IP for external subnet"
-neutron floatingip-create public
+neutron floatingip-create $EXTERNAL_NETWORK_NAME
 
 echo "Create internal network"
 neutron net-create internal
@@ -53,21 +95,12 @@ echo "Create router"
 neutron router-create public_router
 
 echo "Create router gateway"
-neutron router-gateway-set public_router public
+neutron router-gateway-set public_router $EXTERNAL_NETWORK_NAME
 
 echo "Add router interface for internal network"
 neutron router-interface-add public_router subnet=internal
-# add a delay since the previous command takes the neutron-api offline for a while (?)
-sleep 30
-
-echo "Create ssh_ingress security group"
-neutron security-group-create ssh_ingress
-
-echo "Add rule to ssh_ingress security group"
-neutron security-group-rule-create --direction ingress --protocol=TCP --port-range-min=22 --port-range-max=22 ssh_ingress
 
 echo "Wait up to a minute as 'neutron router-interface-add' blocks the neutron-api for some time..."
-# add a delay since the previous command takes the neutron-api offline for a while (?)
 COUNTER=1
 RESULT="Failed!"
 until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
@@ -77,12 +110,45 @@ until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
   let COUNTER+=1
   sleep 10
 done
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+
+echo "Create smoke01 security group"
+neutron security-group-create smoke01
+
+echo "Add rule to smoke01 security group"
+neutron security-group-rule-create --direction ingress --protocol=TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min=22 --port-range-max=22 smoke01
+neutron security-group-rule-create --direction ingress --protocol=ICMP --remote-ip-prefix 0.0.0.0/0 smoke01
+neutron security-group-rule-create --direction egress --protocol=TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min=22 --port-range-max=22 smoke01
+neutron security-group-rule-create --direction egress --protocol=ICMP --remote-ip-prefix 0.0.0.0/0 smoke01
+
+echo "Create Nova key pair"
+ssh-keygen -f "$HOME/.ssh/known_hosts" -R 192.168.10.6
+nova keypair-add smoke01 > /tmp/smoke01
+chmod 600 /tmp/smoke01
 
 echo "Boot cirros1"
-nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-groups ssh_ingress cirros1
+nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-groups smoke01 --key-name smoke01 cirros1
 
-echo "Boot cirros1"
-nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET cirros2
+echo "Boot cirros2"
+nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-groups smoke01 cirros2
 
 echo "Associate floating IP to cirros1"
-nova floating-ip-associate cirros1 192.168.10.6
+nova floating-ip-associate cirros1 $FLOATING_IP
+
+# add a delay to allow cirros1 to come up completely
+COUNTER=1
+RESULT="Failed!"
+until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
+  echo "Verify internal network connectivity"
+  RESULT=$(ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@192.168.10.6 "ping -c 3 10.0.0.4; exit" | awk "/ 0% packet loss/ { print \$1 }")
+  if [ "$RESULT" == "3" ]; then RESULT="Success!"; fi
+  let COUNTER+=1
+  sleep 10
+done
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+
+echo "Verify public network connectivity"
+RESULT=$(ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@192.168.10.6 "ping -c 3 8.8.8.8; exit" | awk "/ 0% packet loss/ { print \$1 }")
+if [ "$RESULT" != "3" ]; then fail; fi
+
+pass
