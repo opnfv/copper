@@ -23,10 +23,9 @@
 # Prequisite: OPFNV installed per JOID or Apex installer
 # - OpenStack CLI environment variables setup
 # How to use:
-#   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
 #   $ bash smtp_ingress.sh
-#   After test, cleanup
+#   # After test, cleanup
 #   $ bash smtp_ingress-clean.sh
 
 pass() {
@@ -54,6 +53,31 @@ if [  $# -eq 1 ]; then
   fi
 fi
 
+# Find external network if any, and details
+function get_external_net () {
+  echo "Find external network"
+  LINE=4
+  ID=$(openstack network list | awk "NR==$LINE{print \$2}")
+  while [[ $ID ]]
+    do
+    if [[ $(openstack network show $ID | awk "/ router:external / { print \$4 }") == "External" ]]; then break; fi
+    ((LINE+=1))
+    ID=$(openstack network list | awk "NR==$LINE{print \$2}")
+  done 
+  if [[ $ID ]]; then 
+    EXTERNAL_NETWORK_NAME=$(openstack network show $ID | awk "/ name / { print \$4 }")
+    EXTERNAL_SUBNET_ID=$(openstack network show $EXTERNAL_NETWORK_NAME | awk "/ subnets / { print \$4 }")
+  else
+    echo "External network not found"
+    echo "Create external network"
+    neutron net-create public --router:external
+    EXTERNAL_NETWORK_NAME="public"
+    echo "Create external subnet"
+    neutron subnet-create public 192.168.10.0/24 --name public --enable_dhcp=False --allocation_pool start=192.168.10.6,end=192.168.10.49 --gateway 192.168.10.1
+    EXTERNAL_SUBNET_ID=$(openstack subnet show public | awk "/ id / { print \$4 }")
+  fi
+}
+
 echo "Create Congress policy 'test'"
 if [[ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]]; then unclean; fi
 openstack congress policy create test
@@ -66,12 +90,13 @@ image=$(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }")
 if [ "$image" == "" ]; then glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64 --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare
 fi
 
-echo "Create external network"
-if [[ $(neutron net-list | awk "/ test_public / { print \$2 }") ]]; then unclean; fi
-neutron net-create test_public --router:external=true
+get_external_net
 
-echo "Create external subnet"
-neutron subnet-create --disable-dhcp test_public 192.168.10.0/24
+echo "Create floating IP for external subnet"
+FLOATING_IP_ID=$(neutron floatingip-create $EXTERNAL_NETWORK_NAME | awk "/ id / { print \$4 }")
+FLOATING_IP=$(neutron floatingip-show $FLOATING_IP_ID | awk "/ floating_ip_address / { print \$4 }" | cut -d - -f 1)
+# Save ID to pass to cleanup script
+echo "FLOATING_IP_ID=$FLOATING_IP_ID" >/tmp/TEST_VARS.sh
 
 echo "Create internal network"
 if [[ $(neutron net-list | awk "/ test_internal / { print \$2 }") ]]; then unclean; fi
@@ -85,17 +110,21 @@ if [[ $(neutron router-list | awk "/ test_router / { print \$2 }") ]]; then uncl
 neutron router-create test_router
 
 echo "Create router gateway"
-neutron router-gateway-set test_router test_public
+neutron router-gateway-set test_router $EXTERNAL_NETWORK_NAME
 
 echo "Add router internal for internal network"
 neutron router-interface-add test_router subnet=test_internal
 
-echo "Wait 30 seconds as the previous command interrupts the neutron-api for some time..."
-# add a delay since the previous command takes the neutron-api offline for a while (?)
-sleep 30
-
-echo "Get the internal network ID"
-test_internal_NET=$(neutron net-list | awk "/ test_internal / { print \$2 }")
+COUNTER=1
+RESULT="Failed!"
+until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
+  echo "Get the internal network ID: try" $COUNTER 
+  test_internal_NET=$(neutron net-list | awk "/ test_internal / { print \$2 }")
+  if [ "$test_internal_NET" != "" ]; then RESULT="Success!"; fi
+  let COUNTER+=1
+  sleep 10
+done
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 
 echo "Create a security group 'smtp_ingress'"
 if [[ $(neutron security-group-list | awk "/ smtp_ingress / { print \$2 }") ]]; then unclean; fi
@@ -110,6 +139,20 @@ nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$test_intern
 echo "Get cirros1 instance ID"
 test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
 
+echo "Wait for cirros1 to go ACTIVE"
+COUNTER=5
+RESULT="Test Failed!"
+until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  status=$(openstack server show $test_cirros1_ID | awk "/ status / { print \$4 }")
+  if [[ "$status" == "ACTIVE" ]]; then RESULT="Test Success!"; fi
+  let COUNTER-=1
+  sleep 5
+done
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+
+echo "Associate floating IP to cirros1"
+nova floating-ip-associate cirros1 $FLOATING_IP
+
 echo "Verify cirros1 is in the Congress policy 'test' table 'smtp_ingress'"
 COUNTER=5
 RESULT="Test Failed!"
@@ -123,4 +166,7 @@ until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
 done
 echo $RESULT
 if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+
+set +x #echo off
+
 pass

@@ -24,10 +24,9 @@
 # Prequisite: OPFNV installed per JOID or Apex installer
 # - OpenStack CLI environment variables setup
 # How to use:
-#   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
 #   $ bash reserved_subnet.sh
-#   After test, cleanup
+#   # After test, cleanup
 #   $ bash reserved_subnet-clean.sh
 
 if [  $# -eq 1 ]; then

@@ -27,9 +27,6 @@
 wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/setenv.sh -O ~/setenv.sh
 source ~/setenv.sh
 
-echo "Disassociate cirros1 floating IP address"
-nova floating-ip-disassociate cirros1 192.168.10.6
-
 echo "Delete cirros1 instance"
 instance=$(nova list | awk "/ cirros1 / { print \$2 }")
 if [ "$instance" != "" ]; then nova delete $instance; fi
@@ -38,13 +35,30 @@ echo "Delete cirros2 instance"
 instance=$(nova list | awk "/ cirros2 / { print \$2 }")
 if  [ "$instance" != "" ]; then nova delete $instance; fi
 
-echo "Delete smoke01 key pair"
-nova keypair-delete smoke01
-rm /tmp/smoke01
+echo "Wait for cirros1 and cirros2 to terminate"
+COUNTER=5
+RESULT="Wait!"
+until [[ $COUNTER -eq 0  || $RESULT == "Go!" ]]; do
+  cirros1_id=$(openstack server list | awk "/ cirros1 / { print \$4 }")
+  cirros2_id=$(openstack server list | awk "/ cirros2 / { print \$4 }")
+  if [[ "$cirros1_id" == "" && "$cirros2_id" == "" ]]; then RESULT="Go!"; fi
+  let COUNTER-=1
+  sleep 5
+done
 
 echo "Delete 'smoke01' security group"
 sg=$(neutron security-group-list | awk "/ smoke01 / { print \$2 }")
 neutron security-group-delete $sg
+
+echo "Delete floating ip"
+# FLOATING_IP_ID was saved by smoke01.sh
+source /tmp/TEST_VARS.sh
+rm /tmp/TEST_VARS.sh
+neutron floatingip-delete $FLOATING_IP_ID
+
+echo "Delete smoke01 key pair"
+nova keypair-delete smoke01
+rm /tmp/smoke01
 
 echo "Get 'public_router' ID"
 router=$(neutron router-list | awk "/ public_router / { print \$2 }")

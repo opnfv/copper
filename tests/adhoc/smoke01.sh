@@ -45,6 +45,12 @@ unclean() {
   fail
 }
 
+if [  $# -eq 1 ]; then
+  if [ $1 == "debug" ]; then 
+    set -x #echo on
+  fi
+fi
+
 # Find external network if any, and details
 function get_external_net () {
   echo "Find external network"
@@ -59,7 +65,6 @@ function get_external_net () {
   if [[ $ID ]]; then 
     EXTERNAL_NETWORK_NAME=$(openstack network show $ID | awk "/ name / { print \$4 }")
     EXTERNAL_SUBNET_ID=$(openstack network show $EXTERNAL_NETWORK_NAME | awk "/ subnets / { print \$4 }")
-    FLOATING_IP=$(openstack subnet show $EXTERNAL_SUBNET_ID | awk "/ allocation_pools / { print \$4 }" | cut -d - -f 1)
   else
     echo "External network not found"
     echo "Create external network"
@@ -68,7 +73,6 @@ function get_external_net () {
     echo "Create external subnet"
     neutron subnet-create public 192.168.10.0/24 --name public --enable_dhcp=False --allocation_pool start=192.168.10.6,end=192.168.10.49 --gateway 192.168.10.1
     EXTERNAL_SUBNET_ID=$(openstack subnet show public | awk "/ id / { print \$4 }")
-    FLOATING_IP="192.168.10.6"
   fi
 }
 
@@ -83,7 +87,10 @@ fi
 get_external_net
 
 echo "Create floating IP for external subnet"
-neutron floatingip-create $EXTERNAL_NETWORK_NAME
+FLOATING_IP_ID=$(neutron floatingip-create $EXTERNAL_NETWORK_NAME | awk "/ id / { print \$4 }")
+FLOATING_IP=$(neutron floatingip-show $FLOATING_IP_ID | awk "/ floating_ip_address / { print \$4 }" | cut -d - -f 1)
+# Save ID to pass to cleanup script
+echo "FLOATING_IP_ID=$FLOATING_IP_ID" >/tmp/TEST_VARS.sh
 
 echo "Create internal network"
 neutron net-create internal
@@ -129,18 +136,31 @@ chmod 600 /tmp/smoke01
 echo "Boot cirros1"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-groups smoke01 --key-name smoke01 cirros1
 
-echo "Boot cirros2"
-nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-groups smoke01 cirros2
+echo "Get cirros1 instance ID"
+test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
+
+echo "Wait for cirros1 to go ACTIVE"
+COUNTER=5
+RESULT="Test Failed!"
+until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  status=$(openstack server show $test_cirros1_ID | awk "/ status / { print \$4 }")
+  if [[ "$status" == "ACTIVE" ]]; then RESULT="Test Success!"; fi
+  let COUNTER-=1
+  sleep 5
+done
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 
 echo "Associate floating IP to cirros1"
 nova floating-ip-associate cirros1 $FLOATING_IP
 
-# add a delay to allow cirros1 to come up completely
+echo "Boot cirros2"
+nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-groups smoke01 cirros2
+
 COUNTER=1
 RESULT="Failed!"
 until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
   echo "Verify internal network connectivity"
-  RESULT=$(ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@192.168.10.6 "ping -c 3 10.0.0.4; exit" | awk "/ 0% packet loss/ { print \$1 }")
+  RESULT=$(ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@$FLOATING_IP "ping -c 3 10.0.0.4; exit" | awk "/ 0% packet loss/ { print \$1 }")
   if [ "$RESULT" == "3" ]; then RESULT="Success!"; fi
   let COUNTER+=1
   sleep 10
@@ -148,7 +168,9 @@ done
 if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 
 echo "Verify public network connectivity"
-RESULT=$(ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@192.168.10.6 "ping -c 3 8.8.8.8; exit" | awk "/ 0% packet loss/ { print \$1 }")
+RESULT=$(ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@$FLOATING_IP "ping -c 3 8.8.8.8; exit" | awk "/ 0% packet loss/ { print \$1 }")
 if [ "$RESULT" != "3" ]; then fail; fi
+
+set +x #echo off
 
 pass

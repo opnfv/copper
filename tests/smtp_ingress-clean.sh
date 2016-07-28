@@ -21,9 +21,9 @@
 # Prequisite: OPFNV installed per JOID or Apex installer
 # - OpenStack CLI environment variables setup
 # How to use:
-#   Install Congress test server per https://wiki.opnfv.org/copper/academy
+#   # Create Congress policy and resources that exercise policy
 #   $ bash dmz.sh
-#   After test, cleanup with
+#   # After test, cleanup with
 #   $ bash dmz-clean.sh
 
 if [  $# -eq 1 ]; then
@@ -46,9 +46,25 @@ instance=$(nova list | awk "/ cirros1 / { print \$2 }")
 if [ "$instance" != "" ]; then nova delete $instance
 fi
 
+echo "Wait for cirros1 to terminate"
+COUNTER=5
+RESULT="Wait!"
+until [[ $COUNTER -eq 0  || $RESULT == "Go!" ]]; do
+  cirros1_id=$(openstack server list | awk "/ cirros1 / { print \$4 }")
+  if [[ "$cirros1_id" == "" ]]; then RESULT="Go!"; fi
+  let COUNTER-=1
+  sleep 5
+done
+
 echo "Delete 'smtp_ingress' security group"
 sg=$(neutron security-group-list | awk "/ smtp_ingress / { print \$2 }")
 neutron security-group-delete $sg
+
+# FLOATING_IP_ID was saved by smtp_ingress.sh
+source /tmp/TEST_VARS.sh
+rm /tmp/TEST_VARS.sh
+echo "Delete floating ip"
+neutron floatingip-delete $FLOATING_IP_ID
 
 echo "Get 'test_router' ID"
 router=$(neutron router-list | awk "/ test_router / { print \$2 }")
@@ -59,16 +75,6 @@ test_internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk
 echo "If found, delete the port with fixed_ip 10.0.0.1 on 'test_router'"
 if [ "$test_internal_interface" != "" ]; then neutron router-interface-delete $router port=$test_internal_interface
 fi
-
-echo "Get public port ID with fixed_ip 192.168.10.2 on 'test_router'"
-test_public_interface=$(neutron router-port-list $router | grep 192.168.10.2 | awk '{print $2}')
-
-echo "If found, delete the port with fixed_ip 192.168.10.2 on 'test_router'"
-if [ "$test_public_interface" != "" ]; then neutron router-interface-delete $router port=$test_public_interface
-fi
-
-echo "Delete the router internal interface"
-neutron router-interface-delete $router $test_internal_interface
 
 echo "Clear the router gateway"
 neutron router-gateway-clear test_router
@@ -81,8 +87,5 @@ neutron subnet-delete test_internal
 
 echo "Delete internal network"
 neutron net-delete test_internal
-
-echo "Delete public network"
-neutron net-delete test_public
 
 set +x #echo off

@@ -29,10 +29,9 @@
 # Prequisite: OPFNV installed per JOID or Apex installer
 # - OpenStack CLI environment variables setup
 # How to use:
-#   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy
 #   $ bash dmz.sh
-#   After test, cleanup
+#   # After test, cleanup
 #   $ bash dmz-clean.sh
 
 pass() {
@@ -60,6 +59,31 @@ if [  $# -eq 1 ]; then
   fi
 fi
 
+# Find external network if any, and details
+function get_external_net () {
+  echo "Find external network"
+  LINE=4
+  ID=$(openstack network list | awk "NR==$LINE{print \$2}")
+  while [[ $ID ]]
+    do
+    if [[ $(openstack network show $ID | awk "/ router:external / { print \$4 }") == "External" ]]; then break; fi
+    ((LINE+=1))
+    ID=$(openstack network list | awk "NR==$LINE{print \$2}")
+  done 
+  if [[ $ID ]]; then 
+    EXTERNAL_NETWORK_NAME=$(openstack network show $ID | awk "/ name / { print \$4 }")
+    EXTERNAL_SUBNET_ID=$(openstack network show $EXTERNAL_NETWORK_NAME | awk "/ subnets / { print \$4 }")
+  else
+    echo "External network not found"
+    echo "Create external network"
+    neutron net-create public --router:external
+    EXTERNAL_NETWORK_NAME="public"
+    echo "Create external subnet"
+    neutron subnet-create public 192.168.10.0/24 --name public --enable_dhcp=False --allocation_pool start=192.168.10.6,end=192.168.10.49 --gateway 192.168.10.1
+    EXTERNAL_SUBNET_ID=$(openstack subnet show public | awk "/ id / { print \$4 }")
+  fi
+}
+
 echo "Create Congress policy 'test'"
 if [ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]; then unclean; fi
 openstack congress policy create test
@@ -86,12 +110,13 @@ IMAGE_ID=$(glance image-list | awk "/ cirros-0.3.3-x86_64-dmz / { print \$2 }")
 echo "Add 'dmz' image tag to the cirros dmz image"
 glance --os-image-api-version 2 image-tag-update $IMAGE_ID "dmz"
 
-echo "Create external network"
-if [ $(neutron net-list | awk "/ test_public / { print \$2 }") ]; then unclean; fi
-neutron net-create test_public --router:external=true
+get_external_net
 
-echo "Create external subnet"
-neutron subnet-create --disable-dhcp test_public 192.168.10.0/24
+echo "Create floating IP for external subnet"
+FLOATING_IP_ID=$(neutron floatingip-create $EXTERNAL_NETWORK_NAME | awk "/ id / { print \$4 }")
+FLOATING_IP=$(neutron floatingip-show $FLOATING_IP_ID | awk "/ floating_ip_address / { print \$4 }" | cut -d - -f 1)
+# Save ID to pass to cleanup script
+echo "FLOATING_IP_ID=$FLOATING_IP_ID" >/tmp/TEST_VARS.sh
 
 echo "Create internal network"
 if [ $(neutron net-list | awk "/ test_internal / { print \$2 }") ]; then unclean; fi
@@ -105,7 +130,7 @@ if [ $(neutron router-list | awk "/ test_router / { print \$2 }") ]; then unclea
 neutron router-create test_router
 
 echo "Create router gateway"
-neutron router-gateway-set test_router test_public
+neutron router-gateway-set test_router $EXTERNAL_NETWORK_NAME
 
 echo "Add router internal for internal network"
 neutron router-interface-add test_router subnet=test_internal
@@ -119,6 +144,7 @@ until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
   let COUNTER+=1
   sleep 10
 done
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 
 echo "Create a security group 'dmz'"
 if [ $(neutron security-group-list | awk "/ dmz / { print \$2 }") ]; then unclean; fi
@@ -133,11 +159,23 @@ neutron security-group-rule-create --direction ingress dmz
 
 echo "Boot cirros1 with non-dmz image"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$test_internal_NET --security-groups dmz cirros1
-test_cirros1_ID=$(nova list | awk "/ cirros1 / { print \$2 }")
-if [ -z $test_cirros1_ID ]; then 
-  echo "Unable to boot cirros1"
-  fail
-fi
+
+echo "Get cirros1 instance ID"
+test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
+
+echo "Wait for cirros1 to go ACTIVE"
+COUNTER=5
+RESULT="Test Failed!"
+until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
+  status=$(openstack server show $test_cirros1_ID | awk "/ status / { print \$4 }")
+  if [[ "$status" == "ACTIVE" ]]; then RESULT="Test Success!"; fi
+  let COUNTER-=1
+  sleep 5
+done
+if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+
+echo "Associate floating IP to cirros1"
+nova floating-ip-associate cirros1 $FLOATING_IP
 
 echo "Boot cirros2 with dmz image"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64-dmz --nic net-id=$test_internal_NET  --security-groups dmz cirros2
@@ -192,4 +230,7 @@ until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
 done
 echo "Verify cirros1 is paused:" $RESULT
 if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+
+set +x #echo off
+
 pass
