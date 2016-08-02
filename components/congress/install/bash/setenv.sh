@@ -44,7 +44,7 @@ export OS_USERNAME=admin
 export OS_PASSWORD=openstack
 export OS_TENANT_NAME=admin
 export OS_AUTH_URL=http://$KEYSTONE_HOST:5000/v2.0
-export OS_REGION_NAME=Canonical
+export OS_REGION_NAME=RegionOne
 EOF
 else
   # Centos
