@@ -14,16 +14,14 @@ storage, network) that are needed for VNFs and services, and how those resources
 should be managed over the lifecycle of a VNF/service. Upstream projects already
 include multiple ways in which resource requirements can be expressed and fulfilled, e.g.:
   * OpenStack Nova
-    * the `image
-      <http://docs.openstack.org/openstack-ops/content/user_facing_images.html>`_
+    * the `image <http://docs.openstack.org/openstack-ops/content/user_facing_images.html>`_
       feature, enabling "VM templates" to be defined for NFs, and referenced by
       name as a specific NF version to be used
     * the `flavor <http://docs.openstack.org/openstack-ops/content/flavors.html>`_
       feature, addressing basic compute and storage requirements, with
       extensibility for custom attributes
   * OpenStack Heat
-    * the `Heat Orchestration Template
-      <http://docs.openstack.org/developer/heat/template_guide/index.html>`_
+    * the `Heat Orchestration Template <http://docs.openstack.org/developer/heat/template_guide/index.html>`_
       feature, enabling a variety of VM aspects to be defined and managed by
       Heat throughout the VM lifecycle, notably
       * alarm handling (requires
@@ -41,11 +39,9 @@ include multiple ways in which resource requirements can be expressed and fulfil
         `Keystone <http://docs.openstack.org/developer/keystone/>`_)
       * shared storage (requires `Manila <https://wiki.openstack.org/wiki/Manila>`_)
       * load balancing (requires Neutron
-        `LBaaS
-         <http://docs.openstack.org/admin-guide-cloud/content/section_lbaas-overview.html>`_)
+        `LBaaS <http://docs.openstack.org/admin-guide-cloud/content/section_lbaas-overview.html>`_)
       * firewalls (requires Neutron
-        `FWaaS
-         <http://docs.openstack.org/admin-guide-cloud/content/install_neutron-fwaas-agent.html>`_)
+        `FWaaS <http://docs.openstack.org/admin-guide-cloud/content/install_neutron-fwaas-agent.html>`_)
       * various Neutron-based network and security configuration items
       * Nova flavors
       * Nova server attributes including access control
@@ -55,19 +51,19 @@ include multiple ways in which resource requirements can be expressed and fulfil
       * DBaaS (requires `Trove <http://docs.openstack.org/developer/trove/>`_)
       * "multi-tenant cloud messaging and notification service" (requires
         `Zaqar <http://docs.openstack.org/developer/zaqar/>`_)
-  * OpenStack `Group-Based Policy
-    <https://wiki.openstack.org/wiki/GroupBasedPolicy>`_
+  * OpenStack
+    `Group-Based Policy <https://wiki.openstack.org/wiki/GroupBasedPolicy>`_
     * API-based grouping of endpoints with associated contractual expectations
       for data flow processing and service chaining
   * OpenStack `Tacker <https://wiki.openstack.org/wiki/Tacker>`_
     * "a fully functional ETSI MANO based general purpose NFV Orchestrator and
       VNF Manager for OpenStack"
-  * OpenDaylight `Group-Based Policy
-    <https://wiki.opendaylight.org/view/Group_Based_Policy_(GBP)>`_
+  * OpenDaylight
+    `Group-Based Policy <https://wiki.opendaylight.org/view/Group_Based_Policy_(GBP)>`_
     * model-based grouping of endpoints with associated contractual expectations
       for data flow processing
-  * OpenDaylight `Service Function Chaining (SFC)
-    <https://wiki.opendaylight.org/view/Service_Function_Chaining:Main>`_
+  * OpenDaylight
+    `Service Function Chaining (SFC) <https://wiki.opendaylight.org/view/Service_Function_Chaining:Main>`_
     * model-based management of "service chains" and the infrastucture that
       enables them
   * Additional projects that are commonly used for configuration management,
@@ -111,11 +107,9 @@ can be monitored and responded to:
     enforcement, including data obtained from internal databases of OpenStack
     core and optional services. The Congress design approach is also extensible
     to other VIMs (e.g. SDNCs) through development of data source drivers for
-    the new monitored state information. See `Stackforge Congress Data Source
-    Translators
-    <https://github.com/stackforge/congress/tree/master/congress/datasources>`_,
-    `congress.readthedocs.org
-    <http://congress.readthedocs.org/en/latest/cloudservices.html#drivers>`_,
+    the new monitored state information. See
+    `Stackforge Congress Data Source Translators <https://github.com/stackforge/congress/tree/master/congress/datasources>`_,
+    `congress.readthedocs.org <http://congress.readthedocs.org/en/latest/cloudservices.html#drivers>`_,
     and the `Congress specs <https://github.com/stackforge/congress-specs>`_ for
     more info.
   * OpenStack `Ceilometer <https://wiki.openstack.org/wiki/Ceilometer>`_
