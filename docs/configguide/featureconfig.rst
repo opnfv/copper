@@ -1,15 +1,13 @@
 Copper configuration
 ====================
-This release focused on use of the OpenStack Congress service for managing
-configuration policy. The Congress install procedure described here is largely
-manual. This procedure, as well as the longer-term goal of automated installer
-support, is a work in progress. The procedure is further specific to one OPNFV
-installer (JOID, i.e. MAAS/JuJu) based environment. Support for other OPNFV
-installer deployed environments is also a work in progress.
+This release includes installer support for the OpenStack Congress service under
+JOID and Apex installers. Congress is installed by default for all JOID and Apex
+scenarios. Support for other OPNFV installer deployed environments is planned
+for the next release.
 
 Pre-configuration activities
 ----------------------------
-This procedure assumes OPNFV has been installed via the JOID installer.
+None required.
 
 Hardware configuration
 ----------------------
@@ -17,55 +15,60 @@ There is no specific hardware configuration required for the Copper project.
 
 Feature configuration
 ---------------------
-Following are instructions for installing Congress on an Ubuntu 14.04 LXC
-container in the OPNFV Controller node, as installed by the JOID installer.
-This guide uses instructions from the
-`Congress intro guide on readthedocs <http://congress.readthedocs.org/en/latest/readme.html#installing-congress|Congress>`_.
-Specific values below will need to be modified if you intend to repeat this
-procedure in your JOID-based install environment.
 
-Install Procedure
-.................
-The install currently occurs via four bash scripts provided in the copper repo. See these files for the detailed steps:
-  * `install_congress_1.sh <https://git.opnfv.org/cgit/copper/tree/components/congress/joid/install_congress_1.sh>`_
-    * creates and starts the linux container for congress on the controller node
-    * copies install_congress_2.sh to the controller node and invokes it via ssh
-  * `install_congress_2.sh <https://git.opnfv.org/cgit/copper/tree/components/congress/joid/install_congress_2.sh>`_
-    * installs congress on the congress server.
+OPNFV installer support
+.......................
 
-Cleanup Procedure
-.................
-If there is an error during installation, use the bash script
-`clean_congress.sh <https://git.opnfv.org/cgit/copper/tree/components/congress/joid/clean_congress.sh>`_
-which stops the congress server if running, and removes the congress user and
-service from the controller database.
+The Congress service is automatically configured as required by the JOID and
+Apex installers, including creation of datasources per the installed datasource
+drivers. This release includes default support for the following datasource drivers:
+  * nova
+  * neutronv2
+  * ceilometer
+  * cinder
+  * glancev2
+  * keystone
 
-Restarting after server power loss etc
-......................................
+For JOID, Congress is installed through a JuJu Charm, and for Apex through a
+Puppet Module. Both the Charm and Module are being upstreamed to OpenStack for
+future maintenance.
 
-Currently this install procedure is manual. Automated install and restoral after host
-recovery is TBD. For now, this procedure will get the Congress service running again.
+Other project installer support (e.g. Doctor) may install additional datasource
+drivers once Congress is installed.
+
+Manual installation
+...................
+
+NOTE: This section describes a manual install procedure that had been tested
+under the JOID and Apex base installs, prior to the integration of native
+installer support through JuJu (JOID) and Puppet (Apex). This procedure is being
+maintained as a basis for additional installer support in future releases.
+However since Congress is pre-installed for JOID and Apex, this procedure is not
+necessary and not recommended for use if Congress is already installed.
+
+Copper provides a set of bash scripts to automatically install Congress based
+upon a JOID or Apex install which does not already have Congress installed.
+These scripts are in the Copper repo at:
+  * components/congress/install/bash/install_congress_1.sh
+  * components/congress/install/bash/install_congress_2.sh
+
+Prerequisites to using these scripts:
+  * OPFNV installed via JOID or Apex
+  * For Apex installs, on the jumphost, ssh to the undercloud VM and "su stack".
+  * For JOID installs, admin-openrc.sh saved from Horizon to ~/admin-openrc.sh
+  * Retrieve the copper install script as below, optionally specifying the branch
+    to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
+
+To invoke the procedure, enter the following shell commands, optionally
+specifying the branch identifier to use for OpenStack.
 
 .. code::
 
-  # On jumphost, SSH to Congress server
-  source ~/env.sh
-  juju ssh ubuntu@$CONGRESS_HOST
-  # If that fails
-    # On jumphost, SSH to controller node
-    juju ssh ubuntu@node1-control
-    # Start the Congress container
-    sudo lxc-start -n juju-trusty-congress -d
-    # Verify the Congress container status
-    sudo lxc-ls -f juju-trusty-congress
-    NAME                  STATE    IPV4            IPV6  GROUPS  AUTOSTART
-    ----------------------------------------------------------------------
-    juju-trusty-congress  RUNNING  192.168.10.117  -     -       NO
-    # exit back to the Jumphost, wait a minute, and go back to the "SSH to Congress server" step above
-  # On the Congress server that you have logged into
-  source ~/admin-openrc.sh
-  cd ~/git/congress
-  source bin/activate
-  bin/congress-server &
-  disown -h  %1
+cd ~
+wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_1.sh
+wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_2.sh
+bash install_congress_1.sh [openstack-branch]
 
+Copper post configuration procedures
+------------------------------------
+No configuration procedures are required beyond the basic install procedure.

@@ -8,10 +8,13 @@ Definitions
      - Meaning
 
    * - State
-     - Information that can be used to convey or imply the state of something, e.g. an application, resource, entity, etc. This can include data held inside OPNFV components, "events" that have occurred (e.g. "policy violation"), etc.
+     - Information that can be used to convey or imply the state of something,
+e.g. an application, resource, entity, etc. This can include data held inside
+OPNFV components, "events" that have occurred (e.g. "policy violation"), etc.
 
    * - Event
-     - An item of significance to the policy engine, for which the engine has become aware thr		ough some method of discovery e.g. polling or notification.
+     - An item of significance to the policy engine, for which the engine has
+become aware through some method of discovery e.g. polling or notification.
 
 Abbreviations
 =============
