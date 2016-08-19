@@ -18,9 +18,6 @@
 #
 # Prequisite: OPFNV installed per JOID or Apex installer
 # On jumphost:
-# - Congress installed through install_congress_1.sh
-# - admin-openrc.sh downloaded from Horizon
-# - env.sh and admin-openrc.sh in the current folder
 # - For Apex installs, on the jumphost, ssh to the undercloud VM and
 #     $ su stack
 # How to use:
