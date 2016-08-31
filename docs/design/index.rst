@@ -11,3 +11,4 @@ OPNFV Copper Project
    usecases.rst
    architecture.rst
    requirements.rst
+   otherdocs_link.rst
