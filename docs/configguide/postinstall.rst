@@ -38,8 +38,8 @@ specifying the branch identifier to use for Copper.
 
 .. code::
 
-wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_testserver.sh
-bash install_congress_testserver.sh [copper-branch]
+   wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_testserver.sh
+   bash install_congress_testserver.sh [copper-branch]
 
 Using the test webapp
 .....................
