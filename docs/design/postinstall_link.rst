@@ -1,0 +1,2 @@
+.. include::
+   ../configguide/postinstall.rst
