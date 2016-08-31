@@ -11,3 +11,6 @@ OPNFV Copper Project
    usecases.rst
    architecture.rst
    requirements.rst
+   "../configguide/featureconfig.rst"
+   "../configguide/postinstall.rst"
+   "../userguide/featureusage.rst"
