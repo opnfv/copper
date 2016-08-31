@@ -64,10 +64,10 @@ specifying the branch identifier to use for OpenStack.
 
 .. code::
 
-cd ~
-wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_1.sh
-wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_2.sh
-bash install_congress_1.sh [openstack-branch]
+   cd ~
+   wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_1.sh
+   wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_2.sh
+   bash install_congress_1.sh [openstack-branch]
 
 Copper post configuration procedures
 ------------------------------------
