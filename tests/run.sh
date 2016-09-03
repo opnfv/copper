@@ -49,7 +49,7 @@ for test in $tests; do
     test_result[$n]="Failed"
     overall_result=1
   fi
-  bash $test-clean.sh
+  bash ${test}-clean.sh
 done
 
 end=`date +%s`

@@ -47,6 +47,8 @@ unclean() {
   fail
 }
 
+trap 'fail' ERR
+
 if [  $# -eq 1 ]; then
   if [ $1 == "debug" ]; then 
     set -x #echo on
