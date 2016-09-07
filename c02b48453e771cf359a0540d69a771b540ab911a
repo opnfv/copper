@@ -1,0 +1,188 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a76adc5_1997f491",
+        "filename": "tests/dmz.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2016-09-07T19:15:23Z",
+      "side": 1,
+      "message": "i think this is good to keep, since it variabizes a commonly used string throughout the test.",
+      "range": {
+        "startLine": 38,
+        "startChar": 0,
+        "endLine": 39,
+        "endChar": 25
+      },
+      "revId": "c02b48453e771cf359a0540d69a771b540ab911a",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_d9909c97",
+        "filename": "tests/dmz.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2016-09-07T19:15:23Z",
+      "side": 1,
+      "message": "the trap calls the fail() method on any error (that is not inside of an if statement).  That way the test does not continue if there is a failure in a key piece of of the test.",
+      "range": {
+        "startLine": 86,
+        "startChar": 0,
+        "endLine": 86,
+        "endChar": 15
+      },
+      "revId": "c02b48453e771cf359a0540d69a771b540ab911a",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_3992f09f",
+        "filename": "tests/dmz.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2016-09-07T19:15:23Z",
+      "side": 1,
+      "message": "i will remove this not needed",
+      "range": {
+        "startLine": 92,
+        "startChar": 0,
+        "endLine": 92,
+        "endChar": 7
+      },
+      "revId": "c02b48453e771cf359a0540d69a771b540ab911a",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_f9b47836",
+        "filename": "tests/dmz.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2016-09-07T19:15:23Z",
+      "side": 1,
+      "message": "how about we leave the ones like this, since they eliminate the need to use awk at all and are a single command?",
+      "range": {
+        "startLine": 101,
+        "startChar": 0,
+        "endLine": 101,
+        "endChar": 63
+      },
+      "revId": "c02b48453e771cf359a0540d69a771b540ab911a",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_99830456",
+        "filename": "tests/dmz.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2016-09-07T19:15:23Z",
+      "side": 1,
+      "message": "ditto",
+      "range": {
+        "startLine": 106,
+        "startChar": 0,
+        "endLine": 106,
+        "endChar": 67
+      },
+      "revId": "c02b48453e771cf359a0540d69a771b540ab911a",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_b9860064",
+        "filename": "tests/dmz.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2016-09-07T19:15:23Z",
+      "side": 1,
+      "message": "but I remove this",
+      "range": {
+        "startLine": 125,
+        "startChar": 1,
+        "endLine": 129,
+        "endChar": 2
+      },
+      "revId": "c02b48453e771cf359a0540d69a771b540ab911a",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_597d6c6d",
+        "filename": "tests/dmz.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2016-09-07T19:15:23Z",
+      "side": 1,
+      "message": "and remove this",
+      "range": {
+        "startLine": 135,
+        "startChar": 0,
+        "endLine": 139,
+        "endChar": 2
+      },
+      "revId": "c02b48453e771cf359a0540d69a771b540ab911a",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_79806846",
+        "filename": "tests/dmz.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2016-09-07T19:15:23Z",
+      "side": 1,
+      "message": "keep this one.  It removes the need for awk because if security-group creation fails, it will return non zero to the if statement.",
+      "range": {
+        "startLine": 160,
+        "startChar": 0,
+        "endLine": 160,
+        "endChar": 44
+      },
+      "revId": "c02b48453e771cf359a0540d69a771b540ab911a",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
