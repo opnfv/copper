@@ -1,2 +1,2 @@
 .. include::
-   ../configguide/postinstall.rst
+   ../installationprocedure/installation.instruction.rst

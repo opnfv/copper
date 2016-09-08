@@ -1,2 +1,2 @@
 .. include::
-   ../userguide/featureusage.rst
+   ../userguide/feature.usage.rst

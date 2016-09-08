@@ -12,6 +12,7 @@ OPNFV Copper Project
    :maxdepth: 4
 
    introduction.rst
+   releasenotes_link.rst
    definitions.rst
    usecases.rst
    architecture.rst
