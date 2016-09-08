@@ -97,21 +97,3 @@ For that reason, the Copper project will initially focus on more specific
 configuration requirements as fulfilled by specific configuration capabilities,
 and how those requirements and capabilities are expressed in VNF and service
 design and packaging, or as generic poicies for the NFVI.
-
-Copper Release 1 Scope
-----------------------
-OPNFV Brahmaputra was the initial OPNFV release for Copper, and achieved the
-goals:
-  * Add the OpenStack Congress service to OPNFV, through at least one installer
-    project, through post-install configuration.
-  * Provide basis tests scripts and tools to exercise the Congress service
-
-Copper Release 2 Scope
-----------------------
-OPNFV Colorado includes the additional features:
-  * Congress support in the the OPNFV CI/CD pipeline for the JOID and Apex
-    installers, through the following projects being upstreamed to OpenStack:
-    * For JOID, a JuJu Charm for Congress
-    * For Apex, a Puppet Module for Congress
-  * Congress use case tests integrated into Functest and as manual tests
-  * Further enhancements of Congress test tools

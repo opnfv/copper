@@ -1,2 +1,2 @@
 .. include::
-   ../configguide/featureconfig.rst
+   ../installationprocedure/feature.configuration.rst
