@@ -6,5 +6,5 @@ OPNFV Copper Configuration Guide
    :numbered:
    :maxdepth: 4
 
-   featureconfig.rst
-   postinstall.rst
+   feature.configuration.rst
+   installation.instruction.rst

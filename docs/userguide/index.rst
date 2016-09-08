@@ -6,4 +6,4 @@ OPNFV Copper Configuration Guide
    :numbered:
    :maxdepth: 4
 
-   featureusage.rst
+   feature.usage.rst
