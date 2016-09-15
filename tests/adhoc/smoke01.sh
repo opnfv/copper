@@ -129,7 +129,13 @@ nova keypair-add smoke01 > /tmp/smoke01
 chmod 600 /tmp/smoke01
 
 echo "Boot cirros1"
-nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-groups smoke01 --key-name smoke01 cirros1
+openstack server create --config-drive True --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-group smoke01 --key-name smoke01 cirros1
+# metadata is accessible by logging into cirros1 after floating IP assignment
+# ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@$FLOATING_IP
+# from the local metadata service, via: curl http://169.254.169.254/latest/meta-data
+# from the config drive, via
+#    sudo mount /dev/sr0 /mnt/
+#    find /mnt/openstack/latest -name *.json -exec grep -H { {} + | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}'
 
 echo "Get cirros1 instance ID"
 test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
