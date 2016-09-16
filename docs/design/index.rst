@@ -11,3 +11,6 @@ OPNFV Copper Project
    usecases.rst
    architecture.rst
    requirements.rst
+   featureconfig_link.rst
+   postinstall_link.rst
+   featureusage_link.rst
