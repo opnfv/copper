@@ -1,6 +1,6 @@
-********************************
-OPNFV Copper Configuration Guide
-********************************
+***********************
+OPNFV Copper User Guide
+***********************
 
 .. toctree::
    :numbered:
