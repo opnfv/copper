@@ -1,5 +1,5 @@
 **************************
-OPNFV Copper Rekease Notes
+OPNFV Copper Release Notes
 **************************
 
 .. toctree::
