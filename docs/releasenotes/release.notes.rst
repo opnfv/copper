@@ -25,3 +25,18 @@ OPNFV Colorado includes the additional features:
 
   * Congress use case tests integrated into Functest and as manual tests
   * Further enhancements of Congress test tools
+
+Limitations
+===========
+
+The following features have not been verified as of this release:
+
+  * HA deployment: Congress should be installed in OPNFV deployments in a 
+    non-HA mode, including in HA deployment scenarios. Basic HA support was 
+    implemented for Congress in the Mitaka release (see 
+    https://review.openstack.org/#/q/topic:bp/basic-high-availability,n,z), but 
+    this feature has not yet been verified on the OPNFV platform.
+
+  * Horizon plugin: The Congress Horizon plugin (a "policy tab") has not been
+    deployed in OPNFV as of this release. Installing the needed Horizon plugin
+    files on the Horizon host is a future work item.
