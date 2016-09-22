@@ -27,15 +27,15 @@
 wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/setenv.sh -O ~/setenv.sh
 source ~/setenv.sh
 
-echo "Delete cirros1 instance"
+echo "$0: Delete cirros1 instance"
 instance=$(nova list | awk "/ cirros1 / { print \$2 }")
 if [ "$instance" != "" ]; then nova delete $instance; fi
 
-echo "Delete cirros2 instance"
+echo "$0: Delete cirros2 instance"
 instance=$(nova list | awk "/ cirros2 / { print \$2 }")
 if  [ "$instance" != "" ]; then nova delete $instance; fi
 
-echo "Wait for cirros1 and cirros2 to terminate"
+echo "$0: Wait for cirros1 and cirros2 to terminate"
 COUNTER=5
 RESULT="Wait!"
 until [[ $COUNTER -eq 0  || $RESULT == "Go!" ]]; do
@@ -46,46 +46,46 @@ until [[ $COUNTER -eq 0  || $RESULT == "Go!" ]]; do
   sleep 5
 done
 
-echo "Delete 'smoke01' security group"
+echo "$0: Delete 'smoke01' security group"
 sg=$(neutron security-group-list | awk "/ smoke01 / { print \$2 }")
 neutron security-group-delete $sg
 
-echo "Delete floating ip"
+echo "$0: Delete floating ip"
 # FLOATING_IP_ID was saved by smoke01.sh
-source /tmp/TEST_VARS.sh
-rm /tmp/TEST_VARS.sh
+source /tmp/SMOKE01_VARS.sh
+rm /tmp/SMOKE01_VARS.sh
 neutron floatingip-delete $FLOATING_IP_ID
 
-echo "Delete smoke01 key pair"
+echo "$0: Delete smoke01 key pair"
 nova keypair-delete smoke01
 rm /tmp/smoke01
 
-echo "Get 'public_router' ID"
+echo "$0: Get 'public_router' ID"
 router=$(neutron router-list | awk "/ public_router / { print \$2 }")
 
-echo "Get internal port ID with subnet 10.0.0.1 on 'public_router'"
+echo "$0: Get internal port ID with subnet 10.0.0.1 on 'public_router'"
 internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk '{print $2}')
 
-echo "If found, delete the port with subnet 10.0.0.1 on 'public_router'"
+echo "$0: If found, delete the port with subnet 10.0.0.1 on 'public_router'"
 if [ "$internal_interface" != "" ]; then neutron router-interface-delete $router port=$internal_interface; fi
 
-echo "Clear the router gateway"
+echo "$0: Clear the router gateway"
 neutron router-gateway-clear public_router
 
-echo "Delete the router"
+echo "$0: Delete the router"
 neutron router-delete public_router
 
-echo "Delete neutron port with fixed_ip 10.0.0.1"
+echo "$0: Delete neutron port with fixed_ip 10.0.0.1"
 port=$(neutron port-list | awk "/ 10.0.0.1 / { print \$2 }")
 if [ "$port" != "" ]; then neutron port-delete $port; fi
 
-echo "Delete neutron port with fixed_ip 10.0.0.2"
+echo "$0: Delete neutron port with fixed_ip 10.0.0.2"
 port=$(neutron port-list | awk "/ 10.0.0.2 / { print \$2 }")
 if [ "$port" != "" ]; then neutron port-delete $port; fi
 
-echo "Delete internal subnet"
+echo "$0: Delete internal subnet"
 neutron subnet-delete internal
 
-echo "Delete internal network"
+echo "$0: Delete internal network"
 neutron net-delete internal
 
