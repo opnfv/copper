@@ -28,7 +28,7 @@ CID=$(sudo docker ps | awk "/copper-webapp/ { print \$1 }")
 echo "Stop copper-webapp container"
 sudo docker stop $CID
 echo "Remove copper-webapp container"
-sudo docker rm $CID
+sudo docker rm -v $CID
 # Use this if the server is not running
 # sudo docker rm `docker ps -aq`
 set +x
