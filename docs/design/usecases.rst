@@ -9,6 +9,56 @@ Use Cases
 Implemented as of this release
 ------------------------------
 
+Network Bridging
+................
+
+As a service provider, I need to prevent tenants from bridging networks I have
+created with different security levels, e.g. a DMZ network and an Admin 
+network.
+
+An example implementation is shown in the Congress use case test "Network
+Bridging" (bridging.sh) in the Copper repo under the tests folder. This test:
+  * Identifies VMs with connected to Service Provider defined networks via
+          floating IPs.
+  * Identifies VMs that are connected to two such networks with different
+    security levels.
+  * For VMs that are thus connected, identifies those that are not owned
+    by the SP.
+  * Reactively enforces the network bridging rule by pausing VMs found to be in
+    violation of the policy.
+
+Note the assumptions related to the following example:
+  * "SP" is the service provider tenant, and only the SP can create tenants
+
+As implemented through OpenStack Congress:
+
+.. code::
+
+   sp_dmz_connected(x) :-
+   nova:floating_ips(fixed_ip, id, ip=y, instance_id=x, pool),
+   neutronv2:floating_ips(id, router_id, tenant_id, floating_network_id=z,
+   fixed_ip_address, floating_ip_address=y, port_id, status),
+   neutronv2:networks(id=z, tenant_id=w, name="DMZ", status, admin_state_up, shared),
+   keystone:tenants(enabled, name="SP", id=w)
+
+   sp_admin_connected(x) :-
+   nova:floating_ips(fixed_ip, id, ip=y, instance_id=x, pool),
+   neutronv2:floating_ips(id, router_id, tenant_id, floating_network_id=z,
+   fixed_ip_address, floating_ip_address=y, port_id, status),
+   neutronv2:networks(id=z, tenant_id=w, name="Admin", status, admin_state_up, shared),
+   keystone:tenants(enabled, name="SP", id=w)
+         
+   dmz_admin_connnected(x) :-
+   sp_dmz_connected(x), sp_admin_connected(x)
+         
+   dmz_admin_bridging_error(id) :-
+   nova:servers(id,name,hostId,status,tenant_id=x,user_id,image,flavor,az,hh),
+   not keystone:tenants(enabled, name="SP", id=x)
+
+   execute[nova:servers.pause(id)] :-
+   dmz_admin_bridging_error(id),
+   nova:servers(id,status='ACTIVE')
+
 DMZ Deployment
 ..............
 
