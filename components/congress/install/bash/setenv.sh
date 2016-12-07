@@ -32,7 +32,7 @@ if [ "$dist" == "Ubuntu" ]; then
   echo "Create the environment file"
   KEYSTONE_HOST=$(juju status --format=short | awk "/keystone\/0/ { print \$3 }")
   cat <<EOF >/tmp/copper/env.sh
-export CONGRESS_HOST=$(juju status --format=short | awk "/openstack-dashboard/ { print \$3 }")
+export CONGRESS_HOST=$(juju status --format=short | awk "/congress\/0/ { print \$3 }")
 export HORIZON_HOST=$(juju status --format=short | awk "/openstack-dashboard/ { print \$3 }")
 export KEYSTONE_HOST=$KEYSTONE_HOST
 export CEILOMETER_HOST=$(juju status --format=short | awk "/ceilometer\/0/ { print \$3 }")

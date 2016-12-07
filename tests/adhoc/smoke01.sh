@@ -63,7 +63,7 @@ function get_external_net () {
   else
     echo "$0: External network not found"
     echo "$0: Create external network"
-    neutron net-create public --router:external
+    openstack network create --external public
     EXTERNAL_NETWORK_NAME="public"
     echo "$0: Create external subnet"
     neutron subnet-create public 192.168.10.0/24 --name public --enable_dhcp=False --allocation_pool start=192.168.10.6,end=192.168.10.49 --gateway 192.168.10.1
@@ -145,7 +145,7 @@ echo "$0: Get cirros1 instance ID"
 test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
 
 echo "$0: Wait for cirros1 to go ACTIVE"
-COUNTER=5
+COUNTER=10
 RESULT="Test Failed!"
 until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   status=$(openstack server show $test_cirros1_ID | awk "/ status / { print \$4 }")
@@ -161,7 +161,7 @@ nova floating-ip-associate cirros1 $FLOATING_IP
 echo "$0: Boot cirros2"
 nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-groups smoke01 cirros2
 
-COUNTER=1
+COUNTER=10
 RESULT="Failed!"
 until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
   echo "$0: Verify internal network connectivity"

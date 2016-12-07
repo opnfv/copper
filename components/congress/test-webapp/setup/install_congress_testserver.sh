@@ -95,8 +95,8 @@ sed -i -- "s/OS_PASSWORD/$OS_PASSWORD/g" /tmp/copper/copper/components/congress/
 
 echo "Start webapp container"
 sudo docker build -t copper-webapp /tmp/copper/copper/components/congress/test-webapp/
-CID=$(sudo docker run -v /tmp/copper/log:/tmp -p 8257:80 -d copper-webapp)
-CIP=$(sudo docker inspect $CID | grep IPAddress | cut -d '"' -f 4 | tail -1)
+sudo docker run -d -v /tmp/copper/log:/tmp -p 8257:80 --name copper copper-webapp 
+CIP=$(sudo docker inspect copper | grep IPAddress | cut -d '"' -f 4 | tail -1)
 echo "Copper Webapp IP address: $CIP"
 
 set +x
