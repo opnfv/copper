@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2015-2016 AT&T Intellectual Property, Inc
+# Copyright 2015-2017 AT&T Intellectual Property, Inc
 #  
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@
 #   # After test, cleanup
 #   $ bash dmz-clean.sh
 
+trap 'fail' ERR
+
 pass() {
   echo "Hooray!"
   set +x #echo off
@@ -58,26 +60,6 @@ if [  $# -eq 1 ]; then
     set -x #echo on
   fi
 fi
-
-# Find external network if any, and details
-function get_external_net () {
-  network_ids=($(neutron net-list|grep -v "+"|grep -v name|awk '{print $2}'))
-  for id in ${network_ids[@]}; do
-      [[ $(neutron net-show ${id}|grep 'router:external'|grep -i "true") != "" ]] && ext_net_id=${id}
-  done
-  if [[ $ext_net_id ]]; then 
-    EXTERNAL_NETWORK_NAME=$(openstack network show $ext_net_id | awk "/ name / { print \$4 }")
-    EXTERNAL_SUBNET_ID=$(openstack network show $EXTERNAL_NETWORK_NAME | awk "/ subnets / { print \$4 }")
-  else
-    echo "External network not found"
-    echo "Create external network"
-    neutron net-create public --router:external
-    EXTERNAL_NETWORK_NAME="public"
-    echo "Create external subnet"
-    neutron subnet-create public 192.168.10.0/24 --name public --enable_dhcp=False --allocation_pool start=192.168.10.6,end=192.168.10.49 --gateway 192.168.10.1
-    EXTERNAL_SUBNET_ID=$(openstack subnet show public | awk "/ id / { print \$4 }")
-  fi
-}
 
 echo "Create Congress policy 'test'"
 if [ $(openstack congress policy show test | awk "/ id / { print \$4 }") ]; then unclean; fi
@@ -105,7 +87,7 @@ IMAGE_ID=$(glance image-list | awk "/ cirros-0.3.3-x86_64-dmz / { print \$2 }")
 echo "Add 'dmz' image tag to the cirros dmz image"
 glance --os-image-api-version 2 image-tag-update $IMAGE_ID "dmz"
 
-get_external_net
+source $(dirname "$0")/get_external_net.sh
 
 echo "Create floating IP for external subnet"
 FLOATING_IP_ID=$(neutron floatingip-create $EXTERNAL_NETWORK_NAME | awk "/ id / { print \$4 }")
