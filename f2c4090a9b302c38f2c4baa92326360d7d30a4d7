@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ac10518_9785e2ae",
+        "filename": "components/congress/test-webapp/setup/install_congress_testserver.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 232
+      },
+      "writtenOn": "2017-01-18T22:52:43Z",
+      "side": 1,
+      "message": "ubuntu-$(lsb_release -c | awk -F \u0027\\t\u0027 \u0027{print $2}\u0027)\n\n(that way you don\u0027t need the input param)",
+      "range": {
+        "startLine": 64,
+        "startChar": 39,
+        "endLine": 64,
+        "endChar": 52
+      },
+      "revId": "f2c4090a9b302c38f2c4baa92326360d7d30a4d7",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
