@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ac10518_374c2e70",
+        "filename": "tests/network_bridging-clean.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 4807
+      },
+      "writtenOn": "2017-01-18T16:20:50Z",
+      "side": 1,
+      "message": "maybe modify this section to note that these tests can be run on DevStack",
+      "range": {
+        "startLine": 21,
+        "startChar": 1,
+        "endLine": 24,
+        "endChar": 74
+      },
+      "revId": "4576a28eba8fbd099a928280c33efe611a8ba043",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_b76fbec4",
+        "filename": "tests/network_bridging.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 4807
+      },
+      "writtenOn": "2017-01-18T16:20:50Z",
+      "side": 1,
+      "message": "maybe modify this section to note that these tests can be run on DevStack",
+      "range": {
+        "startLine": 30,
+        "startChar": 0,
+        "endLine": 30,
+        "endChar": 56
+      },
+      "revId": "4576a28eba8fbd099a928280c33efe611a8ba043",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
