@@ -13,45 +13,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# What this is: script 1 of 2 for installation of a test server for Congress.
+# What this is: script for installation of a test server for Congress.
 # Status: this is a work in progress, under test.
 #
-# Prequisite: OPFNV installed per JOID or Apex installer
+# Prequisite: Devstack, or OPFNV installed per JOID or Apex installer
 # On jumphost:
 # - For Apex installs, on the jumphost, ssh to the undercloud VM and
 #     $ su stack
+#
 # How to use:
 #   Retrieve the copper install script as below, optionally specifying the 
 #   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_testserver.sh
-# $ bash install_congress_testserver.sh [copper-branch]
-#   optionally specifying the branch identifier to use for copper
+# $ bash install_congress_testserver.sh <congress_ip> <keystone_ip> \
+#     <admin-openrc.sh> [copper-branch]
+#   where:
+#     congress_ip: IP address of Congress service
+#     keystone_ip: IP address of Keytone service
+#     admin-openrc.sh: file location of admin-openrc.sh
+#     copper-branch: optional copper git branch to install
 
 set -x
 
-if [ $# -eq 1 ]; then cubranch=$1; fi
+CONGRESS_HOST=$1
+KEYSTONE_HOST=$2
+
+if [[ ! -z "$4" ]]; then cubranch=$4; fi
 
 echo "Install prerequisites"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
 
 if [ ! -d /tmp/copper ]; then mkdir /tmp/copper; fi
-wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/setenv.sh -O /tmp/copper/setenv.sh
-source /tmp/copper/setenv.sh
+cp $3 /tmp/copper/admin-openrc.sh
+source /tmp/copper/admin-openrc.sh
 
 if [ "$dist" == "Ubuntu" ]; then
-  # Docker setup procedure from https://docs.docker.com/engine/installation/linux/ubuntulinux/
-  echo "Install docker and prerequisites"
-  sudo apt-get update
-  sudo apt-get install -y apt-transport-https ca-certificates
-  sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-  sudo tee /etc/apt/sources.list.d/docker.list <<- 'EOF'
+  if [[ ! $(dpkg -s docker-engine| grep Status) == "Status: install ok installed" ]]; then
+    # Docker setup procedure from https://docs.docker.com/engine/installation/linux/ubuntulinux/
+    echo "Install docker and prerequisites"
+    sudo apt-get update
+    sudo apt-get install -y apt-transport-https ca-certificates
+    sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+    sudo tee /etc/apt/sources.list.d/docker.list <<- 'EOF'
 deb https://apt.dockerproject.org/repo ubuntu-trusty main
 EOF
-  sudo apt-get update
-  sudo apt-get purge lxc-docker
-  apt-cache policy docker-engine
-  sudo apt-get install -y linux-image-extra-$(uname -r)
-  sudo apt-get install -y docker docker-engine
+    sudo apt-get update
+    sudo apt-get purge lxc-docker
+    apt-cache policy docker-engine
+    sudo apt-get install -y linux-image-extra-$(uname -r)
+    sudo apt-get install -y docker docker-engine
+    sudo service docker start
+  fi
 else
   sudo tee /etc/yum.repos.d/docker.repo <<-'EOF'
 [dockerrepo]
@@ -62,6 +74,7 @@ gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 EOF
   sudo yum install -y docker
+  sudo service docker start
 fi
 
 echo "Clone copper"
@@ -74,7 +87,6 @@ else
   echo "/tmp/copper exists: run 'rm -rf /tmp/copper' to start clean if needed"
 fi
 
-sudo service docker start
 
 echo "Setup copper environment"
 source /tmp/copper/env.sh
