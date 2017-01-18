@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 # What this is: script for installation of a test server for Congress.
+# This script creates a Docker container and installs the Copper webapp in it.
 # Status: this is a work in progress, under test.
 #
 # Prequisite: Devstack, or OPFNV installed per JOID or Apex installer
@@ -23,22 +24,27 @@
 #
 # How to use:
 #   Retrieve the copper install script as below, optionally specifying the 
-#   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
+#   branch to use as a URL parameter
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_testserver.sh
 # $ bash install_congress_testserver.sh <congress_ip> <keystone_ip> \
-#     <admin-openrc.sh> [copper-branch]
+#     <admin-openrc.sh> <ubuntu-distro> [copper-branch]
 #   where:
 #     congress_ip: IP address of Congress service
 #     keystone_ip: IP address of Keytone service
-#     admin-openrc.sh: file location of admin-openrc.sh
+#     admin-openrc.sh: file location of admin-openrc.sh, ie ~/Downloads/admin-openrc.sh
+#     ubuntu-distro: required; if centos, use NONE; ubuntu: ubuntu-trusty, ubuntu-wiley, ubuntu-xenial
 #     copper-branch: optional copper git branch to install
+#
+#   To stop and remove the Docker container, run  
+#   https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/# clean_congress_testserver.sh
 
 set -x
 
 CONGRESS_HOST=$1
 KEYSTONE_HOST=$2
+UBUNTU_DISTRO=$4
 
-if [[ ! -z "$4" ]]; then cubranch=$4; fi
+if [[ ! -z "$5" ]]; then cubranch=$5; fi
 
 echo "Install prerequisites"
 dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
@@ -55,7 +61,7 @@ if [ "$dist" == "Ubuntu" ]; then
     sudo apt-get install -y apt-transport-https ca-certificates
     sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
     sudo tee /etc/apt/sources.list.d/docker.list <<- 'EOF'
-deb https://apt.dockerproject.org/repo ubuntu-trusty main
+deb https://apt.dockerproject.org/repo UBUNTU_DISTRO main
 EOF
     sudo apt-get update
     sudo apt-get purge lxc-docker
