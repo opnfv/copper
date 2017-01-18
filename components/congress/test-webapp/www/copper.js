@@ -1,5 +1,5 @@
 /*
- Copyright 2015-2016 AT&T Intellectual Property, Inc
+ Copyright 2015-2017 AT&T Intellectual Property, Inc
   
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -133,8 +133,14 @@ function get_datasource_table_rows(dsIndex,tableIndex) {
 					else {
 						for (j in TRANSLATORS[datasource][i]['field-translators']) {
 							tbhd = element('th',"",null,null);
-							tbhd.innerHTML = TRANSLATORS[datasource][i]['field-translators'][j]['fieldname'];
-							tbhd.title = TRANSLATORS[datasource][i]['field-translators'][j]['fieldname'];
+							if ("col" in TRANSLATORS[datasource][i]['field-translators'][j]) {
+								tbhd.innerHTML = TRANSLATORS[datasource][i]['field-translators'][j]['col'];
+								tbhd.title = TRANSLATORS[datasource][i]['field-translators'][j]['col'];								
+							}
+							else {
+								tbhd.innerHTML = TRANSLATORS[datasource][i]['field-translators'][j]['fieldname'];
+								tbhd.title = TRANSLATORS[datasource][i]['field-translators'][j]['fieldname'];
+							}
 							tbhr.appendChild(tbhd);
 						}
 					}
