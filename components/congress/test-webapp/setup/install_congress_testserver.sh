@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 # What this is: script for installation of a test server for Congress.
+# This script installs Docker if it's not present, creates a Docker container 
+# and installs the Copper webapp in it.
 # Status: this is a work in progress, under test.
 #
 # Prequisite: Devstack, or OPFNV installed per JOID or Apex installer
@@ -23,20 +25,27 @@
 #
 # How to use:
 #   Retrieve the copper install script as below, optionally specifying the 
-#   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
+#   branch to use as a URL parameter
 # $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/test-webapp/setup/install_congress_testserver.sh
-# $ bash install_congress_testserver.sh <congress_ip> <keystone_ip> \
-#     <admin-openrc.sh> [copper-branch]
+# $ bash install_congress_testserver.sh <congress_ip> <keystone_ip> <admin-openrc.sh> [copper-branch]
 #   where:
 #     congress_ip: IP address of Congress service
 #     keystone_ip: IP address of Keytone service
-#     admin-openrc.sh: file location of admin-openrc.sh
+#     admin-openrc.sh: file location of admin-openrc.sh, ie ~/Downloads/admin-openrc.sh
 #     copper-branch: optional copper git branch to install
+#
+# NOTE: as of 18 Jan 2017, Docker/Ubuntu supports installation on the ubuntu-trusty, ubuntu-wiley,
+#   and ubuntu-xenial.This script will fail if run on 16.10 Yakkety unless Docker has
+#   already been installed. Follow this tutorial to install Docker on Yakkety:
+#   https://www.linuxbabe.com/docker/install-docker-ubuntu-16-10-yakkety-yak
+#
+#   To stop and remove the Docker container, run  clean_congress_testserver.sh
 
 set -x
 
 CONGRESS_HOST=$1
 KEYSTONE_HOST=$2
+
 
 if [[ ! -z "$4" ]]; then cubranch=$4; fi
 
@@ -51,12 +60,10 @@ if [ "$dist" == "Ubuntu" ]; then
   if [[ ! $(dpkg -s docker-engine| grep Status) == "Status: install ok installed" ]]; then
     # Docker setup procedure from https://docs.docker.com/engine/installation/linux/ubuntulinux/
     echo "Install docker and prerequisites"
-    sudo apt-get update
+    url="deb https://apt.dockerproject.org/repo ubuntu-$(lsb_release -c | awk -F '\t' '{print $2}') main"
+    sudo echo $url | tee /etc/apt/sources.list.d/docker.list 
     sudo apt-get install -y apt-transport-https ca-certificates
     sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-    sudo tee /etc/apt/sources.list.d/docker.list <<- 'EOF'
-deb https://apt.dockerproject.org/repo ubuntu-trusty main
-EOF
     sudo apt-get update
     sudo apt-get purge lxc-docker
     apt-cache policy docker-engine
@@ -66,12 +73,12 @@ EOF
   fi
 else
   sudo tee /etc/yum.repos.d/docker.repo <<-'EOF'
-[dockerrepo]
-name=Docker Repository
-baseurl=https://yum.dockerproject.org/repo/main/centos/$releasever/
-enabled=1
-gpgcheck=1
-gpgkey=https://yum.dockerproject.org/gpg
+  [dockerrepo]
+  name=Docker Repository
+  baseurl=https://yum.dockerproject.org/repo/main/centos/$releasever/
+  enabled=1
+  gpgcheck=1
+  gpgkey=https://yum.dockerproject.org/gpg
 EOF
   sudo yum install -y docker
   sudo service docker start
