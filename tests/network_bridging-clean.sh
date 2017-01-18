@@ -68,10 +68,10 @@ echo "Delete test_dmz network"
 neutron net-delete test_dmz
 
 echo "Delete test_admin subnet"
-neutron subnet-delete test_dmz
+neutron subnet-delete test_admin
 
 echo "Delete test_admin network"
-neutron net-delete test_dmz
+neutron net-delete test_admin
 
 set +x #echo off
 
