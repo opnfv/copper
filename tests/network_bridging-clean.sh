@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2015-2016 AT&T Intellectual Property, Inc
+# Copyright 2015-2017 AT&T Intellectual Property, Inc
 #  
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@
 
 # What this is: Cleanup script for the test network_bridging.sh
 #
-# Status: this is a work in progress, under test. 
+# Status: this is a work in progress, under test.
 #
-# Prequisite: OPFNV installed per JOID or Apex installer
+# Prequisite: 
+# - OpenStack Congress installed as part of an OpenStack deployment,
+#   e.g. via Devstack, or OPFNV
 # - OpenStack CLI environment variables setup
 # How to use:
-#   Install Congress test server per https://wiki.opnfv.org/copper/academy
-#   # Create Congress policy and resources that exercise policy
-#   $ bash network_briding.sh
-#   # After test, cleanup
-#   $ bash network_briding-clean.sh
+#   $ bash network_bridging-clean.sh
+
 
 if [  $# -eq 1 ]; then
   if [ $1 == "debug" ]; then 
@@ -68,10 +67,10 @@ echo "Delete test_dmz network"
 neutron net-delete test_dmz
 
 echo "Delete test_admin subnet"
-neutron subnet-delete test_dmz
+neutron subnet-delete test_admin
 
 echo "Delete test_admin network"
-neutron net-delete test_dmz
+neutron net-delete test_admin
 
 set +x #echo off
 
