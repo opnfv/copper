@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ac10518_00df660e",
+        "filename": "components/congress/test-webapp/setup/install_congress_testserver.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 232
+      },
+      "writtenOn": "2017-01-19T19:08:00Z",
+      "side": 1,
+      "message": "Has this been tested? I\u0027m not sure it will work - the tee command needs to be run as sudo. the echo command being run as sudo will not result in the tee command being run as sudo (sudo is not inherited across piped commands).",
+      "range": {
+        "startLine": 64,
+        "startChar": 0,
+        "endLine": 64,
+        "endChar": 61
+      },
+      "revId": "8bf61ec63711f7feaaad22ecf819116407383d57",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
