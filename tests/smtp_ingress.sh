@@ -20,12 +20,15 @@
 #
 # Status: this is a work in progress, under test. 
 #
-# Prequisite: OPFNV installed per JOID or Apex installer
+# Prequisite: 
+# - OpenStack Congress installed as part of an OpenStack deployment,
+#   e.g. via Devstack or OPFNV
 # - OpenStack CLI environment variables setup
+#
 # How to use:
-#   # Create Congress policy and resources that exercise policy
 #   $ bash smtp_ingress.sh
-#   # After test, cleanup
+# 
+# After test, cleanup
 #   $ bash smtp_ingress-clean.sh
 
 pass() {
@@ -55,13 +58,14 @@ fi
 
 # Find external network if any, and details
 function get_external_net () {
+  echo "get_external_net()"
   network_ids=($(neutron net-list|grep -v "+"|grep -v name|awk '{print $2}'))
   for id in ${network_ids[@]}; do
       [[ $(neutron net-show ${id}|grep 'router:external'|grep -i "true") != "" ]] && ext_net_id=${id}
   done
   if [[ $ext_net_id ]]; then 
-    EXTERNAL_NETWORK_NAME=$(openstack network show $ext_net_id | awk "/ name / { print \$4 }")
-    EXTERNAL_SUBNET_ID=$(openstack network show $EXTERNAL_NETWORK_NAME | awk "/ subnets / { print \$4 }")
+    EXTERNAL_NETWORK_NAME=$(neutron net-show $ext_net_id | awk "/ name / { print \$4 }")
+    EXTERNAL_SUBNET_ID=$(neutron net-show $EXTERNAL_NETWORK_NAME | awk "/ subnets / { print \$4 }")
   else
     echo "External network not found"
     echo "Create external network"
