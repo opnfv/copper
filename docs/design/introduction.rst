@@ -1,15 +1,15 @@
 .. This work is licensed under a
 .. Creative Commons Attribution 4.0 International License.
 .. http://creativecommons.org/licenses/by/4.0
-.. (c) 2015-2016 AT&T Intellectual Property, Inc
+.. (c) 2015-2017 AT&T Intellectual Property, Inc
 
 Introduction
 ============
 
 ..
- This work is licensed under a Creative Commons Attribution 3.0 Unported License.
+ This work is licensed under a Creative Commons Attribution 4.0 Unported License.
 
- http://creativecommons.org/licenses/by/3.0/legalcode
+ http://creativecommons.org/licenses/by/4.0
 
 .. NOTE::
    This is the working documentation for the Copper project.
@@ -18,8 +18,8 @@ The `OPNFV Copper <https://wiki.opnfv.org/copper>`_ project aims to help ensure
 that virtualized infrastructure and application deployments comply with goals of
 the NFV service provider or the VNF designer/user.
 
-This is the second ("Colorado") release of the Copper project. The documenation
-provided here focuses on the overall goals of the Copper project, and the
+This is the third ("Danube") release of the Copper project. The documentation
+provided here focuses on the overall goals of the Copper project and the
 specific features supported in the Colorado release.
 
 Overall Goals for Configuration Policy
@@ -36,7 +36,7 @@ in specific terms or more abstractly, but at the highest level they express:
   * what I don't want
 
 Using road-based transportation as an analogy, some examples of this are shown
-below.
+below:
 
 .. list-table:: Configuration Intent Example
    :widths: 10 45 45
@@ -77,7 +77,7 @@ Examples of such translation are:
    * - network security
      - firewall, DPI, private subnets
    * - compute/storage security
-     - vulerability monitoring, resource access controls
+     - vulnerability monitoring, resource access controls
    * - high availability
      - clustering, auto-scaling, anti-affinity, live migration
    * - disaster recovery
@@ -89,11 +89,11 @@ Examples of such translation are:
    * - resource reclamation
      - low-usage monitoring
 
-Although such intent to capability translation is conceptually useful, it is
+Although such intent-to-capability translation is conceptually useful, it is
 unclear how it can address the variety of aspects that may affect the choice of
 an applicable configuration capability.
 
 For that reason, the Copper project will initially focus on more specific
 configuration requirements as fulfilled by specific configuration capabilities,
-and how those requirements and capabilities are expressed in VNF and service
-design and packaging, or as generic poicies for the NFVI.
+as well as how those requirements and capabilities are expressed in VNF and service
+design and packaging or as generic policies for the NFV Infrastructure.

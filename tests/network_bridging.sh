@@ -17,7 +17,7 @@
 # What this is: An OpenStack Congress policy test. Sets up and validates policy
 # creation and execution for:
 # 1) Detecting that a VM is connected to two networks of different 'security
-#    levels'. 'Security levels' in this example means that the service
+#    levels.' 'Security levels' in this example means that the service
 #    provider assigns distinct sensitivity/risk to connections over those
 #    networks, e.g. a public network (e.g. DMZ) and an internal/private network 
 #    (e.g. service provider admin network
@@ -27,9 +27,9 @@
 #
 # Status: this is a work in progress, under test.
 #
-# Prequisite: 
+# Prerequisite:
 # - OpenStack Congress installed as part of an OpenStack deployment,
-#   e.g. via Devstack, or OPFNV
+#   e.g. via Devstack or OPFNV
 # - OpenStack CLI environment variables setup
 # How to use:
 #   # Create Congress policy and resources that exercise policy
@@ -135,7 +135,7 @@ until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
   let COUNTER-=1
   sleep 5
 done
-echo "$0: $(date) smz_connected table entries present for cirros1, cirros2:" $RESULT
+echo "$0: $(date) dmz_connected table entries present for cirros1, cirros2:" $RESULT
 if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 
 echo "$0: $(date) Verify cirros1 and cirros2 IDs are in the Congress policy 'test' table 'admin_connected'"

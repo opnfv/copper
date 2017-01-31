@@ -1,7 +1,7 @@
 .. This work is licensed under a
 .. Creative Commons Attribution 4.0 International License.
 .. http://creativecommons.org/licenses/by/4.0
-.. (c) 2015-2016 AT&T Intellectual Property, Inc
+.. (c) 2015-2017 AT&T Intellectual Property, Inc
 
 Definitions
 ===========
@@ -41,3 +41,6 @@ Abbreviations
 
    * - VNF
      - Virtual Network Function
+
+   * - NFVI
+     - Network Function Virtualization Infrastructure
