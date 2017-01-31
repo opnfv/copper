@@ -1,7 +1,7 @@
 .. This work is licensed under a
 .. Creative Commons Attribution 4.0 International License.
 .. http://creativecommons.org/licenses/by/4.0
-.. (c) 2015-2016 AT&T Intellectual Property, Inc
+.. (c) 2015-2017 AT&T Intellectual Property, Inc
 
 Requirements
 ============
@@ -22,10 +22,8 @@ include multiple ways in which resource requirements can be expressed and fulfil
 
   * OpenStack Nova
 
-    * the `image <http://docs.openstack.org/openstack-ops/content/user_facing_images.html>`_ feature, enabling "VM templates" to be defined for NFs,
-      and referenced by name as a specific NF version to be used
-    * the `flavor <http://docs.openstack.org/openstack-ops/content/flavors.html>`_ feature, addressing basic compute and
-      storage requirements, with extensibility for custom attributes
+    * the Image feature, enabling "VM templates" to be defined for NFs and referenced by name as a specific NF version to be used
+    * the Flavor feature, addressing basic compute and storage requirements, with extensibility for custom attributes
 
   * OpenStack Heat
 
@@ -44,10 +42,8 @@ include multiple ways in which resource requirements can be expressed and fulfil
       * orchestration service user management (requires
         `Keystone <http://docs.openstack.org/developer/keystone/>`_)
       * shared storage (requires `Manila <https://wiki.openstack.org/wiki/Manila>`_)
-      * load balancing (requires Neutron
-        `LBaaS <http://docs.openstack.org/admin-guide-cloud/content/section_lbaas-overview.html>`_)
-      * firewalls (requires Neutron
-        `FWaaS <http://docs.openstack.org/admin-guide-cloud/content/install_neutron-fwaas-agent.html>`_)
+      * load balancing (requires `Neutron LBaaS <http://docs.openstack.org/admin-guide/networking.html>`_)
+      * firewalls (requires `Neutron FWaaS <http://docs.openstack.org/admin-guide/networking.html>`_)
       * various Neutron-based network and security configuration items
       * Nova flavors
       * Nova server attributes including access control
@@ -58,19 +54,19 @@ include multiple ways in which resource requirements can be expressed and fulfil
       * "multi-tenant cloud messaging and notification service" (requires
         `Zaqar <http://docs.openstack.org/developer/zaqar/>`_)
 
-  * OpenStack `Group-Based Policy <https://wiki.openstack.org/wiki/GroupBasedPolicy>`_
+  * `OpenStack Group-Based Policy <https://wiki.openstack.org/wiki/GroupBasedPolicy>`_
 
     * API-based grouping of endpoints with associated contractual expectations for data flow processing and service chaining
 
-  * OpenStack `Tacker <https://wiki.openstack.org/wiki/Tacker>`_
+  * `OpenStack Tacker <https://wiki.openstack.org/wiki/Tacker>`_
 
     * "a fully functional ETSI MANO based general purpose NFV Orchestrator and VNF Manager for OpenStack"
 
-  * OpenDaylight `Group-Based Policy <https://wiki.opendaylight.org/view/Group_Based_Policy_(GBP)>`_
+  * `OpenDaylight Group-Based Policy <https://wiki.opendaylight.org/view/Group_Based_Policy_(GBP)>`_
 
     * model-based grouping of endpoints with associated contractual expectations for data flow processing
 
-  * OpenDaylight `Service Function Chaining (SFC) <https://wiki.opendaylight.org/view/Service_Function_Chaining:Main>`_
+  * `OpenDaylight Service Function Chaining (SFC) <https://wiki.opendaylight.org/view/Service_Function_Chaining:Main>`_
 
     * model-based management of "service chains" and the infrastucture that enables them
 
@@ -113,17 +109,13 @@ high-level required capabilities include:
 Upstream projects already include multiple ways in which configuration conditions
 can be monitored and responded to:
 
-  * OpenStack `Congress <https://wiki.openstack.org/wiki/Congress>`_ provides a
+  * OpenStack `Congress <http://docs.openstack.org/developer/congress/index.html>`_ provides a
     table-based mechanism for state monitoring and proactive/reactive policy
     enforcement, including data obtained from internal databases of OpenStack
     core and optional services. The Congress design approach is also extensible
     to other VIMs (e.g. SDNCs) through development of data source drivers for
-    the new monitored state information. See
-    `Stackforge Congress Data Source Translators <https://github.com/stackforge/congress/tree/master/congress/datasources>`_,
-    `congress.readthedocs.org <http://congress.readthedocs.org/en/latest/cloudservices.html#drivers>`_,
-    and the `Congress specs <https://github.com/stackforge/congress-specs>`_ for
-    more info.
-  * OpenStack `Ceilometer <https://wiki.openstack.org/wiki/Ceilometer>`_
+    the new monitored state information.
+  * OpenStack `Aodh <https://wiki.openstack.org/wiki/Telemetry#Aodh>`_
     provides means to trigger alarms upon a wide variety of conditions derived
     from its monitored OpenStack analytics.
   * `Nagios <https://www.nagios.org/#/>`_ "offers complete monitoring and alerting for servers, switches, applications, and services".

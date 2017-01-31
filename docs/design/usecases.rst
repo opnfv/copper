@@ -1,12 +1,12 @@
 .. This work is licensed under a
 .. Creative Commons Attribution 4.0 International License.
 .. http://creativecommons.org/licenses/by/4.0
-.. (c) 2015-2016 AT&T Intellectual Property, Inc
+.. (c) 2015-2017 AT&T Intellectual Property, Inc
 
 Use Cases
 =========
 
-Implemented as of this release
+Implemented in Current Release
 ------------------------------
 
 Network Bridging
@@ -18,16 +18,14 @@ network.
 
 An example implementation is shown in the Congress use case test "Network
 Bridging" (bridging.sh) in the Copper repo under the tests folder. This test:
-  * Identifies VMs with connected to Service Provider defined networks via
-          floating IPs.
-  * Identifies VMs that are connected to two such networks with different
-    security levels.
-  * For VMs that are thus connected, identifies those that are not owned
-    by the SP.
-  * Reactively enforces the network bridging rule by pausing VMs found to be in
-    violation of the policy.
+
+  * Identifies VMs that are connected to Service Provider (SP) defined networks via floating IPs
+  * Identifies VMs that are connected to two such networks with different security levels
+  * For VMs that are thus connected, identifies those that are not owned by the Service Provider
+  * Reactively enforces the network bridging rule by pausing VMs found to be in violation of the policy
 
 Note the assumptions related to the following example:
+
   * "SP" is the service provider tenant, and only the SP can create tenants
 
 As implemented through OpenStack Congress:
@@ -63,17 +61,14 @@ DMZ Deployment
 ..............
 
 As a service provider, I need to ensure that applications which have not been
-designed for exposure in a DMZ zone, are not attached to DMZ networks.
+designed for exposure in a DMZ zone are not attached to DMZ networks.
 
 An example implementation is shown in the Congress use case test "DMZ Placement"
 (dmz.sh) in the Copper repo under the tests folder. This test:
-  * Identifies VMs connected to a DMZ (currently identified through a
-    specifically-named security group)
-  * Identifes VMs connected to a DMZ, which are by policy not allowed to be
-    (currently implemented through an image tag intended to identify images
-    that are "authorized" i.e. tested and secure, to be DMZ-connected)
-  * Reactively enforces the dmz placement rule by pausing VMs found to be in
-    violation of the policy.
+
+  * Identifies VMs connected to a DMZ (currently identified through a specifically-named security group)
+  * Identifies VMs connected to a DMZ, which are by policy not allowed to be (currently implemented through an image tag intended to identify images that are "authorized" i.e. tested and secure, to be DMZ-connected)
+  * Reactively enforces the dmz placement rule by pausing VMs found to be in violation of the policy.
 
 As implemented through OpenStack Congress:
 
@@ -103,10 +98,11 @@ or reactive policy enforcement.
 
 An example implementation is shown in the Congress use case test "SMTP Ingress"
 (smtp_ingress.sh) in the Copper repo under the tests folder. This test:
+
   * Detects that a VM is associated with a security group that allows SMTP
     ingress (TCP port 25)
   * Adds a policy table row entry for the VM, which can be later investigated
-    for appropriate use of the security group, etc
+    for appropriate use of the security group
 
 As implemented through OpenStack Congress:
 
@@ -125,12 +121,12 @@ As implemented through OpenStack Congress:
 Reserved Resources
 ..................
 
-As an NFVI provider, I need to ensure that my admins do not inadvertently
+As an NFV Infrastructure provider, I need to ensure that my admins do not inadvertently
 enable VMs to connect to reserved subnets.
 
-An example implementation is shown in the Congress use case test "Reserved
-Subnet" (reserved_subnet.sh) in the Copper repo under the tests folder. This
-test:
+An example implementation is shown in the Congress use case test "Reserved Subnet"
+(reserved_subnet.sh) in the Copper repo under the tests folder. This test:
+
   * Detects that a subnet has been created in a reserved range
   * Reactively deletes the subnet
 
@@ -145,7 +141,7 @@ As implemented through OpenStack Congress:
    reserved_subnet_error(x)
 
 
-For further analysis and implementation
+For Further Analysis and Implementation
 ---------------------------------------
 
 Affinity
@@ -187,10 +183,10 @@ Anti-Affinity
 .............
 
 Ensures that the VM instance is launched "with anti-affinity to" specific resources,
-e.g. outside a compute or storage cluster, or geographic location. Examples
-include: "Different Host Filter", i.e. ensures that the VM instance is launched
-on a different compute node from a given set of instances, as defined in a
-scheduler hint list.
+e.g. outside a compute or storage cluster, or geographic location.
+Examples include: "Different Host Filter", i.e. ensures that the VM instance is
+launched on a different compute node from a given set of instances, as defined
+in a scheduler hint list.
 
 As implemented by OpenStack Heat using scheduler hints:
 
@@ -230,8 +226,7 @@ As implemented by OpenStack Heat using scheduler hints:
 Network Access Control
 ......................
 
-Networks connected to VMs must be public, or owned by someone in the VM owner's
-group.
+Networks connected to VMs must be public or owned by someone in the VM owner's group.
 
 This use case captures the intent of the following sub-use-cases:
 
@@ -295,9 +290,8 @@ As implemented through OpenStack Congress:
 Resource Reclamation
 ....................
 
-As a service provider or tenant, I need to be informed of VMs that are
-under-utilized so that I can reclaim the VI resources. (example from
-`RuleYourCloud blog <http://ruleyourcloud.com/2015/03/12/scaling-up-congress.html>`_)
+As a service provider or tenant, I need to be informed of VMs that are under-utilized
+so that I can reclaim the VI resources. (example from `RuleYourCloud blog <http://ruleyourcloud.com/2015/03/12/scaling-up-congress.html>`_)
 
 As implemented through OpenStack Congress:
 
@@ -317,8 +311,8 @@ As implemented through OpenStack Congress:
 Resource Use Limits
 ...................
 
-As a tenant or service provider, I need to be automatically terminate an
-instance that has run for a pre-agreed maximum duration.
+As a tenant or service provider, I need to be automatically terminate an instance
+that has run for a pre-agreed maximum duration.
 
 As implemented through OpenStack Congress:
 
@@ -334,4 +328,3 @@ As implemented through OpenStack Congress:
   reclaim_server(vm),
   nova:servers(vm, vm_name, user_id),
   keystone:users(user_id, email)
-
