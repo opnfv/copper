@@ -165,6 +165,4 @@ done
 echo $RESULT
 if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 
-set +x #echo off
-
 pass

@@ -27,6 +27,22 @@
 #   # After test, cleanup with
 #   $ bash dmz-clean.sh
 
+trap 'fail' ERR
+
+pass() {
+  echo "Hooray!"
+  set +x #echo off
+  exit 0
+}
+
+# Use this to trigger fail() at the right places
+# if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+fail() {
+  echo "Test Failed!"
+  set +x
+  exit 1
+}
+
 if [  $# -eq 1 ]; then
   if [ $1 == "debug" ]; then 
     set -x #echo on
@@ -89,4 +105,4 @@ neutron subnet-delete test_internal
 echo "Delete internal network"
 neutron net-delete test_internal
 
-set +x #echo off
+pass
