@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2015-2016 AT&T Intellectual Property, Inc
+# Copyright 2015-2017 AT&T Intellectual Property, Inc
 #  
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,22 @@
 #   $ bash dmz.sh
 #   # After test, cleanup
 #   $ bash dmz-clean.sh
+
+trap 'fail' ERR
+
+pass() {
+  echo "Hooray!"
+  set +x #echo off
+  exit 0
+}
+
+# Use this to trigger fail() at the right places
+# if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+fail() {
+  echo "Test Failed!"
+  set +x
+  exit 1
+}
 
 if [  $# -eq 1 ]; then
   if [ $1 == "debug" ]; then 
@@ -102,4 +118,6 @@ echo "Delete internal network"
 neutron net-delete test_internal
 
 set +x #echo off
+
+pass
 
