@@ -209,6 +209,4 @@ done
 echo "Verify cirros1 is paused:" $RESULT
 if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 
-set +x #echo off
-
 pass
