@@ -30,6 +30,22 @@
 #   # After test, cleanup
 #   $ bash reserved_subnet-clean.sh
 
+trap 'fail' ERR
+
+pass() {
+  echo "Hooray!"
+  set +x #echo off
+  exit 0
+}
+
+# Use this to trigger fail() at the right places
+# if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+fail() {
+  echo "Test Failed!"
+  set +x
+  exit 1
+}
+
 if [  $# -eq 1 ]; then
   if [ $1 == "debug" ]; then 
     set -x #echo on
@@ -57,4 +73,4 @@ neutron subnet-delete test_public
 echo "Delete public network"
 neutron net-delete test_public
 
-set +x #echo off
+pass
