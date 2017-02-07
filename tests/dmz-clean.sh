@@ -18,8 +18,9 @@
 #
 # Status: this is a work in progress, under test. 
 #
-# Prequisite: OPFNV installed per JOID or Apex installer
-# - OpenStack CLI environment variables setup
+# Prerequisite: 
+# - OpenStack deployment with Congress service activated.
+# - OpenStack CLI environment variables setup e.g. via admin-openrc.sh script.
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   # Create Congress policy and resources that exercise policy

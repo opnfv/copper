@@ -19,8 +19,9 @@
 #
 # Status: this is a work in progress, under test.
 #
-# Prequisite: 
-# - OpenStack CLI environment variables setup
+# Prerequisite: 
+# - OpenStack deployment with Congress service activated.
+# - OpenStack CLI environment variables setup e.g. via admin-openrc.sh script.
 # How to use:
 #   source get_external_net
 #   (sets two shell variables: EXTERNAL_NETWORK_NAME and EXTERNAL_SUBNET_ID)

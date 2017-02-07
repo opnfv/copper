@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2015-2016 AT&T Intellectual Property, Inc
+# Copyright 2015-2017 AT&T Intellectual Property, Inc
 #  
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 #
 # What this is: function test driver for the OPNFV Copper project.
 # Status: this is a work in progress, under test.
-# Prequisite: 
-# - OPFNV installed per JOID or Apex installer
+# Prerequisite: 
+# - OpenStack deployment with Congress service activated.
+# - OpenStack CLI environment variables setup e.g. via admin-openrc.sh script.
 # On jumphost:
 # - Congress installed through OPNFV installer or install_congress_1.sh
 # - OpenStack CLI clients installed 

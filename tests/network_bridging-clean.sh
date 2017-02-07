@@ -18,10 +18,9 @@
 #
 # Status: this is a work in progress, under test.
 #
-# Prequisite: 
-# - OpenStack Congress installed as part of an OpenStack deployment,
-#   e.g. via Devstack, or OPFNV
-# - OpenStack CLI environment variables setup
+# Prerequisite: 
+# - OpenStack deployment with Congress service activated.
+# - OpenStack CLI environment variables setup e.g. via admin-openrc.sh script.
 # How to use:
 #   $ bash network_bridging-clean.sh
 

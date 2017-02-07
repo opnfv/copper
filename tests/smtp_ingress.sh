@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2015-2016 AT&T Intellectual Property, Inc
+# Copyright 2015-2017 AT&T Intellectual Property, Inc
 #  
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@
 #
 # Status: this is a work in progress, under test. 
 #
-# Prequisite: 
-# - OpenStack Congress installed as part of an OpenStack deployment,
-#   e.g. via Devstack or OPFNV
-# - OpenStack CLI environment variables setup
+# Prerequisite: 
+# - OpenStack deployment with Congress service activated.
+# - OpenStack CLI environment variables setup e.g. via admin-openrc.sh script.
 #
 # How to use:
 #   $ bash smtp_ingress.sh
