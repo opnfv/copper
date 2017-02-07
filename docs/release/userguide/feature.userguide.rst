@@ -3,8 +3,14 @@
 .. http://creativecommons.org/licenses/by/4.0
 .. (c) 2015-2017 AT&T Intellectual Property, Inc
 
-Copper Capabilities and Usage
-=============================
+=======================
+OPNFV Copper User Guide
+=======================
+
+.. contents::
+   :depth: 3
+   :local:
+
 This release focuses on use of the OpenStack Congress service for managing
 configuration policy. See the Congress `intro guide <http://docs.openstack.org/developer/congress/index.html>`_
 for general information on the capabilities and usage of Congress.
