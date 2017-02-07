@@ -24,12 +24,26 @@
 # How to use:
 #   $ bash network_bridging-clean.sh
 
+trap 'fail' ERR
 
-if [  $# -eq 1 ]; then
-  if [ $1 == "debug" ]; then 
-    set -x #echo on
-  fi
-fi
+pass() {
+  echo "Hooray!"
+  set +x #echo off
+  exit 0
+}
+
+# Use this to trigger fail() at the right places
+# if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+fail() {
+  echo "Test Failed!"
+  set +x
+  exit 1
+}
+
+unclean() {
+  echo "Unclean environment!"
+  fail
+}
 
 echo "Get Congress policy 'test' ID"
 test_policy_ID=$(openstack congress policy show test | awk "/ id / { print \$4 }")
@@ -71,5 +85,5 @@ neutron subnet-delete test_admin
 echo "Delete test_admin network"
 neutron net-delete test_admin
 
-set +x #echo off
+pass
 
