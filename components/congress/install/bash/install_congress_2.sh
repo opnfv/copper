@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2015-2016 AT&T Intellectual Property, Inc
+# Copyright 2015-2017 AT&T Intellectual Property, Inc
 #  
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,143 +13,137 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This is script 2 of 2 for installation of Congress on the OPNFV Controller
-# node as installed via JOID or Apex (Fuel and Compass not yet verified).
+# This is script 2 of 2 for installation of OpenStack Congress. This install 
+# procedure is intended to deploy Congress for testing purposes only.
 # Prerequisites: 
-# - OPFNV installed via JOID or Apex
-# - For Apex installs, on the jumphost, ssh to the undercloud VM and
-#     $ su stack
-# - For JOID installs, admin-openrc.sh saved from Horizon to ~/admin-openrc.sh
-# - Retrieve the copper install script as below, optionally specifying the 
-#   branch to use as a URL parameter, e.g. ?h=stable%2Fbrahmaputra
-# $ cd ~
-# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_1.sh
-# $ wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_2.sh
-# $ bash install_congress_1.sh [openstack-branch]
-#   optionally specifying the branch identifier to use for OpenStack
+# - OpenStack base deployment.
+# Usage:
+# $ bash install_congress_2.sh <target> [branch]
+#   <target>: IP/hostname where Congress is being installed
+#   branch: branch identifier to use for OpenStack
 #     
+
+trap 'fail' ERR
+
+pass() {
+  echo "$0: $(date) Install Succeeded!"
+  exit 0
+}
+
+fail() {
+  echo "$0: $(date) Install Failed!"
+  exit 1
+}
 
 set -x
 
-sudo -i
-
-if [ $# -eq 1 ]; then osbranch=$1; fi
-
-echo "OS-specific prerequisite steps"
-dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
-
-if [ "$dist" == "Ubuntu" ]; then
-  # Ubuntu
-  echo "Ubuntu-based install"
-  export CTLUSER="ubuntu"
-  source ~/congress/admin-openrc.sh
-  source ~/congress/env.sh
-  echo "Update/upgrade package repos"
-  apt-get update
-  echo "install pip"
-  apt-get install python-pip -y
-  echo "install java"
-  apt-get install default-jre -y
-  echo "install other dependencies"
-  apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev -y
-  pip install --upgrade pip virtualenv setuptools pbr tox
-  echo "set mysql root user password and install mysql"
-  export MYSQL_PASSWORD=$(/usr/bin/apg -n 1 -m 16 -c cl_seed)
-  debconf-set-selections <<< 'mysql-server mysql-server/root_password password '$MYSQL_PASSWORD
-  debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password '$MYSQL_PASSWORD
-  -E apt-get -q -y install mysql-server python-mysqldb
-  echo "install tox dependencies (detected by errors during 'tox -egenconfig')"
-  apt-get install libffi-dev openssl libssl-dev -y
-else
-  # Centos
-  echo "Centos-based install"
-  export CTLUSER="heat-admin"
-  source ~/congress/admin-openrc.sh
-  source ~/congress/env.sh
-  echo "install pip"
-  yum install python-pip -y
-  echo "install other dependencies"
-  yum install apg git gcc libxml2 python-devel libzip-devel libxslt-devel -y
-  pip install --upgrade pip virtualenv setuptools pbr tox
-  echo "install tox dependencies (detected by errors during 'tox -egenconfig')"
-  yum install libffi-devel openssl openssl-devel -y
+if [[ ! -f /.dockerenv ]]; then 
+  sudo -i
+  mkdir /opt/congress
 fi
 
-echo "Clone congress"
-cd ~/congress
+target=$1
+branch=$2
+
+cd /opt/congress
+source admin-openrc.sh
+
+echo "$0: $(date) OS-specific prerequisite steps"
+dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
+
+echo "$0: $(date) Update/upgrade package repos"
+apt-get update
+echo "$0: $(date) install pip"
+apt-get install python-pip -y
+apt-get install python3-pip -y
+echo "$0: $(date) install java"
+apt-get install default-jre -y
+echo "$0: $(date) install other dependencies"
+apt-get install apg git gcc python-dev libxml2 libxslt1-dev libzip-dev build-essential libssl-dev libffi-dev -y
+# pip install --upgrade pip setuptools pbr
+echo "$0: $(date) set mysql root user password"
+export MYSQL_PASSWORD=$(/usr/bin/apg -n 1 -m 16 -c cl_seed)
+debconf-set-selections <<< 'mysql-server mysql-server/root_password password '$MYSQL_PASSWORD
+debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password '$MYSQL_PASSWORD
+apt-get -q -y install mysql-server python-mysqldb
+service mysql restart 
+
+echo "$0: $(date) Clone congress"
+cd /opt/congress
 git clone https://github.com/openstack/congress.git
 cd congress
-if [ $# -eq 1 ]; then git checkout $1; fi
+if [ $# -eq 1 ]; then git checkout $branch; fi
 
-echo "Install OpenStack client"
-cd ~/congress
-git clone https://github.com/openstack/python-openstackclient.git
-cd python-openstackclient
-if [ $# -eq 1 ]; then git checkout $1; fi
-pip install -r requirements.txt
+echo "$0: $(date) install Congress code and dependencies"
+cd /opt/congress/congress
 pip install .
+python setup.py install
 
-echo "Setup Congress"
-cd ~/congress/congress
+echo "$0: $(date) Setup Congress"
 mkdir -p /etc/congress
-chown $CTLUSER /etc/congress
 mkdir -p /etc/congress/snapshot
 mkdir /var/log/congress
-chown $CTLUSER  /var/log/congress
 cp etc/api-paste.ini /etc/congress
 cp etc/policy.json /etc/congress
 
-echo "install dependencies of Congress"
-cd ~/congress/congress
-pip install -r requirements.txt
-pip install .
+#echo "$0: $(date) generate congress.conf.sample"
+# TODO: tox can't be used for now due to exception with setuptools
+# when trying to install pyparsing
+#pip install tox
+#tox -egenconfig
+# For now, using a pre-generated congress.conf.sample as part of the 
+# Models repo.
 
-echo "install tox"
-pip install tox
+cp /opt/congress/congress.conf.sample etc/congress.conf.sample
 
-echo "generate congress.conf.sample"
-tox -egenconfig
-
-echo "edit congress.conf.sample as needed"
+echo "$0: $(date) edit congress.conf.sample as needed"
 sed -i -- 's/#verbose = true/verbose = true/g' etc/congress.conf.sample
 sed -i -- 's/#log_file = <None>/log_file = congress.log/g' etc/congress.conf.sample
 sed -i -- 's/#log_dir = <None>/log_dir = \/var\/log\/congress/g' etc/congress.conf.sample
-sed -i -- 's/#bind_host = 0.0.0.0/bind_host = '$CONGRESS_HOST'/g' etc/congress.conf.sample
+sed -i -- 's/#bind_host = 0.0.0.0/bind_host = '$target'/g' etc/congress.conf.sample
 sed -i -- 's/#policy_path = <None>/policy_path = \/etc\/congress\/snapshot/g' etc/congress.conf.sample
+# TODO: verify keystone auth strategy
 sed -i -- 's/#auth_strategy = keystone/auth_strategy = noauth/g' etc/congress.conf.sample
-sed -i -- 's/#drivers =/drivers = congress.datasources.neutronv2_driver.NeutronV2Driver,congress.datasources.glancev2_driver.GlanceV2Driver,congress.datasources.nova_driver.NovaDriver,congress.datasources.keystone_driver.KeystoneDriver,congress.datasources.ceilometer_driver.CeilometerDriver,congress.datasources.cinder_driver.CinderDriver/g' etc/congress.conf.sample
-sed -i -- 's/#auth_host = 127.0.0.1/auth_host = '$CONGRESS_HOST'/g' etc/congress.conf.sample
-sed -i -- 's/#auth_port = 35357/auth_port = 35357/g' etc/congress.conf.sample
-sed -i -- 's/#auth_protocol = https/auth_protocol = http/g' etc/congress.conf.sample
-sed -i -- 's/#admin_tenant_name = admin/admin_tenant_name = admin/g' etc/congress.conf.sample
-sed -i -- 's/#admin_user = <None>/admin_user = congress/g' etc/congress.conf.sample
-sed -i -- 's/#admin_password = <None>/admin_password = congress/g' etc/congress.conf.sample
-sed -i -- 's/#connection = <None>/connection = mysql:\/\/congress@localhost:3306\/congress/g' etc/congress.conf.sample
+sed -i -- "s/connection = mysql+pymysql:\/\/root:secret@127.0.0.1\/congress?charset=utf8/connection = mysql+pymysql:\/\/root:$MYSQL_PASSWORD@127.0.0.1\/congress?charset=utf8/" etc/congress.conf.sample
+sed -i -- 's/#drivers = /drivers = congress.datasources.neutronv2_driver.NeutronV2Driver, congress.datasources.glancev2_driver.GlanceV2Driver, congress.datasources.nova_driver.NovaDriver, congress.datasources.keystone_driver.KeystoneDriver, congress.datasources.ceilometer_driver.CeilometerDriver, congress.datasources.cinder_driver.CinderDriver, congress.datasources.swift_driver.SwiftDriver, congress.datasources.heatv1_driver.HeatV1Driver\n#drivers = /' etc/congress.conf.sample
 
-echo "copy congress.conf.sample to /etc/congress"
+# TODO: find out how to get the Rabbit user, password, and host address
+rabbit_ip=$(openstack endpoint show nova | awk "/ internalurl / { print \$4 }" | awk -F'[/]' '{print $3}' | awk -F'[:]' '{print $1}')
+sed -i -- "s~#transport_url = <None>~transport_url = rabbit://guest:guest@$rabbit_ip:5672~" etc/congress.conf.sample
+
+echo "$0: $(date) copy congress.conf.sample to /etc/congress"
 cp etc/congress.conf.sample /etc/congress/congress.conf
 
-echo "create congress database"
-mysql -e "CREATE DATABASE congress; GRANT ALL PRIVILEGES ON congress.* TO 'congress';"
+echo "$0: $(date) create congress database"
+mysql --password=$MYSQL_PASSWORD -e "CREATE DATABASE congress; CREATE USER 'congress'; GRANT ALL PRIVILEGES ON congress.* TO 'congress';"
 
-echo "install congress-db-manage dependencies (detected by errors)"
-if [ "$dist" == "Ubuntu" ]; then apt-get build-dep python-mysqldb -y; fi
-pip install MySQL-python
+echo "$0: $(date) install congress-db-manage dependencies (detected by errors)"
+apt-get build-dep python-mysqldb -y
+pip install MySQL-python PyMySQL
 
-echo "create database schema"
+echo "$0: $(date) create database schema"
 congress-db-manage --config-file /etc/congress/congress.conf upgrade head
 
-echo "Install Congress client"
-cd ~/congress
+echo "$0: $(date) Install congress client"
+cd /opt/congress
 git clone https://github.com/openstack/python-congressclient.git
 cd python-congressclient
-if [ $# -eq 1 ]; then git checkout $1; fi
-pip install -r requirements.txt
+if [ $# -eq 1 ]; then git checkout $branch; fi
 pip install .
 
 # Fix error found during startup of congress server
-echo "Install python fixtures"
+echo "$0: $(date) Install python fixtures"
 pip install fixtures
+
+echo "$0: $(date) Install OpenStack client"
+cd /opt/congress
+git clone https://github.com/openstack/python-openstackclient.git
+cd python-openstackclient
+if [ $# -eq 1 ]; then git checkout $branch; fi
+# TODO: fix this workaround - setuptools fails
+# "Command "python setup.py egg_info" failed with error code 1 in /tmp/pip-build-JWTiHZ/pyparsing/"
+# run it twice, turn off fail trap
+pip install .
 
 # TODO: The rest of this script is not yet tested
 function _congress_setup_horizon {
@@ -165,7 +159,7 @@ function _congress_setup_horizon {
   cp $CONGRESS_HORIZON_DIR/_70_datasources.py $HORIZON_DIR/openstack_dashboard/local/enabled/
 
   # For unit tests
-  sh -c 'echo "python-congressclient" >> '$HORIZON_DIR'/requirements.txt'
+  sh -c 'echo "$0: $(date) python-congressclient" >> '$HORIZON_DIR'/requirements.txt'
   sh -c 'echo -e \
 "\n# Load the pluggable dashboard settings"\
 "\nimport openstack_dashboard.local.enabled"\
@@ -191,7 +185,9 @@ function _congress_setup_horizon {
   service apache2 restart
 }
 # Commented out as the procedure is not yet working
-#echo "Install Horizon Policy plugin"
+#echo "$0: $(date) Install Horizon Policy plugin"
 #_congress_setup_horizon
 
+pass
 set +x #echo off
+pass
