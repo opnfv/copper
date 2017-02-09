@@ -1,0 +1,7 @@
+Verified+1: jenkins-ci <jenkins-opnfv-ci@opnfv.org>
+Code-Review+2: Bryan Sullivan <bryan.sullivan@att.com>
+Submitted-by: Bryan Sullivan <bryan.sullivan@att.com>
+Submitted-at: Thu, 09 Feb 2017 01:32:57 +0000
+Reviewed-on: https://gerrit.opnfv.org/gerrit/28251
+Project: copper
+Branch: refs/heads/master
