@@ -3,11 +3,42 @@
 .. http://creativecommons.org/licenses/by/4.0
 .. (c) 2015-2017 AT&T Intellectual Property, Inc
 
-Release Notes
-=============
+======================================================================
+OPNFV Copper Release Notes
+======================================================================
+
+This document provides the release notes for the Danube Release of Copper.
+
+.. contents::
+   :depth: 3
+   :local:
+
+
+Version History
+---------------
+
++--------------------+--------------------+--------------------+--------------------+
+| **Date**           | **Ver.**           | **Author**         | **Comment**        |
+|                    |                    |                    |                    |
++--------------------+--------------------+--------------------+--------------------+
+| 2017 Feb 7         | 1.0                | Bryan Sullivan     |                    |
+|                    |                    |                    |                    |
++--------------------+--------------------+--------------------+--------------------+
+
+Important Notes
+---------------
+
+
+Summary
+-------
+
+The Danube release of OPNFV Copper is based on OpenStack Newton.
+
+Release Data
+------------
 
 Copper Release 1 Scope
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 OPNFV Brahmaputra was the initial OPNFV release for Copper, and achieved the
 goals:
 
@@ -16,7 +47,7 @@ goals:
   * Provide basis tests scripts and tools to exercise the Congress service
 
 Copper Release 2 Scope
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 OPNFV Colorado includes the additional features:
   * Congress support in the the OPNFV CI/CD pipeline for the JOID and Apex
     installers, through the following projects being upstreamed to OpenStack:
@@ -28,7 +59,7 @@ OPNFV Colorado includes the additional features:
   * Further enhancements of Congress test tools
 
 Copper Release 3 Scope
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 OPNFV Danube includes the additional features:
   * Manual tests
 
@@ -36,8 +67,15 @@ OPNFV Danube includes the additional features:
 
   * Further enhancements of Congress test scripts
 
-Limitations
-===========
+Version Change
+^^^^^^^^^^^^^^
+
+Module Version Changes
+~~~~~~~~~~~~~~~~~~~~~~
+- Openstack has changed from Mitaka to Newton
+
+Known Limitations, Issues and Workarounds
+-----------------------------------------
 
 The following features have not been verified as of this release:
 
@@ -49,3 +87,4 @@ The following features have not been verified as of this release:
   * Horizon plugin: The Congress OpenStack Dashboard plugin (a "Policy tab") has not been
     deployed in OPNFV as of this release. Installing the needed Congress Dashboard plugin
     files on the OpenStack Dashboard host is a future work item.
+

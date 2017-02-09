@@ -1,29 +1,29 @@
-.. This work is licensed under a
-.. Creative Commons Attribution 4.0 International License.
+.. This work is licensed under a Creative Commons Attribution 4.0 International License.
 .. http://creativecommons.org/licenses/by/4.0
-.. (c) 2015-2017 AT&T Intellectual Property, Inc
 
-Copper Configuration
-====================
-This release includes installer support for the OpenStack Congress service under
-JOID and Apex installers. Congress is installed by default for all JOID and Apex
-scenarios. Support for other OPNFV installer deployed environments is planned
-for the next release.
+===============================
+OPNFV Copper Installation Guide
+===============================
 
-Pre-configuration Activities
-----------------------------
-None required.
+This document describes how to install Copper, its dependencies and required system resources.
 
-Hardware Configuration
-----------------------
-There is no specific hardware configuration required for the Copper project.
+.. contents::
+   :depth: 3
+   :local:
 
-Feature Configuration
----------------------
+Version History
+---------------
 
-OPNFV Installer Support
-.......................
++--------------------+--------------------+--------------------+--------------------+
+| **Date**           | **Ver.**           | **Author**         | **Comment**        |
+|                    |                    |                    |                    |
++--------------------+--------------------+--------------------+--------------------+
+| 2017 Feb 7         | 1.0                | Bryan Sullivan     |                    |
+|                    |                    |                    |                    |
++--------------------+--------------------+--------------------+--------------------+
 
+Introduction
+------------
 The Congress service is automatically configured as required by the JOID and
 Apex installers, including creation of datasources per the installed datasource
 drivers. This release includes default support for the following datasource drivers:
@@ -43,7 +43,7 @@ Other project installer support (e.g. Doctor) may install additional datasource
 drivers once Congress is installed.
 
 Manual Installation
-...................
+-------------------
 
 NOTE: This section describes a manual install procedure that had been tested
 under the JOID and Apex base installs prior to the integration of native
@@ -76,7 +76,3 @@ specifying the branch identifier to use for OpenStack.
    wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_1.sh
    wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/install_congress_2.sh
    bash install_congress_1.sh [openstack-branch]
-
-Copper Post Configuration Procedures
-------------------------------------
-No configuration procedures are required beyond the basic install procedure.

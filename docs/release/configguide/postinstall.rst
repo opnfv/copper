@@ -7,8 +7,7 @@ Copper Post Installation Procedures
 ===================================
 
 This section describes optional procedures for verifying that the Congress
-service is operational as well as additional test tools developed for the Colorado
-release.
+service is operational.
 
 Copper Functional Tests
 -----------------------
