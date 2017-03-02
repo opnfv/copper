@@ -22,7 +22,8 @@
 #
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
-#   $ bash ~/git/copper/tests/adhoc/smoke01.sh
+#   $ bash ~/git/copper/tests/adhoc/smoke01.sh <openrc>
+#     <openrc>: path to your openrc script
 #   After test, cleanup with
 #   $ bash ~/git/copper/tests/adhoc/smoke01-clean.sh
 
@@ -45,12 +46,6 @@ unclean() {
   fail
 }
 
-if [  $# -eq 1 ]; then
-  if [ $1 == "debug" ]; then 
-    set -x #echo on
-  fi
-fi
-
 # Find external network if any, and details
 function get_external_net () {
   network_ids=($(neutron net-list|grep -v "+"|grep -v name|awk '{print $2}'))
@@ -71,8 +66,7 @@ function get_external_net () {
   fi
 }
 
-wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/setenv.sh -O ~/setenv.sh
-source ~/setenv.sh
+source $1
 
 echo "$0: Create cirros-0.3.3-x86_64 image"
 if [[ -z $(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }") ]]; then
