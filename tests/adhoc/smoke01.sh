@@ -25,7 +25,7 @@
 #   $ bash ~/git/copper/tests/adhoc/smoke01.sh <openrc>
 #     <openrc>: path to your openrc script
 #   After test, cleanup with
-#   $ bash ~/git/copper/tests/adhoc/smoke01-clean.sh
+#   $ bash ~/git/copper/tests/adhoc/smoke01-clean.sh <openrc>
 
 pass() {
   echo "$0: Hooray!"

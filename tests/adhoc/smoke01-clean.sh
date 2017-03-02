@@ -20,12 +20,26 @@
 #
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
-#   $ source ~/git/copper/tests/adhoc/smoke01.sh
+#   $ bash ~/git/copper/tests/adhoc/smoke01.sh <openrc>
+#     <openrc>: path to your openrc script
 #   After test, cleanup with
-#   $ source ~/git/copper/tests/adhoc/smoke01-clean.sh
+#   $ bash ~/git/copper/tests/adhoc/smoke01-clean.sh <openrc>
 
-wget https://git.opnfv.org/cgit/copper/plain/components/congress/install/bash/setenv.sh -O ~/setenv.sh
-source ~/setenv.sh
+pass() {
+  echo "$0: Hooray!"
+  set +x #echo off
+  exit 0
+}
+
+# Use this to trigger fail() at the right places
+# if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+fail() {
+  echo "$0: Test Failed!"
+  set +x
+  exit 1
+}
+
+source $1
 
 echo "$0: Delete cirros1 instance"
 instance=$(nova list | awk "/ cirros1 / { print \$2 }")
