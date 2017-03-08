@@ -2,8 +2,8 @@ Virtualized Infrastructure Deployment Policies (Copper)
 Creation Date: December 9, 2014
 Creation Date: Requirements
 Lifecycle State: Incubation
-Primary Contact: bs3131@att.com
-Project Lead: bs3131@att.com
+Primary Contact: aimeeu.opensource@gmail.com
+Project Lead: aimeeu.opensource@gmail.com
 Jira Name: Virtualized Infrastructure Deployment Policies project
 Jira Prefix: COPPER
 Mailing list tag [copper]
@@ -13,8 +13,6 @@ Committers:
 bs3131@att.com
 bryan.sullivan@att.com
 aimeeu.opensource@gmail.com
-staffan.blau@ericsson.com
-huangzhipeng@huawei.com
 
 Link to TSC approval: http://meetbot.opnfv.org/meetings/
 Link to approval of additional submitters:
