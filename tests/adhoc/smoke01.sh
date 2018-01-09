@@ -27,8 +27,11 @@
 #   After test, cleanup with
 #   $ bash ~/git/copper/tests/adhoc/smoke01-clean.sh <openrc>
 
+
+trap 'fail' ERR
+
 pass() {
-  echo "$0: Hooray!"
+  log "Hooray!"
   set +x #echo off
   exit 0
 }
@@ -36,140 +39,148 @@ pass() {
 # Use this to trigger fail() at the right places
 # if [ "$RESULT" == "Test Failed!" ]; then fail; fi
 fail() {
-  echo "$0: Test Failed!"
+  log "$1"
   set +x
   exit 1
 }
 
+function log() {
+  f=$(caller 0 | awk '{print $2}')
+  l=$(caller 0 | awk '{print $1}')
+  echo; echo "$f:$l ($(date)) $1"
+}
+
 unclean() {
-  echo "$0: Unclean environment!"
-  fail
+  fail "Unclean environment!"
 }
 
 # Find external network if any, and details
 function get_external_net () {
-  network_ids=($(neutron net-list|grep -v "+"|grep -v name|awk '{print $2}'))
-  for id in ${network_ids[@]}; do
-      [[ $(neutron net-show ${id}|grep 'router:external'|grep -i "true") != "" ]] && ext_net_id=${id}
+  networks=($(openstack network list | grep -v "+" | grep -v ID | awk '{print $4}'))
+  for name in ${networks[@]}; do
+    log "Checking network \"$name\""
+    external=$(openstack network show ${name} | grep 'router:external' | grep -c "External")
+    if [[ $external -eq 1 ]]; then 
+      log "Found external network \"$name\"" 
+      EXTERNAL_NETWORK_NAME=$name
+      EXTERNAL_SUBNET_ID=$(openstack network show $name | awk "/ subnets / { print \$4 }")
+      break
+    fi
   done
-  if [[ $ext_net_id ]]; then 
-    EXTERNAL_NETWORK_NAME=$(openstack network show $ext_net_id | awk "/ name / { print \$4 }")
-    EXTERNAL_SUBNET_ID=$(openstack network show $EXTERNAL_NETWORK_NAME | awk "/ subnets / { print \$4 }")
-  else
-    echo "$0: External network not found"
-    echo "$0: Create external network"
-    openstack network create --external public
-    EXTERNAL_NETWORK_NAME="public"
-    echo "$0: Create external subnet"
-    neutron subnet-create public 192.168.10.0/24 --name public --enable_dhcp=False --allocation_pool start=192.168.10.6,end=192.168.10.49 --gateway 192.168.10.1
-    EXTERNAL_SUBNET_ID=$(openstack subnet show public | awk "/ id / { print \$4 }")
+  if [[ ! $EXTERNAL_NETWORK_NAME ]]; then 
+    fail "External network not found"
   fi
 }
 
-source $1
+function wait_active() {
+  log "Wait for $1 to go ACTIVE"
+  COUNTER=10
+  status=""
+  until [[ $COUNTER -eq 0  || "$status" == "ACTIVE" ]]; do
+    status=$(openstack server show $1 | awk "/ status / { print \$4 }")
+    COUNTER=$((COUNTER-1))
+    sleep 5
+  done
+  if [[ "$status" != "ACTIVE" ]]; then 
+    fail "Timeout on $1 becoming active"
+  fi
+}
 
-echo "$0: Create cirros-0.3.3-x86_64 image"
-if [[ -z $(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }") ]]; then
-  glance --os-image-api-version 1 image-create --name cirros-0.3.3-x86_64 --disk-format qcow2 --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --container-format bare
-fi
+function smoke01() {
+  source $1
 
-get_external_net
+  if [[ -z $(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }") ]]; then
+    log "Create cirros-0.3.3-x86_64 image"
+    wget http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img \
+      -O ~/cirros-0.3.3-x86_64-disk.img
+    glance image-create --name cirros-0.3.3-x86_64 --disk-format qcow2 \
+      --container-format bare
+    image_id=$(openstack image list | awk "/ cirros-0.3.3-x86_64 / { print \$2 }")
+    glance image-upload --file ~/cirros-0.3.3-x86_64-disk.img $image_id
+  fi
 
-echo "$0: Create floating IP for external subnet"
-FLOATING_IP_ID=$(neutron floatingip-create $EXTERNAL_NETWORK_NAME | awk "/ id / { print \$4 }")
-FLOATING_IP=$(neutron floatingip-show $FLOATING_IP_ID | awk "/ floating_ip_address / { print \$4 }" | cut -d - -f 1)
-# Save ID to pass to cleanup script
-echo "FLOATING_IP_ID=$FLOATING_IP_ID" >/tmp/SMOKE01_VARS.sh
+  log "Find name and subnet of external network"
+  get_external_net
 
-if [[ -z $(neutron net-list | awk "/ internal / { print \$2 }") ]]; then 
-  echo "$0: Create internal network"
-  neutron net-create internal
+  log "Create floating IP for external subnet"
+  FLOATING_IP_ID=$(openstack floating ip create $EXTERNAL_NETWORK_NAME | awk "/ id / { print \$4 }")
+  FLOATING_IP=$(openstack floating ip show $FLOATING_IP_ID | awk "/ floating_ip_address / { print \$4 }" | cut -d - -f 1)
+  # Save ID to pass to cleanup script
+  echo "FLOATING_IP_ID=$FLOATING_IP_ID" >/tmp/SMOKE01_VARS.sh
 
-  echo "$0: Create internal subnet"
-  neutron subnet-create internal 10.0.0.0/24 --name internal --gateway 10.0.0.1 --enable-dhcp --allocation-pool start=10.0.0.2,end=10.0.0.254 --dns-nameserver 8.8.8.8
-fi
+  if [[ -z $(openstack network list | awk "/ internal / { print \$2 }") ]]; then 
+    log "Create internal network"
+    openstack network create internal
 
-if [[ -z $(neutron router-list | awk "/ public_router / { print \$2 }") ]]; then 
-  echo "$0: Create router"
-  neutron router-create public_router
+    log "Create internal subnet"
+    openstack subnet create --network internal --subnet-range 10.0.0.0/24 \
+      --gateway 10.0.0.1 --dhcp --allocation-pool start=10.0.0.2,end=10.0.0.254 \
+      --dns-nameserver 8.8.8.8 internal
+  fi
 
-  echo "$0: Create router gateway"
-  neutron router-gateway-set public_router $EXTERNAL_NETWORK_NAME
+  log "Get ID of internal network"
+  internal_net=$(openstack network show internal | awk '/ id / {print $4}')
 
-  echo "$0: Add router interface for internal network"
-  neutron router-interface-add public_router subnet=internal
-fi
+  if [[ -z $(openstack router list | awk "/ public_router / { print \$2 }") ]]; then 
+    log "Create router"
+    openstack router create public_router
 
-echo "$0: Wait up to a minute as 'neutron router-interface-add' blocks the neutron-api for some time..."
-COUNTER=1
-RESULT="Failed!"
-until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
-  echo "$0: Get the internal network ID: try" $COUNTER 
-  internal_NET=$(neutron net-list | awk "/ internal / { print \$2 }")
-  if [ "$internal_NET" != "" ]; then RESULT="Success!"; fi
-  let COUNTER+=1
-  sleep 10
-done
-if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+    log "Create router gateway"
+    openstack router set --external-gateway $EXTERNAL_NETWORK_NAME public_router
 
-echo "$0: Create smoke01 security group"
-neutron security-group-create smoke01
+    log "Add router interface for internal network"
+    openstack port create --network internal \
+      --fixed-ip subnet=internal,ip-address=10.0.0.1 \
+      public_router_internal_port
+    openstack router add port public_router public_router_internal_port
+  fi
 
-echo "$0: Add rule to smoke01 security group"
-neutron security-group-rule-create --direction ingress --protocol=TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min=22 --port-range-max=22 smoke01
-neutron security-group-rule-create --direction ingress --protocol=ICMP --remote-ip-prefix 0.0.0.0/0 smoke01
-neutron security-group-rule-create --direction egress --protocol=TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min=22 --port-range-max=22 smoke01
-neutron security-group-rule-create --direction egress --protocol=ICMP --remote-ip-prefix 0.0.0.0/0 smoke01
+  log "Create smoke01 security group"
+  openstack security group create smoke01
 
-echo "$0: Create Nova key pair"
-ssh-keygen -f "$HOME/.ssh/known_hosts" -R $FLOATING_IP
-nova keypair-add smoke01 > /tmp/smoke01
-chmod 600 /tmp/smoke01
+  log "Add rule to smoke01 security group"
+  openstack security group rule create --ingress --protocol=TCP \
+    --remote-ip 0.0.0.0/0 --dst-port 22:22 smoke01
+  openstack security group rule create --ingress --protocol=ICMP \
+    --remote-ip 0.0.0.0/0 smoke01
+  openstack security group rule create --egress --protocol=TCP \
+    --remote-ip 0.0.0.0/0 --dst-port 22:22 smoke01
+  openstack security group rule create --egress --protocol=ICMP \
+    --remote-ip 0.0.0.0/0 smoke01
 
-echo "$0: Boot cirros1"
-openstack server create --config-drive True --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-group smoke01 --key-name smoke01 cirros1
-# metadata is accessible by logging into cirros1 after floating IP assignment
-# ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@$FLOATING_IP
-# from the local metadata service, via: curl http://169.254.169.254/latest/meta-data
-# from the config drive, via
-#    sudo mount /dev/sr0 /mnt/
-#    find /mnt/openstack/latest -name *.json -exec grep -H { {} + | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}'
+  log "Create Nova key pair"
+  if [[ -f /tmp/smoke01 ]]; then rm /tmp/smoke01; fi
+  ssh-keygen -t rsa -N "" -f /tmp/smoke01 -C smokem@ifyagotem
+  chmod 600 /tmp/smoke01
+  openstack keypair create --public-key /tmp/smoke01.pub smoke01
 
-echo "$0: Get cirros1 instance ID"
-test_cirros1_ID=$(openstack server list | awk "/ cirros1 / { print \$2 }")
+  log "Create Nova flavor"
+  openstack flavor create --ram 512 --disk 1 --vcpus 1 smoke01.tiny
 
-echo "$0: Wait for cirros1 to go ACTIVE"
-COUNTER=10
-RESULT="Test Failed!"
-until [[ $COUNTER -eq 0  || $RESULT == "Test Success!" ]]; do
-  status=$(openstack server show $test_cirros1_ID | awk "/ status / { print \$4 }")
-  if [[ "$status" == "ACTIVE" ]]; then RESULT="Test Success!"; fi
-  let COUNTER-=1
-  sleep 5
-done
-if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+  log "Boot cirros1"
+  openstack server create --config-drive True --flavor smoke01.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_net --security-group smoke01 --key-name smoke01 cirros1
+  wait_active cirros1
+  # metadata is accessible by logging into cirros1 after floating IP assignment
+  # ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@$FLOATING_IP
+  # from the local metadata service, via: curl http://169.254.169.254/latest/meta-data
+  # from the config drive, via
+  #    sudo mount /dev/sr0 /mnt/
+  #    find /mnt/openstack/latest -name *.json -exec grep -H { {} + | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}'
 
-echo "$0: Associate floating IP to cirros1"
-nova floating-ip-associate cirros1 $FLOATING_IP
+  log "Associate floating IP to cirros1"
+  openstack server add floating ip cirros1 $FLOATING_IP
 
-echo "$0: Boot cirros2"
-nova boot --flavor m1.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_NET --security-groups smoke01 cirros2
+  log "Boot cirros2"
+  openstack server create --config-drive True --flavor smoke01.tiny --image cirros-0.3.3-x86_64 --nic net-id=$internal_net --security-group smoke01 --key-name smoke01 cirros2
+  wait_active cirros2
 
-COUNTER=10
-RESULT="Failed!"
-until [[ "$COUNTER" -gt 6  || "$RESULT" == "Success!" ]]; do
-  echo "$0: Verify internal network connectivity"
-  RESULT=$(ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@$FLOATING_IP "ping -c 3 10.0.0.4; exit" | awk "/ 0% packet loss/ { print \$1 }")
-  if [ "$RESULT" == "3" ]; then RESULT="Success!"; fi
-  let COUNTER+=1
-  sleep 10
-done
-if [ "$RESULT" == "Test Failed!" ]; then fail; fi
+  log "Verify public network connectivity"
+  RESULT=$(ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@$FLOATING_IP "ping -c 3 8.8.8.8; exit" | awk "/ 0% packet loss/ { print \$1 }")
+  if [[ "$RESULT" != "3" ]]; then
+    fail "Could not verify inter-VM pings"
+  fi
+}
 
-echo "$0: Verify public network connectivity"
-RESULT=$(ssh -i /tmp/smoke01 -x -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no cirros@$FLOATING_IP "ping -c 3 8.8.8.8; exit" | awk "/ 0% packet loss/ { print \$1 }")
-if [ "$RESULT" != "3" ]; then fail; fi
-
-set +x #echo off
-
+smoke01 $1
 pass
+

@@ -25,65 +25,74 @@
 #   $ source ~/git/copper/tests/adhoc/smoke01-clean.sh
 
 
-echo "$0: Delete cirros1 instance"
-instance=$(nova list | awk "/ cirros1 / { print \$2 }")
-if [ "$instance" != "" ]; then nova delete $instance; fi
+function log() {
+  f=$(caller 0 | awk '{print $2}')
+  l=$(caller 0 | awk '{print $1}')
+  echo; echo "$f:$l ($(date)) $1"
+}
 
-echo "$0: Delete cirros2 instance"
-instance=$(nova list | awk "/ cirros2 / { print \$2 }")
-if  [ "$instance" != "" ]; then nova delete $instance; fi
+function smoke01_clean() {
+  log "Delete cirros1 instance"
+  instance=$(nova list | awk "/ cirros1 / { print \$2 }")
+  if [ "$instance" != "" ]; then nova delete $instance; fi
 
-echo "$0: Wait for cirros1 and cirros2 to terminate"
-COUNTER=5
-RESULT="Wait!"
-until [[ $COUNTER -eq 0  || $RESULT == "Go!" ]]; do
-  cirros1_id=$(openstack server list | awk "/ cirros1 / { print \$4 }")
-  cirros2_id=$(openstack server list | awk "/ cirros2 / { print \$4 }")
-  if [[ "$cirros1_id" == "" && "$cirros2_id" == "" ]]; then RESULT="Go!"; fi
-  let COUNTER-=1
-  sleep 5
-done
+  log "Delete cirros2 instance"
+  instance=$(nova list | awk "/ cirros2 / { print \$2 }")
+  if  [ "$instance" != "" ]; then nova delete $instance; fi
 
-echo "$0: Delete 'smoke01' security group"
-sg=$(neutron security-group-list | awk "/ smoke01 / { print \$2 }")
-neutron security-group-delete $sg
+  log "Wait for cirros1 and cirros2 to terminate"
+  COUNTER=5
+  RESULT="Wait!"
+  until [[ $COUNTER -eq 0  || $RESULT == "Go!" ]]; do
+    cirros1_id=$(openstack server list | awk "/ cirros1 / { print \$4 }")
+    cirros2_id=$(openstack server list | awk "/ cirros2 / { print \$4 }")
+    if [[ "$cirros1_id" == "" && "$cirros2_id" == "" ]]; then RESULT="Go!"; fi
+    let COUNTER-=1
+    sleep 5
+  done
 
-echo "$0: Delete floating ip"
-# FLOATING_IP_ID was saved by smoke01.sh
-source /tmp/SMOKE01_VARS.sh
-rm /tmp/SMOKE01_VARS.sh
-neutron floatingip-delete $FLOATING_IP_ID
+  log "Delete 'smoke01' security group"
+  openstack security group delete smoke01
 
-echo "$0: Delete smoke01 key pair"
-nova keypair-delete smoke01
-rm /tmp/smoke01
+  log "Delete floating ip"
+  # FLOATING_IP_ID was saved by smoke01.sh
+  source /tmp/SMOKE01_VARS.sh
+  rm /tmp/SMOKE01_VARS.sh
+  openstack floating ip delete $FLOATING_IP_ID
 
-echo "$0: Get 'public_router' ID"
-router=$(neutron router-list | awk "/ public_router / { print \$2 }")
+  log "Delete Nova key pair smoke01"
+  openstack keypair delete smoke01
+  rm /tmp/smoke01
 
-echo "$0: Get internal port ID with subnet 10.0.0.1 on 'public_router'"
-internal_interface=$(neutron router-port-list $router | grep 10.0.0.1 | awk '{print $2}')
+  log "Delete Nova flavor smoke01.tiny"
+  openstack flavor delete smoke01.tiny
 
-echo "$0: If found, delete the port with subnet 10.0.0.1 on 'public_router'"
-if [ "$internal_interface" != "" ]; then neutron router-interface-delete $router port=$internal_interface; fi
+  log "Get 'public_router' ID"
+  router=$(openstack router list | awk "/ public_router / { print \$2 }")
 
-echo "$0: Clear the router gateway"
-neutron router-gateway-clear public_router
+  log "Remove public_router_internal_port from public_router"
+  openstack router remove port public_router public_router_internal_port
 
-echo "$0: Delete the router"
-neutron router-delete public_router
+  log "Clear the router gateway"
+  openstack router unset --external-gateway public_router
 
-echo "$0: Delete neutron port with fixed_ip 10.0.0.1"
-port=$(neutron port-list | awk "/ 10.0.0.1 / { print \$2 }")
-if [ "$port" != "" ]; then neutron port-delete $port; fi
+  log "Delete the router"
+  openstack router delete public_router
 
-echo "$0: Delete neutron port with fixed_ip 10.0.0.2"
-port=$(neutron port-list | awk "/ 10.0.0.2 / { print \$2 }")
-if [ "$port" != "" ]; then neutron port-delete $port; fi
+  log "Delete port with fixed_ip 10.0.0.1"
+  port=$(openstack port list | awk "/'10.0.0.1'/ { print \$2 }")
+  if [ "$port" != "" ]; then openstack port delete $port; fi
 
-echo "$0: Delete internal subnet"
-neutron subnet-delete internal
+  log "Delete port with fixed_ip 10.0.0.2"
+  port=$(openstack port list | awk "/'10.0.0.2'/ { print \$2 }")
+  if [ "$port" != "" ]; then openstack port delete $port; fi
 
-echo "$0: Delete internal network"
-neutron net-delete internal
+  log "Delete internal subnet"
+  openstack subnet delete internal
+
+  log "Delete internal network"
+  openstack network delete internal
+}
+
+smoke01_clean
 
