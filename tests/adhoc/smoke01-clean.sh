@@ -14,16 +14,22 @@
 # limitations under the License.
 #
 
-# What this is: Cleanup script for a basic test to validate an OPNFV install. 
+# What this is: Cleanup script for a basic test to validate an OPNFV install.
 #
-# Status: this is a work in progress, under test. 
+# Prerequisites:
+#   OpenStack installed.
+#   Environment setting script (e.g. admin-openrc.sh) available, and executed
+#   so OpenStack environment variables are setup.
+#   OpenStack clients installed e.g. via setup_osc.sh in the OPNFV Models repo.
 #
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
-#   $ source ~/git/copper/tests/adhoc/smoke01.sh
+#   $ bash ~/git/copper/tests/adhoc/smoke01.sh <openrc>
+#     <openrc>: path to your openrc script
 #   After test, cleanup with
-#   $ source ~/git/copper/tests/adhoc/smoke01-clean.sh
-
+#   $ bash ~/git/copper/tests/adhoc/smoke01-clean.sh 
+#
+# Status: this is a work in progress, under test. 
 
 function log() {
   f=$(caller 0 | awk '{print $2}')

@@ -20,13 +20,19 @@
 # Status: this is a work in progress, under test. Automated ping test to the 
 # internet and between VMs has not yet been implemented.
 #
+# Prerequisites:
+#   OpenStack installed.
+#   Environment setting script (e.g. admin-openrc.sh) available.
+#   OpenStack clients installed e.g. via setup_osc.sh in the OPNFV Models repo.
+#
 # How to use:
 #   Install Congress test server per https://wiki.opnfv.org/copper/academy
 #   $ bash ~/git/copper/tests/adhoc/smoke01.sh <openrc>
 #     <openrc>: path to your openrc script
 #   After test, cleanup with
-#   $ bash ~/git/copper/tests/adhoc/smoke01-clean.sh <openrc>
-
+#   $ bash ~/git/copper/tests/adhoc/smoke01-clean.sh
+#
+# Status: this is a work in progress, under test. 
 
 trap 'fail' ERR
 
