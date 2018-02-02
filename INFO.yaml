@@ -1,0 +1,51 @@
+---
+project: 'aimeeu.opensource@gmail.com'
+project_creation_date: ''
+project_category: ''
+lifecycle_state: 'Incubation'
+project_lead: &opnfv_copper_ptl
+primary_contact: *opnfv_copper_ptl
+issue_tracking:
+    type: 'jira'
+    url: 'https://jira.opnfv.org/projects/COPPER'
+    key: 'COPPER'
+mailing_list:
+    type: 'mailman2'
+    url: 'opnfv-tech-discuss@lists.opnfv.org'
+    tag: '[copper]'
+realtime_discussion:
+    type: irc
+    server: 'freenode.net'
+    channel: '#opnfv-copper'
+meetings:
+    - type: 'gotomeeting+irc'
+      agenda:  # eg: 'https://wiki.opnfv.org/display/'
+      url:  # eg: 'https://global.gotomeeting.com/join/819733085'
+      server: 'freenode.net'
+      channel: '#opnfv-meeting'
+      repeats: 'weekly'
+      time:  # eg: '16:00 UTC'
+repositories:
+    - 'copper'
+committers:
+    - <<: *opnfv_copper_ptl
+    - name: 'David Lenrow'
+      email: 'david.lenrow@huawei.com'
+      company: 'huawei.com'
+      id: 'dlenrow'
+    - name: 'Zhipeng (Howard) Huang'
+      email: 'huangzhipeng@huawei.com'
+      company: 'huawei.com'
+      id: 'zhipengh'
+    - name: 'Bryan Sullivan'
+      email: 'bryan.sullivan@att.com'
+      company: 'att.com'
+      id: 'blsaws'
+    - name: 'Aimee Ukasick'
+      email: 'aimeeu@research.att.com'
+      company: 'research.att.com'
+      id: 'aimeeu'
+tsc:
+    # yamllint disable rule:line-length
+    approval: 'http//meetbot.opnfv.org/meetings/'
+    # yamllint enable rule:line-length
