@@ -1,6 +1,7 @@
 *~
 .*.sw?
 /build/
-/docs_build/
 /docs_output/
 /releng/
+.tox
+docs/_build/*
